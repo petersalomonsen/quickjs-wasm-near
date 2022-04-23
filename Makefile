@@ -63,10 +63,12 @@ else
   CROSS_PREFIX=
   EXE=
 endif
+CROSS_PREFIX=em
+
 ifdef CONFIG_CLANG
-  HOST_CC=clang
-  CC=$(CROSS_PREFIX)clang
-  CFLAGS=-g -Wall -MMD -MF $(OBJDIR)/$(@F).d
+  HOST_CC=emcc
+  CC=$(CROSS_PREFIX)cc
+  CFLAGS=-g -Wall -Wemcc -MMD -MF $(OBJDIR)/$(@F).d
   CFLAGS += -Wextra
   CFLAGS += -Wno-sign-compare
   CFLAGS += -Wno-missing-field-initializers
@@ -86,7 +88,7 @@ ifdef CONFIG_CLANG
   endif
 else
   HOST_CC=gcc
-  CC=$(CROSS_PREFIX)gcc
+  CC=$(CROSS_PREFIX)emcc
   CFLAGS=-g -Wall -MMD -MF $(OBJDIR)/$(@F).d
   CFLAGS += -Wno-array-bounds -Wno-format-truncation
   ifdef CONFIG_LTO

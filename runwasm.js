@@ -1,7 +1,7 @@
-import { Wasi } from './wasi.mjs';
+import { Wasi } from './wasi.js';
 import { readFileSync } from 'fs';
 import { execSync } from 'child_process';
-console.log(execSync('emcc -s STANDALONE_WASM -O2 --no-entry wasmlib.c libjseval.a libquickjs.a -o jseval.wasm').toString());
+console.log(execSync('emcc -g -s STANDALONE_WASM --no-entry wasmlib.c libjseval.a libquickjs.a -o jseval.wasm').toString());
 (async function () {
     const getWasmInstance = async () => {
         const wasi = new Wasi({
@@ -57,8 +57,8 @@ console.log(execSync('emcc -s STANDALONE_WASM -O2 --no-entry wasmlib.c libjseval
         return new Uint8Array(instance.memory.buffer, compiledbytecodeaddr, compiledbytecodebuflen);
     };
 
-    console.log(await evalSource(`(function () {return 11+34+55+"test".length})()`));
-    console.log(await evalByteCode([0x02, 0x02, 0x08, 0x74, 0x65, 0x73, 0x74, 0x1a,
+    console.log('eval js', await evalSource(`(function () {return 11+34+55+"test".length})()`));
+    console.log('eval bytecode', await evalByteCode([0x02, 0x02, 0x08, 0x74, 0x65, 0x73, 0x74, 0x1a,
         0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x5f, 0x6e, 0x65,
         0x61, 0x72, 0x2e, 0x6a, 0x73, 0x0e, 0x00, 0x06,
         0x00, 0xa0, 0x01, 0x00, 0x01, 0x00, 0x02, 0x00,
@@ -67,6 +67,19 @@ console.log(execSync('emcc -s STANDALONE_WASM -O2 --no-entry wasmlib.c libjseval
         0xcd, 0x28, 0xbe, 0x03, 0x01, 0x00]));
 
     let bytecode = await compileToByteCode(`(function () {return 11+34+55+"test".length})()`);
-    console.log([...bytecode].map(v => v.toString(16).padStart(2, '0')));
-    console.log(await evalByteCode(bytecode));
+    console.log('compiled bytecode', [...bytecode].map(v => v.toString(16).padStart(2, '0')));
+    console.log('eval compiled bytecode', await evalByteCode(bytecode));
+
+    console.log('JSON parse', await evalSource(`JSON.parse('1')`));
+    console.log('JSON parse in bytecode', await evalByteCode([0x02, 0x02, 0x0a, 0x70, 0x61, 0x72, 0x73, 0x65,
+        0x1a, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x5f, 0x6e,
+        0x65, 0x61, 0x72, 0x2e, 0x6a, 0x73, 0x0e, 0x00,
+        0x06, 0x00, 0xa0, 0x01, 0x00, 0x01, 0x00, 0x03,
+        0x00, 0x01, 0x11, 0x01, 0xa2, 0x01, 0x00, 0x00,
+        0x00, 0x38, 0x9b, 0x00, 0x00, 0x00, 0x42, 0xde,
+        0x00, 0x00, 0x00, 0xbf, 0x00, 0x24, 0x01, 0x00,
+        0xcd, 0x28, 0xbe, 0x03, 0x01, 0x00, 0x07, 0x02,
+        0x31]));
+    
+    
 })();

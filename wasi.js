@@ -215,7 +215,7 @@ export class Wasi {
     view.setBigUint64(stat + 16, WASI_RIGHTS_FD_WRITE, true);
     return WASI_ESUCCESS;
   }
-  clock_time_get = (a,b) => {
-    console.log('clock get time',a,b);
+  clock_time_get = (a) => {
+    console.log('clock get time',a);
   }
 }

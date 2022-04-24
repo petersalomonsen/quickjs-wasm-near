@@ -33,7 +33,7 @@ int js_eval(const char * source) {
     return JS_VALUE_GET_INT(val);
 }
 
-uint8_t * js_compile_to_bytecode(const char * source, size_t * out_buf_len) {
+uint8_t * js_compile_to_bytecode(const char * source, size_t * out_buf_len, int module) {
     JSRuntime* rt; JSContext* ctx;
 
     rt = JS_NewRuntime();
@@ -54,8 +54,8 @@ uint8_t * js_compile_to_bytecode(const char * source, size_t * out_buf_len) {
     JSValue obj = JS_Eval(ctx,
                           source,
                           len,
-                          "hello",
-                          JS_EVAL_FLAG_COMPILE_ONLY);
+                          "hello_near.js",
+                          JS_EVAL_FLAG_COMPILE_ONLY | (module == 1 ? JS_EVAL_TYPE_MODULE : JS_EVAL_TYPE_GLOBAL));
 
     if (JS_IsException(obj)) {
         printf("exception:%s\n",JS_ToCString(ctx, obj));

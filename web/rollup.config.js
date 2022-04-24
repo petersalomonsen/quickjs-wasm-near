@@ -1,9 +1,11 @@
 import html from '@web/rollup-plugin-html';
 import { terser } from 'rollup-plugin-terser';
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets';
-import { readFileSync, writeFileSync, unlinkSync } from 'fs';
+import { readFileSync, writeFileSync, unlinkSync, rmdirSync } from 'fs';
 
 const outdir = '../dist';
+rmdirSync(outdir, {recursive: true});
+
 export default {
     input: './index.html',
     output: { dir: outdir },
@@ -17,6 +19,9 @@ export default {
                 const pathname = resolvedUrl.pathname;
                 if (pathname.endsWith('.html')) {
                     const datauri = `data:text/html;base64,${readFileSync(pathname).toString('base64')}`;
+                    code = code.replace(urlMatch[0], `new URL('${datauri}')`);
+                } else if (pathname.endsWith('.wasm')) {
+                    const datauri = `data:application/wasm;base64,${readFileSync(pathname).toString('base64')}`;
                     code = code.replace(urlMatch[0], `new URL('${datauri}')`);
                 } else if (pathname.endsWith('.js')) {
                     code = code.replace(urlMatch[0], `URL.createObjectURL(new Blob([

@@ -1,9 +1,14 @@
 {
     "type": "module",
     "scripts": {
-        "start": "http-server ."
+        "start": "http-server .",
+        "dist": "rollup -c rollup.config.js"
     },
     "devDependencies": {
-        "http-server": "^14.1.0"
+        "@web/rollup-plugin-html": "^1.10.3",
+        "@web/rollup-plugin-import-meta-assets": "^1.0.7",
+        "http-server": "^14.1.0",
+        "rollup": "^2.70.2",
+        "rollup-plugin-terser": "^7.0.2"
     }
 }

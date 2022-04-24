@@ -6,7 +6,7 @@ const getWasmInstance = async () => {
         "LANG": "en_GB.UTF-8",
         "TERM": "xterm"
     });
-    const wasm = await fetch('jseval.wasm').then(r => r.arrayBuffer());
+    const wasm = await fetch(new URL('jseval.wasm', import.meta.url)).then(r => r.arrayBuffer());
     const mod = (await WebAssembly.instantiate(wasm, {
         "wasi_snapshot_preview1": wasi
     })).instance;
@@ -84,7 +84,13 @@ const compileToByteCode = async (src, module = false) => {
 
 const deploybutton = document.getElementById('deploybutton');
 const sourcecodeeditor = document.getElementById('sourcecode');
+const lastSavedSourceCode = localStorage.getItem('lastSavedSourceCode');
+sourcecodeeditor.value = lastSavedSourceCode ? lastSavedSourceCode : `export function hello() {
+    env.log("Hello Near");
+}`;
+
 deploybutton.addEventListener('click', async () => {
+    localStorage.setItem('lastSavedSourceCode', lastSavedSourceCode);
     const bytecode = await compileToByteCode(sourcecodeeditor.value, true);
     //console.log( [...bytecode].map(v => v.toString(16).padStart(2, '0')));
     deployJScontract(bytecode);

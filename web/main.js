@@ -1,6 +1,6 @@
 import { deployJScontract, callJSContract, walletConnection } from './near.js';
-
 import { Wasi } from './wasi.js';
+
 const getWasmInstance = async () => {
     const wasi = new Wasi({
         "LANG": "en_GB.UTF-8",

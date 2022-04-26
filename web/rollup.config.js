@@ -38,15 +38,5 @@ export default {
                 code: code
             }
         }
-    }))(), importMetaAssets(), html({ include: '**/*.html', minify: true }), terser(),
-    {
-        name: 'inline-js',
-        closeBundle: () => {
-            const js = readFileSync(`${outdir}/app.component.js`).toString();
-            const html = readFileSync(`${outdir}/index.html`).toString()
-                .replace(`<script type="module" src="./app.component.js"></script>`, `<script type="module">${js}</script>`);
-            writeFileSync(`${outdir}/index.html`, html);
-            unlinkSync(`${outdir}/app.component.js`);
-        }
-    }],
+    }))(), importMetaAssets(), html({ include: '**/*.html', minify: false }), terser()],
 };

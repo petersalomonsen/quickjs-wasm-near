@@ -1,0 +1,23 @@
+<mwc-top-app-bar>
+    <mwc-icon-button icon="menu" slot="navigationIcon"></mwc-icon-button>
+    <div slot="title">Deploy JS contract on NEAR</div>
+    <mwc-icon-button icon="file_download" slot="actionItems"></mwc-icon-button>
+    <mwc-icon-button icon="favorite" slot="actionItems"></mwc-icon-button>
+    <div><!-- content --></div>
+</mwc-top-app-bar>
+
+<div class="container">
+    <p><code-editor id="sourcecodeeditor"></code-editor>
+    </p>
+    <p>
+        <mwc-button raised id="deploybutton">Deploy</mwc-button>
+    </p>
+    <p>
+        <mwc-textfield label="Contract name" id="contractnameinput"></mwc-textfield>
+        <mwc-textfield label="Method name" id="methodnameinput"></mwc-textfield>
+        <mwc-textfield label="Arguments" id="argsinput"></mwc-textfield>
+    </p>
+    <p>
+        <mwc-button raised id="callcontractbutton">Call contract</mwc-button>
+    </p>
+</div>

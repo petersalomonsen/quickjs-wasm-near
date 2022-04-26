@@ -1,9 +1,17 @@
 import '@material/mwc-top-app-bar';
 import '@material/mwc-icon-button';
 import '@material/mwc-button';
+import '@material/mwc-textfield';
 import './code-editor/code-editor.component.js';
 import { deployJScontract, callJSContract, walletConnection } from './near.js';
 import { Wasi } from './wasi.js';
+
+HTMLElement.prototype.attachStyleSheet = function (url) {
+    const linkElement = document.createElement('link');
+    linkElement.rel = 'stylesheet';
+    linkElement.href = url;
+    this.shadowRoot.appendChild(linkElement);
+};
 
 const getWasmInstance = async () => {
     const wasi = new Wasi({
@@ -68,6 +76,8 @@ class AppComponent extends HTMLElement {
 
     async loadHTML() {
         this.shadowRoot.innerHTML = await fetch(new URL('app.component.html', import.meta.url)).then(r => r.text());
+        this.attachStyleSheet(new URL('app.component.css', import.meta.url));
+
         console.log('eval js', await evalSource(`(function () {return 11+34+55+"test".length})()`));
         console.log('eval bytecode', await evalByteCode([0x02, 0x02, 0x08, 0x74, 0x65, 0x73, 0x74, 0x1a,
             0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x5f, 0x6e, 0x65,

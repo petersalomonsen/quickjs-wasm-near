@@ -6,16 +6,18 @@
     <div><!-- content --></div>
 </mwc-top-app-bar>
 
-<p><code-editor id="sourcecodeeditor"></code-editor>
-</p>
-<p>
-    <button id="deploybutton">Deploy</button>
-</p>
-<p>
-<label for="contractnameinput">contract name</label><input type="text" id="contractnameinput">
-<label for="methodnameinput">method name</label><input type="text" id="methodnameinput">
-<label for="argsinput">args</label><input type="text" id="argsinput">
-</p>
-<p>
-    <button id="callcontractbutton">Call contract</button>
-</p>
+<div class="container">
+    <p><code-editor id="sourcecodeeditor"></code-editor>
+    </p>
+    <p>
+        <mwc-button raised id="deploybutton">Deploy</mwc-button>
+    </p>
+    <p>
+        <mwc-textfield label="Contract name" id="contractnameinput"></mwc-textfield>
+        <mwc-textfield label="Method name" id="methodnameinput"></mwc-textfield>
+        <mwc-textfield label="Arguments" id="argsinput"></mwc-textfield>
+    </p>
+    <p>
+        <mwc-button raised id="callcontractbutton">Call contract</mwc-button>
+    </p>
+</div>

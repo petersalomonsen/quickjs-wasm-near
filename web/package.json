@@ -2,6 +2,7 @@
     "type": "module",
     "scripts": {
         "start": "http-server -p 8082 .",
+        "start-dist": "http-server -p 8082 ../dist",
         "importmap": "node importmapgenerator.js",
         "dist": "rollup -c rollup.config.js"
     },

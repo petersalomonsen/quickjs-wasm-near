@@ -1,0 +1,10 @@
+div.container {
+    max-width: 1024px;
+    margin: auto;
+}
+
+.outputarea {
+    background-color: #eef;
+    width: 100%;
+    padding: 10px;
+}

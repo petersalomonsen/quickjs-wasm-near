@@ -2,9 +2,12 @@ import '@material/mwc-top-app-bar';
 import '@material/mwc-icon-button';
 import '@material/mwc-button';
 import '@material/mwc-textfield';
+
 import './code-editor/code-editor.component.js';
 import { deployJScontract, callJSContract, walletConnection } from './near.js';
 import { Wasi } from './wasi.js';
+
+import { setAppComponent, toggleIndeterminateProgress } from './common/progressindicator.js';
 
 HTMLElement.prototype.attachStyleSheet = function (url) {
     const linkElement = document.createElement('link');
@@ -77,6 +80,8 @@ class AppComponent extends HTMLElement {
     async loadHTML() {
         this.shadowRoot.innerHTML = await fetch(new URL('app.component.html', import.meta.url)).then(r => r.text());
         this.attachStyleSheet(new URL('app.component.css', import.meta.url));
+        setAppComponent(this);
+        toggleIndeterminateProgress(true);
 
         console.log('eval js', await evalSource(`(function () {return 11+34+55+"test".length})()`));
         console.log('eval bytecode', await evalByteCode([0x02, 0x02, 0x08, 0x74, 0x65, 0x73, 0x74, 0x1a,
@@ -112,10 +117,12 @@ class AppComponent extends HTMLElement {
     }`;
 
     deploybutton.addEventListener('click', async () => {
+        toggleIndeterminateProgress(true);
         localStorage.setItem('lastSavedSourceCode', sourcecodeeditor.value);
         const bytecode = await compileToByteCode(sourcecodeeditor.value, true);
         //console.log( [...bytecode].map(v => v.toString(16).padStart(2, '0')));
-        deployJScontract(bytecode);
+        await deployJScontract(bytecode);
+        toggleIndeterminateProgress(false);
     });
 
     const callcontractbutton = this.shadowRoot.getElementById('callcontractbutton');
@@ -123,12 +130,18 @@ class AppComponent extends HTMLElement {
 
     const methodnameinput = this.shadowRoot.getElementById('methodnameinput');
     const argsinput = this.shadowRoot.getElementById('argsinput');
-    callcontractbutton.addEventListener('click', async () => {console.log(await callJSContract(contractnameinput.value, methodnameinput.value, argsinput.value));
-});
+    callcontractbutton.addEventListener('click', async () => {
+        toggleIndeterminateProgress(true);
+        const contractOutputArea = this.shadowRoot.querySelector('#contractoutput');
+        const result = await callJSContract(contractnameinput.value, methodnameinput.value, argsinput.value);
+        contractOutputArea.innerHTML = result.receipts_outcome.map(r => r.outcome.logs.join('\n')).join('\n');
+        toggleIndeterminateProgress(false);
+    });
 
-(async () => {
-    contractnameinput.value = (await walletConnection).account().accountId;
-})();
+    (async () => {
+        contractnameinput.value = (await walletConnection).account().accountId;
+    })();
+    toggleIndeterminateProgress(false);
     }
 }
 

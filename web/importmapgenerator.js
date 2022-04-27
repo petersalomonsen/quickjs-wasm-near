@@ -13,6 +13,8 @@ const generator = new Generator({
 await generator.install('@material/mwc-top-app-bar');
 await generator.install('@material/mwc-icon-button');
 await generator.install('@material/mwc-dialog');
+await generator.install('@material/mwc-drawer');
+await generator.install('@material/mwc-list');
 await generator.install('@material/mwc-button');
 await generator.install('@material/mwc-textfield');
 await generator.install('@material/mwc-linear-progress');

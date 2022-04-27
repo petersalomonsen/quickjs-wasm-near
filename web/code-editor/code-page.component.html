@@ -1,0 +1,20 @@
+<p>
+    <code-editor id="sourcecodeeditor"></code-editor>
+</p>
+
+<p>
+    <mwc-button raised id="deploybutton">Deploy</mwc-button>        
+</p>
+<mwc-dialog id="deploy-contract-dialog" heading="Deploy contract?">
+    <div>This will overwrite the existing contract.</div>
+    <mwc-button
+        slot="primaryAction"
+        dialogAction="deploy">
+      Deploy
+    </mwc-button>
+    <mwc-button
+        slot="secondaryAction"
+        dialogAction="cancel">
+      Cancel
+    </mwc-button>
+</mwc-dialog>

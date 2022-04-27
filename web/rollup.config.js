@@ -38,5 +38,5 @@ export default {
                 code: code
             }
         }
-    }))(), importMetaAssets(), html({ include: '**/*.html', minify: false }), terser()],
+    }))(), importMetaAssets(), html({ include: '**/*.html', minify: true }), terser()],
 };

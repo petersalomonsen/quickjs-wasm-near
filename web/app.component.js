@@ -1,6 +1,7 @@
 import '@material/mwc-top-app-bar';
 import '@material/mwc-icon-button';
 import '@material/mwc-button';
+import '@material/mwc-dialog';
 import '@material/mwc-textfield';
 
 import './code-editor/code-editor.component.js';
@@ -117,12 +118,20 @@ class AppComponent extends HTMLElement {
     }`;
 
     deploybutton.addEventListener('click', async () => {
-        toggleIndeterminateProgress(true);
-        localStorage.setItem('lastSavedSourceCode', sourcecodeeditor.value);
-        const bytecode = await compileToByteCode(sourcecodeeditor.value, true);
-        //console.log( [...bytecode].map(v => v.toString(16).padStart(2, '0')));
-        await deployJScontract(bytecode);
-        toggleIndeterminateProgress(false);
+        const deployContractDialog = this.shadowRoot.getElementById('deploy-contract-dialog');
+        deployContractDialog.setAttribute('open','true');
+        if (await new Promise(resolve => {
+            deployContractDialog.querySelectorAll('mwc-button').forEach(b => b.addEventListener('click', (e) => {
+                resolve(e.target.getAttribute('dialogaction'));
+            }))
+        }) == 'deploy') {
+            toggleIndeterminateProgress(true);
+            localStorage.setItem('lastSavedSourceCode', sourcecodeeditor.value);
+            const bytecode = await compileToByteCode(sourcecodeeditor.value, true);
+            //console.log( [...bytecode].map(v => v.toString(16).padStart(2, '0')));
+            await deployJScontract(bytecode);
+            toggleIndeterminateProgress(false);
+        }
     });
 
     const callcontractbutton = this.shadowRoot.getElementById('callcontractbutton');

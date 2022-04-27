@@ -10,8 +10,10 @@
     <p><code-editor id="sourcecodeeditor"></code-editor>
     </p>
     <p>
-        <mwc-button raised id="deploybutton">Deploy</mwc-button>
+        <mwc-button raised id="deploybutton">Deploy</mwc-button>        
     </p>
+    
+    <h3>Call on-chain</h3>
     <p>
         <mwc-textfield label="Contract name" id="contractnameinput"></mwc-textfield>
         <mwc-textfield label="Method name" id="methodnameinput"></mwc-textfield>
@@ -20,8 +22,9 @@
     <p>
         <mwc-button raised id="callcontractbutton">Call contract</mwc-button>
     </p>
+    <h3>Contract output</h3>
     <p>
-        <h3>Contract output</h3>
+        
         <div class="outputarea">
             <pre><code id="contractoutput">
 
@@ -29,3 +32,17 @@
         </div>
     </p>
 </div>
+
+<mwc-dialog id="deploy-contract-dialog" heading="Deploy contract?">
+    <div>This will overwrite the existing contract.</div>
+    <mwc-button
+        slot="primaryAction"
+        dialogAction="deploy">
+      Deploy
+    </mwc-button>
+    <mwc-button
+        slot="secondaryAction"
+        dialogAction="cancel">
+      Cancel
+    </mwc-button>
+</mwc-dialog>

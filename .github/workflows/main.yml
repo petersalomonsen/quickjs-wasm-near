@@ -1,0 +1,34 @@
+name: CI
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  detectonly:
+    name: Detect use of .only
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Detect use of .only
+        run: |
+          grep -rq --include '*.spec.js' \.only\( . && echo 'You have .only() in your tests!' && exit 1
+          exit 0
+  chromeheadless:
+    name: Chrome headless
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Chrome headless
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install latest
+          ./emsdk activate latest
+          cd ..
+          source ./emsdk/emsdk_env.sh
+          cd wasmlib
+          ./build.sh
+          cd ../web
+          yarn install
+          yarn test

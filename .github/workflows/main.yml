@@ -1,9 +1,9 @@
 name: CI
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 jobs:
   detectonly:
     name: Detect use of .only
@@ -26,9 +26,7 @@ jobs:
           ./emsdk install latest
           ./emsdk activate latest
           cd ..
-          source ./emsdk/emsdk_env.sh
-          cd wasmlib
-          ./build.sh
-          cd ../web
+          npm i -g wasm-opt
+          (cd wasmlib && source ../emsdk/emsdk_env.sh && ./build.sh)          
           yarn install
           yarn test

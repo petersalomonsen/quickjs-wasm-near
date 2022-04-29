@@ -8,8 +8,6 @@ class CodeEditor extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({mode: 'open'});
-        
-        
 
         let state = EditorState.create({
             extensions: [

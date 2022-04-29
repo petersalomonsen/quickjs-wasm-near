@@ -40,7 +40,7 @@ class AppComponent extends HTMLElement {
             drawer.open = false;
         }
         
-        
+        goToPage('code');
         toggleIndeterminateProgress(false);
     }
 }

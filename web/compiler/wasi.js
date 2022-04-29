@@ -104,6 +104,8 @@ export class Wasi {
     this.wasiMemoryManager = null
     this.stdoutText = ''
     this.stderrText = ''
+    this.stdout = console.log
+    this.stderr = console.error
   }
 
   // Initialise the instance from the WebAssembly.
@@ -191,9 +193,9 @@ export class Wasi {
     view.setUint32(nwritten, written, true);
 
     if (fd === STDOUT) {
-      this.stdoutText = drainWriter(console.log, this.stdoutText, text)
+      this.stdoutText = drainWriter(this.stdout, this.stdoutText, text)
     } else if (fd == STDERR) {
-      this.stderrText = drainWriter(console.error, this.stderrText, text)
+      this.stderrText = drainWriter(this.stderr, this.stderrText, text)
     }
 
     return WASI_ESUCCESS;

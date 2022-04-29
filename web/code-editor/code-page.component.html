@@ -3,8 +3,21 @@
 </p>
 
 <p>
-    <mwc-button raised id="deploybutton">Deploy</mwc-button>        
+  <mwc-button raised id="simulatebutton" icon="play_arrow">Simulate</mwc-button>        
+  <mwc-button raised id="deploybutton">Deploy</mwc-button>        
 </p>
+
+<h3>Simulation output</h3>
+<p>
+
+<div class="outputarea">
+    <pre>
+      <code id="simulationoutput">
+
+      </code>
+    </pre>
+</div>
+
 <mwc-dialog id="deploy-contract-dialog" heading="Deploy contract?">
     <div>This will overwrite the existing contract.</div>
     <mwc-button

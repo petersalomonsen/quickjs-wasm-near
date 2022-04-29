@@ -26,7 +26,7 @@ export class QuickJS {
         })();
     }
 
-    async evalSource(src) {
+    async evalSource(src, module = false) {
         const instance = await this.wasmInstancePromise;
         const scriptaddr = instance.malloc(src.length + 1);
         const buf = new Uint8Array(instance.memory.buffer,
@@ -35,7 +35,7 @@ export class QuickJS {
         for (let n = 0; n < src.length; n++) {
             buf[n] = src.charCodeAt(n);
         }
-        return instance.eval_js_source(scriptaddr);
+        return instance.eval_js_source(scriptaddr, module);
     }
 
     async evalByteCode(bytecode) {

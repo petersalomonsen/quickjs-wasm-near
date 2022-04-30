@@ -1,6 +1,6 @@
 import './code-editor.component.js';
 import { deployJScontract } from '../near.js';
-import { QuickJS } from '../compiler/compilerutils.js'
+import { QuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { getNearEnvSource } from '../compiler/nearenv.js';
 
@@ -44,12 +44,15 @@ class CodePageComponent extends HTMLElement {
         const simulationOutputArea = this.shadowRoot.querySelector('#simulationoutput');
         simulatebutton.addEventListener('click', async () => {
             const quickjs = new QuickJS();
-            const bytecode = await quickjs.compileToByteCode(`
-                const env = (${getNearEnvSource()})();
-                ${sourcecodeeditor.value};
-        `, true);
-            console.log('compiled');
+            const bytecode = await quickjs.compileToByteCode(sourcecodeeditor.value, 'contractmodule');
+            await quickjs.evalSource(`const env = (${getNearEnvSource()})();`, 'global');
             await quickjs.evalByteCode(bytecode);
+            await quickjs.evalSource(`import * as contractExports from 'contractmodule';
+
+            print('available contract methods:',Object.keys(contractExports));
+
+            `,'main');
+            
             simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
         });
     }

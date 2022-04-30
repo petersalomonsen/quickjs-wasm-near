@@ -26,16 +26,22 @@ export class QuickJS {
         })();
     }
 
-    async evalSource(src, module = false) {
+    async allocateString(str) {
         const instance = await this.wasmInstancePromise;
-        const scriptaddr = instance.malloc(src.length + 1);
+        const straddr = instance.malloc(str.length + 1);
         const buf = new Uint8Array(instance.memory.buffer,
-            scriptaddr,
-            src.length);
-        for (let n = 0; n < src.length; n++) {
-            buf[n] = src.charCodeAt(n);
+            straddr,
+            str.length);
+        for (let n = 0; n < str.length; n++) {
+            buf[n] = str.charCodeAt(n);
         }
-        return instance.eval_js_source(scriptaddr, module);
+        return straddr;
+    }
+
+    async evalSource(src, modulefilename='<evalsource>') {
+        const instance = await this.wasmInstancePromise;
+        
+        return instance.eval_js_source(await this.allocateString(modulefilename), await this.allocateString(src), modulefilename!='<evalsource>');
     }
 
     async evalByteCode(bytecode) {
@@ -51,15 +57,11 @@ export class QuickJS {
         return instance.eval_js_bytecode(bytecodebufaddr, bytecodebuf.length);
     }
 
-    async compileToByteCode(src, module = false) {
+    async compileToByteCode(src, modulefilename='<evalsource>') {
         const instance = await this.wasmInstancePromise;
-        const scriptaddr = instance.malloc(src.length + 1);
-        const buf = new Uint8Array(instance.memory.buffer, scriptaddr, src.length);
-        for (let n = 0; n < src.length; n++) {
-            buf[n] = src.charCodeAt(n);
-        }
         const compiledbytecodebuflenptr = instance.malloc(4);
-        const compiledbytecodeaddr = instance.compile_to_bytecode(scriptaddr, compiledbytecodebuflenptr, module);
+        const compiledbytecodeaddr = instance.compile_to_bytecode(await this.allocateString(modulefilename),
+                await this.allocateString(src), compiledbytecodebuflenptr, modulefilename!='<evalsource>');
 
         const compiledbytecodebuflen = new Uint32Array(instance.memory.buffer, compiledbytecodebuflenptr, 4)[0];
         console.log('len', compiledbytecodebuflen);

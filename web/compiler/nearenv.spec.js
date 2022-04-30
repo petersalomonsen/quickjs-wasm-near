@@ -1,4 +1,4 @@
-import { QuickJS } from "./compilerutils.js";
+import { QuickJS } from "./quickjs.js";
 import { getNearEnvSource } from "./nearenv.js";
 
 describe('nearenv', () => {

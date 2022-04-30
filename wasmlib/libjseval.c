@@ -1,6 +1,10 @@
 #include "./quickjs.h"
 #include <string.h>
 
+JSValue global_obj;
+JSRuntime *rt = NULL;
+JSContext *ctx;
+
 static JSValue js_print(JSContext *ctx, JSValueConst this_val,
                         int argc, JSValueConst *argv)
 {
@@ -22,11 +26,10 @@ static JSValue js_print(JSContext *ctx, JSValueConst this_val,
     return JS_UNDEFINED;
 }
 
-void create_runtime(JSRuntime **rt_out, JSContext **ctx_out) {
-    JSValue global_obj;
-    JSRuntime *rt;
-    JSContext *ctx;
-    
+void create_runtime() {
+    if (rt != NULL) {
+        return;
+    }
     rt = JS_NewRuntime();
     ctx = JS_NewContextRaw(rt);
     JS_AddIntrinsicEval(ctx);
@@ -43,22 +46,18 @@ void create_runtime(JSRuntime **rt_out, JSContext **ctx_out) {
     global_obj = JS_GetGlobalObject(ctx);
     JS_SetPropertyStr(ctx, global_obj, "print",
                       JS_NewCFunction(ctx, js_print, "print", 1));
-    *rt_out = rt;
-    *ctx_out = ctx;
 }
 
-int js_eval(const char *source, int module)
+int js_eval(const char *filename, const char *source, int module)
 {
-    JSRuntime *rt;
-    JSContext *ctx;
-    create_runtime(&rt, &ctx);
+    create_runtime();
 
     int len = strlen(source);
 
     JSValue val = JS_Eval(ctx,
                           source,
                           len,
-                          "<evalScript>",
+                          filename,
                           (module == 1 ? JS_EVAL_TYPE_MODULE : JS_EVAL_TYPE_GLOBAL));
 
     if (JS_IsException(val) || JS_IsError(ctx, val))
@@ -72,19 +71,16 @@ int js_eval(const char *source, int module)
     return JS_VALUE_GET_INT(val);
 }
 
-uint8_t *js_compile_to_bytecode(const char *source, size_t *out_buf_len, int module)
+uint8_t *js_compile_to_bytecode(const char *filename, const char *source, size_t *out_buf_len, int module)
 {
-    JSRuntime *rt;
-    JSContext *ctx;
-    create_runtime(&rt, &ctx);
-
+    create_runtime();
 
     int len = strlen(source);
 
     JSValue obj = JS_Eval(ctx,
                           source,
                           len,
-                          "hello_near.js",
+                          filename,
                           JS_EVAL_FLAG_COMPILE_ONLY | (module == 1 ? JS_EVAL_TYPE_MODULE : JS_EVAL_TYPE_GLOBAL));
 
     if (JS_IsException(obj))
@@ -96,10 +92,7 @@ uint8_t *js_compile_to_bytecode(const char *source, size_t *out_buf_len, int mod
 
 int js_eval_bytecode(const uint8_t *buf, size_t buf_len)
 {
-    JSRuntime *rt;
-    JSContext *ctx;
-
-    create_runtime(&rt, &ctx);
+    create_runtime();
 
     JSValue obj, val;
     obj = JS_ReadObject(ctx, buf, buf_len, JS_READ_OBJ_BYTECODE);

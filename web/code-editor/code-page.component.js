@@ -45,14 +45,22 @@ class CodePageComponent extends HTMLElement {
         simulatebutton.addEventListener('click', async () => {
             const quickjs = new QuickJS();
             const bytecode = await quickjs.compileToByteCode(sourcecodeeditor.value, 'contractmodule');
-            await quickjs.evalSource(`const env = (${getNearEnvSource()})();`, 'global');
+            await quickjs.evalSource(`globalThis.env = (${getNearEnvSource()})();`, 'env');
             await quickjs.evalByteCode(bytecode);
-            await quickjs.evalSource(`import * as contractExports from 'contractmodule';
+            quickjs.stdoutlines = [];
+            await quickjs.evalSource(
+`import * as contractExports from 'contractmodule';
 
-            print('available contract methods:',Object.keys(contractExports));
-
-            `,'main');
+print(Object.keys(contractExports));
+`,'printmethods');
             
+            const availableMethods = quickjs.stdoutlines;
+            quickjs.stdoutlines = [];
+            const runcontractsource = `import { ${availableMethods[0]} } from 'contractmodule';
+            ${availableMethods[0]}();
+            `;
+
+            await quickjs.evalSource(runcontractsource, 'runcontract');
             simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
         });
     }

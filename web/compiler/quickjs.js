@@ -31,10 +31,11 @@ export class QuickJS {
         const straddr = instance.malloc(str.length + 1);
         const buf = new Uint8Array(instance.memory.buffer,
             straddr,
-            str.length);
+            str.length + 1);
         for (let n = 0; n < str.length; n++) {
             buf[n] = str.charCodeAt(n);
         }
+        buf[str.length] = 0;
         return straddr;
     }
 

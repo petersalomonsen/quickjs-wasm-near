@@ -57,9 +57,9 @@ print(Object.keys(contractExports));
             const availableMethods = quickjs.stdoutlines;
             quickjs.stdoutlines = [];
             const runcontractsource = `import { ${availableMethods[0]} } from 'contractmodule';
-            ${availableMethods[0]}();
-            `;
-
+${availableMethods[0]}();
+`;
+            console.log(runcontractsource);
             await quickjs.evalSource(runcontractsource, 'runcontract');
             simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
         });

@@ -28,7 +28,7 @@ hello();
     it('should be able to call an exported function from module with logging through env (eval source)', async () => {
         const quickjs = new QuickJS();
         const contractbytecode = await quickjs.compileToByteCode(`export function hello() {
-            env.log("Hello Near 666!");
+            env.log("Hello Near 666 abcdefghijk!");
         }`,'contractmodule');                
         await quickjs.evalSource(`globalThis.env = (${getNearEnvSource()})()`, 'env');
         await quickjs.evalByteCode(contractbytecode);
@@ -37,6 +37,6 @@ hello();
 `import { hello } from 'contractmodule';
 hello();
 `, 'main');
-        expect(quickjs.stdoutlines).to.include('Hello Near 666!');
+        expect(quickjs.stdoutlines).to.include('Hello Near 666 abcdefghijk!');
     });
 });

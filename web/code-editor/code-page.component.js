@@ -16,11 +16,14 @@ class CodePageComponent extends HTMLElement {
         this.attachStyleSheet(new URL('code-page.component.css', import.meta.url));
 
         const sourcecodeeditor = this.shadowRoot.getElementById('sourcecodeeditor');
+        this.sourcecodeeditor = sourcecodeeditor;
         const lastSavedSourceCode = localStorage.getItem('lastSavedSourceCode');
         sourcecodeeditor.value = lastSavedSourceCode ? lastSavedSourceCode : `export function hello() {
             env.log("Hello Near");
         }`;
 
+        const savebutton = this.shadowRoot.getElementById('savebutton');
+        savebutton.addEventListener('click', () => this.save());
         const deploybutton = this.shadowRoot.getElementById('deploybutton');
 
         deploybutton.addEventListener('click', async () => {
@@ -32,7 +35,7 @@ class CodePageComponent extends HTMLElement {
                 }))
             }) == 'deploy') {
                 toggleIndeterminateProgress(true);
-                localStorage.setItem('lastSavedSourceCode', sourcecodeeditor.value);
+                await this.save();
                 const bytecode = await new QuickJS().compileToByteCode(sourcecodeeditor.value, true);
                 //console.log( [...bytecode].map(v => v.toString(16).padStart(2, '0')));
                 await deployJScontract(bytecode);
@@ -48,21 +51,32 @@ class CodePageComponent extends HTMLElement {
             await quickjs.evalSource(`globalThis.env = (${getNearEnvSource()})();`, 'env');
             await quickjs.evalByteCode(bytecode);
             quickjs.stdoutlines = [];
-            await quickjs.evalSource(
-`import * as contractExports from 'contractmodule';
-
-print(Object.keys(contractExports));
-`,'printmethods');
-            
-            const availableMethods = quickjs.stdoutlines;
             quickjs.stdoutlines = [];
-            const runcontractsource = `import { ${availableMethods[0]} } from 'contractmodule';
-${availableMethods[0]}();
+            const selectedMethod = this.shadowRoot.querySelector('#methodselect').value;
+            const runcontractsource = `import { ${selectedMethod} } from 'contractmodule';
+${selectedMethod}();
 `;
-            console.log(runcontractsource);
             await quickjs.evalSource(runcontractsource, 'runcontract');
             simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
         });
+    }
+
+    async save() {
+        const source = this.sourcecodeeditor.value;
+        localStorage.setItem('lastSavedSourceCode', source);
+        const methodselect = this.shadowRoot.querySelector('#methodselect');
+        const quickjs = new QuickJS();
+        await quickjs.evalSource(source, 'contractmodule');
+        await quickjs.evalSource(`import * as contract from 'contractmodule';
+        print('method names:', Object.keys(contract));`, 'main');
+        const methodnames = quickjs.stdoutlines.find(l => l.indexOf('method names:') == 0).substring('method names: '.length).split(',');
+        methodselect.querySelectorAll('mwc-list-item').forEach(li => li.remove());
+        methodnames.forEach(methodname => {            
+            const option = document.createElement('mwc-list-item');
+            option.innerHTML = methodname;
+            option.value = methodname;
+            methodselect.appendChild(option);
+        });        
     }
 }
 

@@ -9,18 +9,25 @@ const generator = new Generator({
   env: ['production', 'browser', 'module'],
 });
 
+const packages = [
+  '@material/mwc-top-app-bar',
+  '@material/mwc-icon-button',
+  '@material/mwc-dialog',
+  '@material/mwc-drawer',
+  '@material/mwc-list',
+  '@material/mwc-list/mwc-list-item',
+  '@material/mwc-button',
+  '@material/mwc-textfield',
+  '@material/mwc-linear-progress',
+  '@material/mwc-select',
+  '@codemirror/basic-setup',
+  '@codemirror/state',
+  '@codemirror/lang-javascript'
+];
 // Install a new package into the import map
-await generator.install('@material/mwc-top-app-bar');
-await generator.install('@material/mwc-icon-button');
-await generator.install('@material/mwc-dialog');
-await generator.install('@material/mwc-drawer');
-await generator.install('@material/mwc-list');
-await generator.install('@material/mwc-button');
-await generator.install('@material/mwc-textfield');
-await generator.install('@material/mwc-linear-progress');
-await generator.install('@codemirror/basic-setup');    
-await generator.install('@codemirror/state');
-await generator.install('@codemirror/lang-javascript');
+for(const p of packages) {
+  await generator.install(p);
+}
 
 let indexHtml = readFileSync('index.html').toString();
 indexHtml = indexHtml.replace(/\<script type=\"importmap\"\>[^<]+\<\/script\>/,

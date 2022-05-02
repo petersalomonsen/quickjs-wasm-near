@@ -1,6 +1,6 @@
 <mwc-drawer hasHeader type="modal">
-    <span slot="title">NEAR JS Playground</span>
-    <span slot="subtitle">subtitle</span>
+    <span slot="title">NEAR JS</span>
+    <span slot="subtitle" id="loggedinuserspan"></span>
     <div class="drawer-content">
       <mwc-list activatable>
         <mwc-list-item selected activated onclick="goToPage('code')">Code</mwc-list-item>
@@ -10,16 +10,15 @@
     <div slot="appContent">
         <mwc-top-app-bar>
             <mwc-icon-button icon="menu" slot="navigationIcon" id="toggleDrawerButton"></mwc-icon-button>
-            <div slot="title">NEAR JS playground</div>
-            <mwc-icon-button icon="file_download" slot="actionItems"></mwc-icon-button>
-            <mwc-icon-button icon="favorite" slot="actionItems"></mwc-icon-button>
-            <div><!-- content --></div>
+            <div slot="title"></div>
+            
+            <div class="container" id="mainContainer">
+                <p>
+                    Open the menu to edit code for your Javascript contract, deploy, or call it on-chain.
+                </p>
+            </div>
         </mwc-top-app-bar>
 
-        <div class="container" id="mainContainer">
-            <p>
-                Open the menu to edit code for your Javascript contract, deploy, or call it on-chain.
-            </p>
-        </div>
+        
     </div>
 </mwc-drawer>

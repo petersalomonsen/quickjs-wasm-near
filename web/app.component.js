@@ -11,6 +11,7 @@ import './code-editor/code-page.component.js';
 import './callcontract/callcontract-page.component.js';
 
 import { setAppComponent, toggleIndeterminateProgress } from './common/progressindicator.js';
+import { walletConnection } from './near.js';
 
 HTMLElement.prototype.attachStyleSheet = function (url) {
     const linkElement = document.createElement('link');
@@ -35,13 +36,29 @@ class AppComponent extends HTMLElement {
         this.shadowRoot.querySelector('#toggleDrawerButton').addEventListener('click', () => {
             drawer.open = !drawer.open;
         });
+        const widthmatcher = window.matchMedia("(max-width: 700px)");
+        widthmatcher.addEventListener('change', e => {
+            if (e.matches) {
+                drawer.type = 'modal';
+            } else {
+                drawer.type = 'dismissible';
+                drawer.open = true;
+            }
+        });
+        if (!widthmatcher.matches) {
+            drawer.type = 'dismissible';
+            drawer.open = true;
+        }
         const mainContainer = this.shadowRoot.querySelector('#mainContainer')
         window.goToPage = (page) => {
             const pageElement = document.createElement(`${page}-page`);
             mainContainer.replaceChildren(pageElement);
-            drawer.open = false;
+            if (widthmatcher.matches) {
+                drawer.open = false;
+            }
         }
-        
+
+        this.shadowRoot.getElementById('loggedinuserspan').innerHTML = (await walletConnection).account().accountId;
         goToPage('code');
         toggleIndeterminateProgress(false);
     }

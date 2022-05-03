@@ -20,7 +20,10 @@ class CallContractPageComponent extends HTMLElement {
             toggleIndeterminateProgress(true);
             const contractOutputArea = this.shadowRoot.querySelector('#contractoutput');
             const result = await callJSContract(contractnameinput.value, methodnameinput.value, argsinput.value);
-            contractOutputArea.innerHTML = result.receipts_outcome.map(r => r.outcome.logs.join('\n')).join('\n');
+            contractOutputArea.innerHTML = `
+                ${result.receipts_outcome.map(r => r.outcome.logs.join('\n')).join('\n')}<br />
+                ${result.status.SuccessValue ? atob(result.status.SuccessValue) : ''}`;
+
             toggleIndeterminateProgress(false);
         });
 

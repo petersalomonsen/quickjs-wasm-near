@@ -1,4 +1,4 @@
-import { QuickJS } from "./quickjs.js";
+import { createQuickJS } from "./quickjs.js";
 
 function createNearEnv(args = '') {
     const registers = {};
@@ -48,7 +48,7 @@ function createNearEnv(args = '') {
         "jsvm_storage_read": () => null,
         "jsvm_storage_has_key": () => null,
         "jsvm_storage_remove": () => null,
-        "jsvm_value_return": () => null,
+        "jsvm_value_return": (val) => print(`return value: ${val}`),
         "jsvm_call": () => null,
     }
 };
@@ -59,7 +59,7 @@ export function getNearEnvSource() {
 
 export async function createQuickJSWithNearEnv(args) {
     const argsBase64 = btoa(args);
-    const quickjs = new QuickJS();
+    const quickjs = await createQuickJS();
     await quickjs.evalSource(await fetch('https://cdn.jsdelivr.net/npm/js-base64@3.7.2/base64.mjs').then(r => r.text()), 'js-base64');
     await quickjs.evalSource(`
     import { decode } from 'js-base64';

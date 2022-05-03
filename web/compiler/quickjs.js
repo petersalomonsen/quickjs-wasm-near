@@ -1,6 +1,6 @@
 import { Wasi } from './wasi.js';
 
-export class QuickJS {
+class QuickJS {
     constructor() {
         this.wasmInstancePromise = (async () => {
             this.wasi = new Wasi({
@@ -22,12 +22,13 @@ export class QuickJS {
                 "wasi_snapshot_preview1": this.wasi
             })).instance;
             this.wasi.init(mod);
+            this.wasmInstance = mod.exports;
             return mod.exports;
         })();
     }
 
-    async allocateString(str) {
-        const instance = await this.wasmInstancePromise;
+    allocateString(str) {
+        const instance = this.wasmInstance;
         const straddr = instance.malloc(str.length + 1);
         const buf = new Uint8Array(instance.memory.buffer,
             straddr,
@@ -39,14 +40,14 @@ export class QuickJS {
         return straddr;
     }
 
-    async evalSource(src, modulefilename='<evalsource>') {
-        const instance = await this.wasmInstancePromise;
+    evalSource(src, modulefilename='<evalsource>') {
+        const instance = this.wasmInstance;
         
-        return instance.eval_js_source(await this.allocateString(modulefilename), await this.allocateString(src), modulefilename!='<evalsource>');
+        return instance.eval_js_source(this.allocateString(modulefilename), this.allocateString(src), modulefilename!='<evalsource>');
     }
 
-    async evalByteCode(bytecode) {
-        const instance = await this.wasmInstancePromise;
+    evalByteCode(bytecode) {
+        const instance = this.wasmInstance;
         const bytecodebufaddr = instance.malloc(bytecode.length);
         const bytecodebuf = new Uint8Array(instance.memory.buffer,
             bytecodebufaddr,
@@ -58,15 +59,21 @@ export class QuickJS {
         return instance.eval_js_bytecode(bytecodebufaddr, bytecodebuf.length);
     }
 
-    async compileToByteCode(src, modulefilename='<evalsource>') {
-        const instance = await this.wasmInstancePromise;
+    compileToByteCode(src, modulefilename='<evalsource>') {
+        const instance = this.wasmInstance;
         const compiledbytecodebuflenptr = instance.malloc(4);
-        const compiledbytecodeaddr = instance.compile_to_bytecode(await this.allocateString(modulefilename),
-                await this.allocateString(src), compiledbytecodebuflenptr, modulefilename!='<evalsource>');
+        const compiledbytecodeaddr = instance.compile_to_bytecode(this.allocateString(modulefilename),
+                this.allocateString(src), compiledbytecodebuflenptr, modulefilename!='<evalsource>');
 
         const compiledbytecodebuflen = new Uint32Array(instance.memory.buffer, compiledbytecodebuflenptr, 4)[0];
         console.log('len', compiledbytecodebuflen);
 
         return new Uint8Array(instance.memory.buffer, compiledbytecodeaddr, compiledbytecodebuflen);
     }
+}
+
+export async function createQuickJS() {
+    const quickjs = new QuickJS();
+    await quickjs.wasmInstancePromise;
+    return quickjs;
 }

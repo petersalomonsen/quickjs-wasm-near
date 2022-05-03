@@ -1,6 +1,6 @@
 import './code-editor.component.js';
 import { deployJScontract } from '../near.js';
-import { QuickJS } from '../compiler/quickjs.js'
+import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { createQuickJSWithNearEnv, getNearEnvSource } from '../compiler/nearenv.js';
 
@@ -36,8 +36,8 @@ class CodePageComponent extends HTMLElement {
             }) == 'deploy') {
                 toggleIndeterminateProgress(true);
                 await this.save();
-                const bytecode = await new QuickJS().compileToByteCode(sourcecodeeditor.value, true);
-                //console.log( [...bytecode].map(v => v.toString(16).padStart(2, '0')));
+                const bytecode = (await createQuickJS()).compileToByteCode(sourcecodeeditor.value, 'contract');
+                // console.log( [...bytecode].map(v => v.toString(16).padStart(2, '0')));
                 await deployJScontract(bytecode);
                 toggleIndeterminateProgress(false);
             }
@@ -47,15 +47,15 @@ class CodePageComponent extends HTMLElement {
         const simulationOutputArea = this.shadowRoot.querySelector('#simulationoutput');
         simulatebutton.addEventListener('click', async () => {
             const quickjs = await createQuickJSWithNearEnv(this.shadowRoot.querySelector('#argumentsinput').value);
-            const bytecode = await quickjs.compileToByteCode(sourcecodeeditor.value, 'contractmodule');
-            await quickjs.evalByteCode(bytecode);
+            const bytecode = quickjs.compileToByteCode(sourcecodeeditor.value, 'contractmodule');
+            quickjs.evalByteCode(bytecode);
             quickjs.stdoutlines = [];
             quickjs.stdoutlines = [];
             const selectedMethod = this.shadowRoot.querySelector('#methodselect').value;
             const runcontractsource = `import { ${selectedMethod} } from 'contractmodule';
 ${selectedMethod}();
 `;
-            await quickjs.evalSource(runcontractsource, 'runcontract');
+            quickjs.evalSource(runcontractsource, 'runcontract');
             simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
         });
     }
@@ -64,9 +64,9 @@ ${selectedMethod}();
         const source = this.sourcecodeeditor.value;
         localStorage.setItem('lastSavedSourceCode', source);
         const methodselect = this.shadowRoot.querySelector('#methodselect');
-        const quickjs = new QuickJS();
-        await quickjs.evalSource(source, 'contractmodule');
-        await quickjs.evalSource(`import * as contract from 'contractmodule';
+        const quickjs = await createQuickJS();
+        quickjs.evalSource(source, 'contractmodule');
+        quickjs.evalSource(`import * as contract from 'contractmodule';
         print('method names:', Object.keys(contract));`, 'main');
         const methodnames = quickjs.stdoutlines.find(l => l.indexOf('method names:') == 0).substring('method names: '.length).split(',');
         methodselect.querySelectorAll('mwc-list-item').forEach(li => li.remove());

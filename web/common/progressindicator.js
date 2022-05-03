@@ -11,8 +11,8 @@ export function toggleIndeterminateProgress(state) {
     if (!alreadyExists && state) {
         const progressElement = document.createElement('mwc-linear-progress');
         progressElement.setAttribute('indeterminate','true');
-        const topbar = appComponent.querySelector('mwc-top-app-bar');
-        topbar.parentNode.insertBefore(progressElement, topbar.nextSibling);
+        const mainContainer = appComponent.querySelector('#mainContainer');
+        mainContainer.parentNode.insertBefore(progressElement, mainContainer);
     } else if (alreadyExists && !state) {
         appComponent.querySelector('mwc-linear-progress').remove();
     }

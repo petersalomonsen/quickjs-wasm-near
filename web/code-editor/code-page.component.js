@@ -2,7 +2,7 @@ import './code-editor.component.js';
 import { deployJScontract } from '../near.js';
 import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
-import { createQuickJSWithNearEnv, getNearEnvSource } from '../compiler/nearenv.js';
+import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
@@ -44,7 +44,7 @@ class CodePageComponent extends HTMLElement {
         });
 
         const simulatebutton = this.shadowRoot.getElementById('simulatebutton');
-        const simulationOutputArea = this.shadowRoot.querySelector('#simulationoutput');
+        this.simulationOutputArea = this.shadowRoot.querySelector('#simulationoutput');
         simulatebutton.addEventListener('click', async () => {
             const quickjs = await createQuickJSWithNearEnv(this.shadowRoot.querySelector('#argumentsinput').value);
             const bytecode = quickjs.compileToByteCode(sourcecodeeditor.value, 'contractmodule');
@@ -56,7 +56,7 @@ class CodePageComponent extends HTMLElement {
 ${selectedMethod}();
 `;
             quickjs.evalSource(runcontractsource, 'runcontract');
-            simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
+            this.simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
         });
     }
 
@@ -65,17 +65,24 @@ ${selectedMethod}();
         localStorage.setItem('lastSavedSourceCode', source);
         const methodselect = this.shadowRoot.querySelector('#methodselect');
         const quickjs = await createQuickJS();
-        quickjs.evalSource(source, 'contractmodule');
-        quickjs.evalSource(`import * as contract from 'contractmodule';
-        print('method names:', Object.keys(contract));`, 'main');
-        const methodnames = quickjs.stdoutlines.find(l => l.indexOf('method names:') == 0).substring('method names: '.length).split(',');
-        methodselect.querySelectorAll('mwc-list-item').forEach(li => li.remove());
-        methodnames.forEach(methodname => {            
-            const option = document.createElement('mwc-list-item');
-            option.innerHTML = methodname;
-            option.value = methodname;
-            methodselect.appendChild(option);
-        });        
+        try {
+            quickjs.evalSource(source, 'contractmodule');
+            quickjs.evalSource(`import * as contract from 'contractmodule';
+            print('method names:', Object.keys(contract));`, 'main');
+            const methodnames = quickjs.stdoutlines.find(l => l.indexOf('method names:') == 0).substring('method names: '.length).split(',');
+            methodselect.querySelectorAll('mwc-list-item').forEach(li => li.remove());
+            methodnames.forEach(methodname => {
+                const option = document.createElement('mwc-list-item');
+                option.innerHTML = methodname;
+                option.value = methodname;
+                methodselect.appendChild(option);
+            });
+            this.simulationOutputArea.innerHTML = '';
+        } catch (e) {
+            this.simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
+            const compileErrorSnackbar = this.shadowRoot.querySelector('#compileErrorSnackbar');
+            compileErrorSnackbar.show();
+        }
     }
 }
 

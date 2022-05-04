@@ -7,6 +7,7 @@ import '@material/mwc-list';
 import '@material/mwc-list/mwc-list-item';
 import '@material/mwc-textfield';
 import '@material/mwc-select';
+import '@material/mwc-snackbar';
 import './code-editor/code-page.component.js';
 import './callcontract/callcontract-page.component.js';
 

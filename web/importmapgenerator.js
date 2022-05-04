@@ -10,16 +10,17 @@ const generator = new Generator({
 });
 
 const packages = [
-  '@material/mwc-top-app-bar',
-  '@material/mwc-icon-button',
-  '@material/mwc-dialog',
-  '@material/mwc-drawer',
-  '@material/mwc-list',
-  '@material/mwc-list/mwc-list-item',
-  '@material/mwc-button',
-  '@material/mwc-textfield',
-  '@material/mwc-linear-progress',
-  '@material/mwc-select',
+  '@material/mwc-top-app-bar@0.25.3',
+  '@material/mwc-icon-button@0.25.3',
+  '@material/mwc-dialog@0.25.3',
+  '@material/mwc-drawer@0.25.3',
+  '@material/mwc-list@0.25.3',
+  '@material/mwc-list@0.25.3/mwc-list-item',
+  '@material/mwc-button@0.25.3',
+  '@material/mwc-textfield@0.25.3',
+  '@material/mwc-linear-progress@0.25.3',
+  '@material/mwc-select@0.25.3',
+  '@material/mwc-snackbar@0.25.3',
   '@codemirror/basic-setup',
   '@codemirror/state',
   '@codemirror/lang-javascript'

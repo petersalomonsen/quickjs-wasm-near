@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body {
+                margin: 0;
+                background-color: black;
+                font-family: monospace;
+                font-size: 30px;
+                color: white;
+            }
+            #container {
+                margin: auto;
+                margin-top: 20px;
+                max-width: 1024px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+            }
+            button {
+                font-size: 30px;
+                border: none;
+                padding: 10px;
+            }
+            #imagediv img {
+                max-width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container">
+            <div id="imagediv"></div>
+
+            <button id="enterbutton">Enter</button>
+            <div id="infotext" style="display: none">Please wait while calling smart contract</div>
+        </div>
+    </body>
+    <script type="module">
+import 'https://cdn.jsdelivr.net/npm/near-api-js@0.44.2/dist/near-api-js.min.js';
+
+const contractAccount = 'apsolomo.testnet';
+
+const nearconfig = {
+    nodeUrl: 'https://rpc.testnet.near.org',
+    archiveNodeUrl: 'https://archival-rpc.testnet.near.org',
+    walletUrl: 'https://wallet.testnet.near.org',
+    helperUrl: 'https://helper.testnet.near.org',
+    networkId: 'testnet',
+    contractName: 'dev-1650702826986-24017505724534',
+    deps: {
+        keyStore: null
+    }
+};
+
+const walletConnection = new Promise(async resolve => {
+    nearconfig.deps.keyStore = new nearApi.keyStores.BrowserLocalStorageKeyStore();
+    const near = await nearApi.connect(nearconfig);
+    const wc = new nearApi.WalletConnection(near);
+    resolve(wc);
+});
+
+async function checkSignedin() {
+    const wc = await walletConnection;
+    const acc = wc.account();
+    if (!(await acc.connection.signer.getPublicKey(acc.accountId, acc.connection.networkId))) {
+        wc.signOut();
+    }
+
+    if (!wc.isSignedIn()) {
+        await wc.requestSignIn(
+            nearconfig.contractName,
+            'js-on-near'
+        );
+    }
+    return wc;
+}
+
+async function callJSContract(methodName, args) {
+    const wc = await checkSignedin();
+    let input = Buffer.concat([Buffer.from(contractAccount), Buffer.from([0]), Buffer.from(methodName), Buffer.from([0]), Buffer.from(JSON.stringify(args))]);
+    const result = await wc.account().functionCall(nearconfig.contractName, 'call_js_contract', input);
+    return result.status.SuccessValue ? atob(result.status.SuccessValue) : ''
+}
+(async function() {
+    const enterbutton = document.getElementById('enterbutton');
+    const infotext = document.getElementById('infotext');
+    const imagediv = document.getElementById('imagediv');
+    let currentStep = -1;
+    enterbutton.addEventListener('click', async () => {
+        enterbutton.style.display = 'none';
+        infotext.style.display = 'block';
+        const result = JSON.parse(await callJSContract('nextstep', {currentStep}));
+        currentStep = result.currentStep;
+
+        const imageElement = new Image();
+        imageElement.src = result.image;
+
+        console.log(imageElement.src);
+        imagediv.replaceChildren(imageElement);
+        enterbutton.style.display = 'block';
+        enterbutton.innerHTML = 'Next';
+        infotext.style.display = 'none';
+    });
+})();
+    </script>
+</html>

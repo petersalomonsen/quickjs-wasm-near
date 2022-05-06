@@ -52,11 +52,15 @@ class CodePageComponent extends HTMLElement {
             quickjs.stdoutlines = [];
             quickjs.stdoutlines = [];
             const selectedMethod = this.shadowRoot.querySelector('#methodselect').value;
-            const runcontractsource = `import { ${selectedMethod} } from 'contractmodule';
-${selectedMethod}();
-`;
-            quickjs.evalSource(runcontractsource, 'runcontract');
-            this.simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
+            if (selectedMethod) {
+                const runcontractsource = `import { ${selectedMethod} } from 'contractmodule';
+    ${selectedMethod}();
+    `;
+                quickjs.evalSource(runcontractsource, 'runcontract');
+                this.simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
+            } else {
+                this.shadowRoot.querySelector('#selectMethodSnackbar').show();
+            }
         });
     }
 

@@ -64,10 +64,6 @@ int js_eval(const char *filename, const char *source, int module)
     {
         printf("%s\n", JS_ToCString(ctx, JS_GetException(ctx)));
     }
-    else
-    {
-        printf("success %d\n", JS_VALUE_GET_INT(val));
-    }
     return JS_VALUE_GET_INT(val);
 }
 
@@ -85,7 +81,7 @@ uint8_t *js_compile_to_bytecode(const char *filename, const char *source, size_t
 
     if (JS_IsException(obj))
     {
-        printf("exception:%s\n", JS_ToCString(ctx, obj));
+        printf("%s\n", JS_ToCString(ctx, JS_GetException(ctx)));
     }
     return JS_WriteObject(ctx, out_buf_len, obj, JS_WRITE_OBJ_BYTECODE);
 }
@@ -99,11 +95,7 @@ int js_eval_bytecode(const uint8_t *buf, size_t buf_len)
     val = JS_EvalFunction(ctx, obj);
     if (JS_IsException(val))
     {
-        printf("exception:%s\n", JS_ToCString(ctx, JS_GetException(ctx)));
-    }
-    else
-    {
-        printf("success %d\n", JS_VALUE_GET_INT(val));
+        printf("%s\n", JS_ToCString(ctx, JS_GetException(ctx)));
     }
     return JS_VALUE_GET_INT(val);
 }

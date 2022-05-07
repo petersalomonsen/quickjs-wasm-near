@@ -8,7 +8,11 @@ class CodeEditor extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({mode: 'open'});
-
+        this.shadowRoot.innerHTML = `
+        <style>
+            .cm-editor { height: 250px }
+        </style>
+        <div id="editor"></div>`;
         let state = EditorState.create({
             extensions: [
               basicSetup,
@@ -17,7 +21,7 @@ class CodeEditor extends HTMLElement {
         });
         this.editorView = new EditorView({
             state,
-            parent: this.shadowRoot
+            parent: this.shadowRoot.getElementById('editor')
         });
     }
 

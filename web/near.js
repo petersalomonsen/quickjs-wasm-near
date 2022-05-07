@@ -59,9 +59,9 @@ export async function deployJScontract(contractbytes) {
     );
 }
 
-export async function callJSContract(contractAccount, methodName, args) {
+export async function callJSContract(contractAccount, methodName, args, deposit) {
     const wc = await checkSignedin();
     let input = Buffer.concat([Buffer.from(contractAccount), Buffer.from([0]), Buffer.from(methodName), Buffer.from([0]), Buffer.from(args)]);
-    return await wc.account().functionCall(nearconfig.contractName, 'call_js_contract', input);
+    return await wc.account().functionCall(nearconfig.contractName, 'call_js_contract', input, null, deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
 }
 

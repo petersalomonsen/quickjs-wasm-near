@@ -65,4 +65,17 @@ hello();
 `, 'main');
         expect(quickjs.stdoutlines).to.include('return value: the returned value');
     });
+    it('should handle attached deposit', async () => {
+        const deposit = BigInt('2155166771112341412341241566111112341451');
+        const quickjs = await createQuickJSWithNearEnv('some args', deposit.toString());
+        const contractbytecode = quickjs.compileToByteCode(`export function hello() {
+            env.log('deposit is '+env.attached_deposit().toString())
+        }`, 'contractmodule');
+        quickjs.evalByteCode(contractbytecode);
+        quickjs.evalSource(
+            `import { hello } from 'contractmodule';
+            hello();
+`, 'main');
+        expect(quickjs.stdoutlines).to.include('deposit is '+deposit.toString());
+    });
 });

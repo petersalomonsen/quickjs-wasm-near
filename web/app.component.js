@@ -60,7 +60,9 @@ class AppComponent extends HTMLElement {
         }
 
         this.shadowRoot.getElementById('loggedinuserspan').innerHTML = (await walletConnection).account().accountId;
-        goToPage('code');
+        if (location.search.indexOf('transactionHashes=') > 0) {
+            goToPage('callcontract');
+        }
         toggleIndeterminateProgress(false);
     }
 }

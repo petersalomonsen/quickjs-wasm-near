@@ -62,6 +62,7 @@ class AppComponent extends HTMLElement {
         this.shadowRoot.getElementById('loggedinuserspan').innerHTML = (await walletConnection).account().accountId;
         if (location.search.indexOf('transactionHashes=') > 0) {
             goToPage('callcontract');
+            this.shadowRoot.getElementById('callcontract-menuitem').selected = true;
         }
         toggleIndeterminateProgress(false);
     }

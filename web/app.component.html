@@ -3,8 +3,8 @@
     <span slot="subtitle" id="loggedinuserspan"></span>
     <div class="drawer-content">
       <mwc-list activatable>
-        <mwc-list-item selected activated onclick="goToPage('code')">Code</mwc-list-item>
-        <mwc-list-item onclick="goToPage('callcontract')">Call contract</mwc-list-item>
+        <mwc-list-item id="code-menuitem" selected activated onclick="goToPage('code')">Code</mwc-list-item>
+        <mwc-list-item id="callcontract-menuitem" onclick="goToPage('callcontract')">Call contract</mwc-list-item>
       </mwc-list>
     </div>
     <div slot="appContent">

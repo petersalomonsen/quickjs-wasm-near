@@ -18,6 +18,9 @@ function b64DecodeUnicode(str) {
     }).join(''));
 }
 
+export function getNearConfig() {
+    return nearconfig;
+}
 
 export async function byteArrayToBase64(data) {
     return await new Promise(r => {

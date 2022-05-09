@@ -1,7 +1,8 @@
 import { createQuickJS } from "./quickjs.js";
 
-function createNearEnv(args = '', attached_deposit) {
+function createNearEnv(args = '', attached_deposit, storage = {}) {
     const registers = {};
+
     return {
         "read_register": (register) => registers[register],
         "register_len": () => null,
@@ -44,12 +45,20 @@ function createNearEnv(args = '', attached_deposit) {
         "jsvm_js_contract_name": () => null,
         "jsvm_method_name": () => null,
         "jsvm_args": (register) => registers[register] = args,
-        "jsvm_storage_write": () => null,
-        "jsvm_storage_read": () => null,
-        "jsvm_storage_has_key": () => null,
-        "jsvm_storage_remove": () => null,
+        "jsvm_storage_write": (key, value, register_id) => storage[key] = value,
+        "jsvm_storage_read": (key, register_id) => {
+            if (storage[key] != undefined) {
+                registers[register_id] = storage[key]
+                return 1;
+            } else {
+                return 0;
+            }
+        },
+        "jsvm_storage_has_key": (key) => storage[key] != undefined,
+        "jsvm_storage_remove": (key) => delete storage[key],
         "jsvm_value_return": (val) => print(`return value: ${val}`),
         "jsvm_call": () => null,
+        "print_storage": () => print(JSON.stringify(storage))
     }
 };
 
@@ -57,13 +66,13 @@ export function getNearEnvSource() {
     return createNearEnv.toString();
 }
 
-export async function createQuickJSWithNearEnv(args, attached_deposit = '0') {
+export async function createQuickJSWithNearEnv(args, attached_deposit = '0', storage = {}) {
     const argsBase64 = btoa(args);
     const quickjs = await createQuickJS();
     await quickjs.evalSource(await fetch('https://cdn.jsdelivr.net/npm/js-base64@3.7.2/base64.mjs').then(r => r.text()), 'js-base64');
     await quickjs.evalSource(`
     import { decode } from 'js-base64';
-    globalThis.env = (${getNearEnvSource()})(decode('${argsBase64}'),BigInt('${attached_deposit}'))
+    globalThis.env = (${getNearEnvSource()})(decode('${argsBase64}'),BigInt('${attached_deposit}'), ${JSON.stringify(storage)})
 `, 'env');
     return quickjs;
 }

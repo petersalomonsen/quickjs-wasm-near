@@ -78,4 +78,34 @@ hello();
 `, 'main');
         expect(quickjs.stdoutlines).to.include('deposit is '+deposit.toString());
     });
+    it('should simulate storage', async () => {
+        const quickjs = await createQuickJSWithNearEnv('some args',undefined,{
+            'abc': 'def',
+            'xxx': 'yyy'
+        });
+        const contractbytecode = quickjs.compileToByteCode(`
+export function teststorage() {
+    env.jsvm_storage_write("testkey","testvalue");
+    env.jsvm_storage_read("testkey",0);
+    let val = env.read_register(0);
+    env.log('the value is '+val);
+
+    env.jsvm_storage_read("abc",0);
+    val = env.read_register(0);
+    env.log('the value of abc is '+val);
+
+    env.jsvm_storage_read("xxx",0);
+    val = env.read_register(0);
+    env.log('the value of xxx is '+val);
+}
+`, 'contractmodule');
+        quickjs.evalByteCode(contractbytecode);
+        quickjs.evalSource(
+            `import { teststorage } from 'contractmodule';
+            teststorage();
+`, 'main');
+        expect(quickjs.stdoutlines).to.include('the value is testvalue');
+        expect(quickjs.stdoutlines).to.include('the value of abc is def');
+        expect(quickjs.stdoutlines).to.include('the value of xxx is yyy');
+    });
 });

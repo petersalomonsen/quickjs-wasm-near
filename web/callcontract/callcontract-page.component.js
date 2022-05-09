@@ -19,11 +19,14 @@ class CallContractPageComponent extends HTMLElement {
         const contractOutputArea = this.shadowRoot.querySelector('#contractoutput');
         callcontractbutton.addEventListener('click', async () => {
             toggleIndeterminateProgress(true);
-            const result = await callJSContract(contractnameinput.value, methodnameinput.value, argsinput.value, this.shadowRoot.querySelector('#depositinput').value);
-            contractOutputArea.innerHTML = `
-                ${result.receipts_outcome.map(r => r.outcome.logs.join('\n')).join('\n')}<br />
-                ${result.status.SuccessValue ? atob(result.status.SuccessValue) : ''}`;
-
+            try {
+                const result = await callJSContract(contractnameinput.value, methodnameinput.value, argsinput.value, this.shadowRoot.querySelector('#depositinput').value);
+                contractOutputArea.textContent = `
+${result.receipts_outcome.map(r => r.outcome.logs.join('\n')).join('\n')}
+${result.status.SuccessValue ? atob(result.status.SuccessValue) : ''}`;
+            } catch(e) {
+                contractOutputArea.textContent = e.message;
+            }
             toggleIndeterminateProgress(false);
         });
 

@@ -43,11 +43,32 @@ class CodePageComponent extends HTMLElement {
             }
         });
 
+        const addstorageitembutton = this.shadowRoot.getElementById('addstorageitembutton');
+        const storageitemsdiv = this.shadowRoot.getElementById('storageitems');
+        const addStorageItem = (key = '', val = '') => {
+            const storageitemtemplate = this.shadowRoot.getElementById('storageitemtemplate');
+            storageitemsdiv.appendChild(storageitemtemplate.content.cloneNode(true));
+            const storageitem = storageitemsdiv.lastElementChild;
+            storageitem.querySelector('.deletestorageitembutton').addEventListener('click', () => storageitem.remove());
+            storageitem.querySelector('.storagekeyinput').value = key;
+            storageitem.querySelector('.storagevalueinput').value = val;
+        };
+        addstorageitembutton.addEventListener('click', () => {
+            addStorageItem();
+        });
+
+        const getStorageObj = () => [ ...storageitemsdiv.children ].reduce((p, c) => {
+            p[c.querySelector('.storagekeyinput').value] = c.querySelector('.storagevalueinput').value;
+            return p;
+        }, {}); 
+
         const simulatebutton = this.shadowRoot.getElementById('simulatebutton');
         this.simulationOutputArea = this.shadowRoot.querySelector('#simulationoutput');
         simulatebutton.addEventListener('click', async () => {
             const deposit = this.shadowRoot.querySelector('#depositinput').value;
-            const quickjs = await createQuickJSWithNearEnv(this.shadowRoot.querySelector('#argumentsinput').value, deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
+            const quickjs = await createQuickJSWithNearEnv(this.shadowRoot.querySelector('#argumentsinput').value,
+                    deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined,
+                    getStorageObj());
             const bytecode = quickjs.compileToByteCode(sourcecodeeditor.value, 'contractmodule');
             quickjs.evalByteCode(bytecode);
             quickjs.stdoutlines = [];
@@ -58,7 +79,14 @@ class CodePageComponent extends HTMLElement {
     ${selectedMethod}();
     `;
                 quickjs.evalSource(runcontractsource, 'runcontract');
-                this.simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
+                this.simulationOutputArea.textContent = quickjs.stdoutlines.join('\n');
+                quickjs.stdoutlines = [];
+                quickjs.evalSource('env.print_storage()', 'printstorage');
+                const storageAfterRun = JSON.parse(quickjs.stdoutlines[0]);
+                storageitemsdiv.replaceChildren([]);
+                for (const key in storageAfterRun) {
+                    addStorageItem(key, storageAfterRun[key]);
+                }
             } else {
                 this.shadowRoot.querySelector('#selectMethodSnackbar').show();
             }

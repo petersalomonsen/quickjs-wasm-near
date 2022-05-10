@@ -1,5 +1,5 @@
 import './code-editor.component.js';
-import { deployJScontract } from '../near.js';
+import { deployJScontract } from '../near/near.js';
 import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';

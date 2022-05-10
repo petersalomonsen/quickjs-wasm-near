@@ -1,4 +1,4 @@
-import { callJSContract, getNearConfig, walletConnection } from '../near.js';
+import { callJSContract, getNearConfig, walletConnection } from '../near/near.js';
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 
 class CallContractPageComponent extends HTMLElement {

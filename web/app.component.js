@@ -12,7 +12,7 @@ import './code-editor/code-page.component.js';
 import './callcontract/callcontract-page.component.js';
 
 import { setAppComponent, toggleIndeterminateProgress } from './common/progressindicator.js';
-import { walletConnection } from './near.js';
+import { getNearConfig, walletConnection } from './near/near.js';
 
 HTMLElement.prototype.attachStyleSheet = function (url) {
     const linkElement = document.createElement('link');
@@ -59,7 +59,8 @@ class AppComponent extends HTMLElement {
             }
         }
 
-        this.shadowRoot.getElementById('loggedinuserspan').innerHTML = (await walletConnection).account().accountId;
+        this.shadowRoot.getElementById('loggedinuserspan').innerHTML = 
+                `${((await walletConnection).account().accountId) ?? ''} @ ${getNearConfig().contractName}`;
         if (location.search.indexOf('transactionHashes=') > 0) {
             goToPage('callcontract');
             this.shadowRoot.getElementById('callcontract-menuitem').selected = true;

@@ -1,12 +1,13 @@
 import 'https://cdn.jsdelivr.net/npm/near-api-js@0.44.2/dist/near-api-js.min.js';
+import { showLoginDialog } from './near.component.js';
 
+const contracts = ['dev-1650702826986-24017505724534', 'jsvm.testnet'];
 const nearconfig = {
     nodeUrl: 'https://rpc.testnet.near.org',
     archiveNodeUrl: 'https://archival-rpc.testnet.near.org',
     walletUrl: 'https://wallet.testnet.near.org',
     helperUrl: 'https://helper.testnet.near.org',
     networkId: 'testnet',
-    contractName: 'dev-1650702826986-24017505724534',
     deps: {
         keyStore: null
     }
@@ -32,6 +33,7 @@ export async function byteArrayToBase64(data) {
 
 export const walletConnection = new Promise(async resolve => {
     nearconfig.deps.keyStore = new nearApi.keyStores.BrowserLocalStorageKeyStore();
+    nearconfig.contractName = localStorage.getItem('loggedincontractname');
     const near = await nearApi.connect(nearconfig);
     const wc = new nearApi.WalletConnection(near);
     resolve(wc);
@@ -40,31 +42,45 @@ export const walletConnection = new Promise(async resolve => {
 export async function checkSignedin() {
     const wc = await walletConnection;
     const acc = wc.account();
+    
     if (!(await acc.connection.signer.getPublicKey(acc.accountId, acc.connection.networkId))) {
         wc.signOut();
     }
 
     if (!wc.isSignedIn()) {
-        await wc.requestSignIn(
-            nearconfig.contractName,
-            'js-on-near'
-        );
+        const contractname = await showLoginDialog(contracts);
+        if (contractname) {
+            localStorage.setItem('loggedincontractname', contractname);
+            await wc.requestSignIn(
+                contractname,
+                'near-javascript'
+            );
+        } else {
+            return null;
+        }
     }
     return wc;
 }
 
 export async function deployJScontract(contractbytes) {
     const wc = await walletConnection;
-    await checkSignedin();
-    await wc.account().functionCall(nearconfig.contractName, 'deploy_js_contract', 
-        contractbytes
-        , null, nearApi.utils.format.parseNearAmount(`${contractbytes.length / 1000}`)
-    );
+    if (await checkSignedin()) {
+        await wc.account().functionCall(nearconfig.contractName, 'deploy_js_contract', 
+            contractbytes
+            , null, nearApi.utils.format.parseNearAmount(`${contractbytes.length / 1000}`)
+        );
+    }
 }
 
 export async function callJSContract(contractAccount, methodName, args, deposit) {
     const wc = await checkSignedin();
-    let input = Buffer.concat([Buffer.from(contractAccount), Buffer.from([0]), Buffer.from(methodName), Buffer.from([0]), Buffer.from(args)]);
-    return await wc.account().functionCall(nearconfig.contractName, 'call_js_contract', input, null, deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
+    if (wc) {
+        let input = Buffer.concat([Buffer.from(contractAccount), Buffer.from([0]), Buffer.from(methodName), Buffer.from([0]), Buffer.from(args)]);
+        return await wc.account().functionCall(nearconfig.contractName, 'call_js_contract', input, null, deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
+    }
 }
 
+export async function logout() {
+    const wc = await checkSignedin();
+    wc.signOut();
+}

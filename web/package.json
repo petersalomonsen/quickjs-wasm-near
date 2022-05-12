@@ -5,7 +5,8 @@
         "start-dist": "http-server -p 8082 ../dist",
         "importmap": "node importmapgenerator.js",
         "dist": "rollup -c rollup.config.js",
-        "test": "karma start --single-run --browsers ChromeHeadless karma.conf.cjs"
+        "test": "karma start --single-run --browsers ChromeHeadless karma.conf.cjs",
+        "test:watch": "karma start --browsers Chrome karma.conf.cjs"
     },
     "devDependencies": {
         "@jspm/generator": "^1.0.0-beta.30",

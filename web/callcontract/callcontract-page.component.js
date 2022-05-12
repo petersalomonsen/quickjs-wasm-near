@@ -1,4 +1,4 @@
-import { callJSContract, getNearConfig, walletConnection } from '../near/near.js';
+import { callJSContract, getNearConfig, createWalletConnection } from '../near/near.js';
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 
 class CallContractPageComponent extends HTMLElement {
@@ -30,7 +30,7 @@ ${result.status.SuccessValue ? atob(result.status.SuccessValue) : ''}`;
             toggleIndeterminateProgress(false);
         });
 
-        const accountId = (await walletConnection).account().accountId;
+        const accountId = (await createWalletConnection()).account().accountId;
         contractnameinput.value = accountId;
         const transactionIdMatch = location.search.match(/transactionHashes=([a-zA-Z0-9]+)/);
         if (transactionIdMatch) {

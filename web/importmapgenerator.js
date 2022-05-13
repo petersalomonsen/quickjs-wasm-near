@@ -30,7 +30,14 @@ for(const p of packages) {
   await generator.install(p);
 }
 
+const importMapJson = JSON.stringify(generator.getMap(), null, 2);
 let indexHtml = readFileSync('index.html').toString();
 indexHtml = indexHtml.replace(/\<script type=\"importmap\"\>[^<]+\<\/script\>/,
-            `<script type="importmap">${JSON.stringify(generator.getMap(), null, 2)}</script>`)
+            `<script type="importmap">${importMapJson}</script>`)
 writeFileSync('index.html', indexHtml);
+writeFileSync('importmap.js', `
+const importmapscriptelement = document.createElement('script');
+importmapscriptelement.type = 'importmap';
+importmapscriptelement.textContent = JSON.stringify(${importMapJson});
+document.currentScript.after(importmapscriptelement);
+`);

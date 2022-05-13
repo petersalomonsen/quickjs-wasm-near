@@ -59,8 +59,18 @@ class AppComponent extends HTMLElement {
             }
         }
 
-        this.shadowRoot.getElementById('loggedinuserspan').innerHTML = 
-                `${((await createWalletConnection()).account().accountId) ?? ''} @ ${getNearConfig().contractName}`;
+        const accountId = (await createWalletConnection()).account().accountId;
+        const loggedInUserSpan = this.shadowRoot.getElementById('loggedinuserspan');
+        const logoutMenuItemTemplate = this.shadowRoot.getElementById('logout-menuitem-template');
+        const leftmenu = this.shadowRoot.getElementById('leftmenu');
+
+        if (accountId) {
+            loggedInUserSpan.innerHTML =
+                `${accountId ?? ''} @ ${getNearConfig().contractName}`;
+            leftmenu.appendChild(logoutMenuItemTemplate.content.cloneNode(true));
+        } else {
+            loggedInUserSpan.innerHTML = '';
+        }
         if (location.search.indexOf('transactionHashes=') > 0) {
             goToPage('callcontract');
             this.shadowRoot.getElementById('callcontract-menuitem').selected = true;

@@ -1,24 +1,7 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css?family=Material+Icons&display=block" rel="stylesheet">
-        <style>
-            body {
-                margin: 0;
-                font-family: Roboto, sans-serif;
-            }
-        </style>
-    </head>
-    <body>
-        <app-root></app-root>
-    </body>
-    <script async src="https://ga.jspm.io/npm:es-module-shims@1.4.1/dist/es-module-shims.js"></script>
-    <script type="importmap">{
+
+const importmapscriptelement = document.createElement('script');
+importmapscriptelement.type = 'importmap';
+importmapscriptelement.textContent = JSON.stringify({
   "imports": {
     "@codemirror/basic-setup": "https://ga.jspm.io/npm:@codemirror/basic-setup@0.20.0/dist/index.js",
     "@codemirror/lang-javascript": "https://ga.jspm.io/npm:@codemirror/lang-javascript@0.20.0/dist/index.js",
@@ -119,6 +102,5 @@
       "wicg-inert": "https://ga.jspm.io/npm:wicg-inert@3.1.1/dist/inert.js"
     }
   }
-}</script>
-    <script type="module" src="app.component.js"></script>
-</html>
+});
+document.currentScript.after(importmapscriptelement);

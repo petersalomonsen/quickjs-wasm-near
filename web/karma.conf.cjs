@@ -10,13 +10,15 @@ module.exports = function (config) {
   
       // list of files / patterns to load in the browser
       files: [
+        { pattern: 'importmap.js'},
         { pattern: '**/*.spec.js', type: 'module' },
-        { pattern: '**/*.js', included: false, type: 'module' },
+        { pattern: '**/*.js', included: false },
+        { pattern: '**/*.css', included: false },
         { pattern: '**/*.json', included: false },
         { pattern: '**/*.html', included: false },
         { pattern: '**/*.wasm', included: false }
       ],
-  
+
       // list of files / patterns to exclude
       exclude: [
         'node_modules/**/*.spec.js'

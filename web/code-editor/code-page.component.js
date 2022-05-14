@@ -1,5 +1,5 @@
 import './code-editor.component.js';
-import { deployJScontract } from '../near/near.js';
+import { deployJScontract, getSuggestedDepositForContract } from '../near/near.js';
 import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
@@ -37,9 +37,25 @@ class CodePageComponent extends HTMLElement {
                 toggleIndeterminateProgress(true);
                 await this.save();
                 const bytecode = (await createQuickJS()).compileToByteCode(sourcecodeeditor.value, 'contract');
-                // console.log( [...bytecode].map(v => v.toString(16).padStart(2, '0')));
-                await deployJScontract(bytecode);
-                toggleIndeterminateProgress(false);
+                const deployContract = async (deposit = undefined) => {
+                    try {
+                        console.log('deploy contract with deposit', deposit);
+                        await deployJScontract(bytecode, deposit);
+                        toggleIndeterminateProgress(false);
+                        this.shadowRoot.querySelector('#successDeploySnackbar').show();
+                    } catch(e) {
+                        console.error(e);
+                        if (e.message.indexOf('insufficient deposit for storage')>=0) {
+                            await deployContract(getSuggestedDepositForContract(bytecode.length));
+                        } else {
+                            const errorDeployContractDialog = this.shadowRoot.getElementById('error-deploying-contract-dialog');                            
+                            errorDeployContractDialog.querySelector('#errormessage').textContent = e.message;
+                            errorDeployContractDialog.setAttribute('open', 'true');
+                            toggleIndeterminateProgress(false);
+                        }
+                    }
+                };
+                await deployContract();
             }
         });
 

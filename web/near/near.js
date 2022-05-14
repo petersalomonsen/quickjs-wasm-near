@@ -76,13 +76,14 @@ export async function checkSignedin() {
     return wc;
 }
 
-export async function deployJScontract(contractbytes) {
+export function getSuggestedDepositForContract(contractbytelength) {
+    return nearApi.utils.format.parseNearAmount(`${contractbytelength / 1000}`);
+}
+
+export async function deployJScontract(contractbytes, deposit = undefined) {
     const wc = await createWalletConnection();
     if (await checkSignedin()) {
-        await wc.account().functionCall(nearconfig.contractName, 'deploy_js_contract',
-            contractbytes
-            , null, nearApi.utils.format.parseNearAmount(`${contractbytes.length / 1000}`)
-        );
+        await wc.account().functionCall(nearconfig.contractName, 'deploy_js_contract', contractbytes, null, deposit);
     }
 }
 

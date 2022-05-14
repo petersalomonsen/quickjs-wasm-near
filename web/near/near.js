@@ -96,5 +96,8 @@ export async function callJSContract(contractAccount, methodName, args, deposit)
 
 export async function logout() {
     const wc = await checkSignedin();
-    wc.signOut();
+    await wc.signOut();
+    console.log('logged out');
+    clearWalletConnection();
 }
+

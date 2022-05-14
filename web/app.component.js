@@ -12,7 +12,7 @@ import './code-editor/code-page.component.js';
 import './callcontract/callcontract-page.component.js';
 
 import { setAppComponent, toggleIndeterminateProgress } from './common/progressindicator.js';
-import { getNearConfig, createWalletConnection } from './near/near.js';
+import { getNearConfig, createWalletConnection, checkSignedin, logout, clearWalletConnection } from './near/near.js';
 
 HTMLElement.prototype.attachStyleSheet = function (url) {
     const linkElement = document.createElement('link');
@@ -62,14 +62,26 @@ class AppComponent extends HTMLElement {
         const accountId = (await createWalletConnection()).account().accountId;
         const loggedInUserSpan = this.shadowRoot.getElementById('loggedinuserspan');
         const logoutMenuItemTemplate = this.shadowRoot.getElementById('logout-menuitem-template');
+        const loginMenuItemTemplate = this.shadowRoot.getElementById('login-menuitem-template');
         const leftmenu = this.shadowRoot.getElementById('leftmenu');
 
+        const showNotLoggedIn = () => {
+            loggedInUserSpan.innerHTML = '';
+            const loginMenuItem = leftmenu.appendChild(loginMenuItemTemplate.content.firstElementChild.cloneNode(true));
+            loginMenuItem.addEventListener('click', () => checkSignedin());
+        };
         if (accountId) {
             loggedInUserSpan.innerHTML =
                 `${accountId ?? ''} @ ${getNearConfig().contractName}`;
-            leftmenu.appendChild(logoutMenuItemTemplate.content.cloneNode(true));
+            logoutMenuItemTemplate.content.cloneNode(true)
+            const logoutMenuItem = leftmenu.appendChild(logoutMenuItemTemplate.content.firstElementChild.cloneNode(true));
+            logoutMenuItem.addEventListener('click', async () => {
+                logoutMenuItem.remove();                
+                showNotLoggedIn();
+                await logout();
+            });
         } else {
-            loggedInUserSpan.innerHTML = '';
+            showNotLoggedIn();
         }
         if (location.search.indexOf('transactionHashes=') > 0) {
             goToPage('callcontract');

@@ -26,7 +26,7 @@ class NearComponents extends HTMLElement {
                 resolve(e.target.getAttribute('dialogaction'));
             }))
         }) == 'login') {
-            return loginDialog.querySelector('#contractselect').value;
+            return loginDialog.querySelector('#contractinput').value || loginDialog.querySelector('#contractselect').value;
         } else {
             return null;
         }

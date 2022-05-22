@@ -9,22 +9,9 @@ const generator = new Generator({
   env: ['production', 'browser', 'module'],
 });
 
-const packages = [
-  '@material/mwc-top-app-bar@0.25.3',
-  '@material/mwc-icon-button@0.25.3',
-  '@material/mwc-dialog@0.25.3',
-  '@material/mwc-drawer@0.25.3',
-  '@material/mwc-list@0.25.3',
-  '@material/mwc-list@0.25.3/mwc-list-item',
-  '@material/mwc-button@0.25.3',
-  '@material/mwc-textfield@0.25.3',
-  '@material/mwc-linear-progress@0.25.3',
-  '@material/mwc-select@0.25.3',
-  '@material/mwc-snackbar@0.25.3',
-  '@codemirror/basic-setup',
-  '@codemirror/state',
-  '@codemirror/lang-javascript'
-];
+const packages = ['@material/mwc-list/mwc-list-item'
+  ,...Object.keys(JSON.parse(readFileSync('./package.json')).dependencies)];
+
 // Install a new package into the import map
 for(const p of packages) {
   await generator.install(p);

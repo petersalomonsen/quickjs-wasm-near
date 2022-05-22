@@ -2,6 +2,7 @@ import html from '@web/rollup-plugin-html';
 import { terser } from 'rollup-plugin-terser';
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets';
 import { readFileSync, rmdirSync, existsSync } from 'fs';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 const outdir = '../dist';
 if (existsSync(outdir)) {
@@ -11,7 +12,7 @@ if (existsSync(outdir)) {
 export default {
     input: './index.html',
     output: { dir: outdir, entryFileNames: "app.[hash].js" },
-    plugins: [(() => ({
+    plugins: [nodeResolve(), (() => ({
         transform(code, id) {
             let urlMatch;
             do {
@@ -47,5 +48,8 @@ export default {
                 code: code
             }
         }
-    }))(), importMetaAssets(), html({ include: '**/*.html', minify: true }), terser()],
+    }))(), importMetaAssets(), html({ include: '**/*.html', minify: true,
+    transformHtml: (html) => {        
+        return html.replace(/<script type=\"importmap\">[^<]+<\/script>/g, "");        
+    } }), terser()],
 };

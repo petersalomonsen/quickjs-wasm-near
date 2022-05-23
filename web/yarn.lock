@@ -269,9 +269,9 @@
     "@codemirror/view" "^0.20.0"
     "@lezer/common" "^0.16.0"
 
-"@codemirror/basic-setup@":
+"@codemirror/basic-setup@^0.20.0":
   version "0.20.0"
-  resolved "https://registry.npmjs.org/@codemirror/basic-setup/-/basic-setup-0.20.0.tgz"
+  resolved "https://registry.yarnpkg.com/@codemirror/basic-setup/-/basic-setup-0.20.0.tgz#ed331e0b2d29efc0a09317de9e10467b992b0c7b"
   integrity sha512-W/ERKMLErWkrVLyP5I8Yh8PXl4r+WFNkdYVSzkXYPQv2RMPSkWpr2BgggiSJ8AHF/q3GuApncDD8I4BZz65fyg==
   dependencies:
     "@codemirror/autocomplete" "^0.20.0"
@@ -284,7 +284,7 @@
 
 "@codemirror/commands@^0.20.0":
   version "0.20.0"
-  resolved "https://registry.npmjs.org/@codemirror/commands/-/commands-0.20.0.tgz"
+  resolved "https://registry.yarnpkg.com/@codemirror/commands/-/commands-0.20.0.tgz#51405d442e6b8687b63e8fa27effc28179917c88"
   integrity sha512-v9L5NNVA+A9R6zaFvaTbxs30kc69F6BkOoiEbeFw4m4I0exmDEKBILN6mK+GksJtvTzGBxvhAPlVFTdQW8GB7Q==
   dependencies:
     "@codemirror/language" "^0.20.0"
@@ -292,9 +292,9 @@
     "@codemirror/view" "^0.20.0"
     "@lezer/common" "^0.16.0"
 
-"@codemirror/lang-javascript@":
+"@codemirror/lang-javascript@^0.20.0":
   version "0.20.0"
-  resolved "https://registry.npmjs.org/@codemirror/lang-javascript/-/lang-javascript-0.20.0.tgz"
+  resolved "https://registry.yarnpkg.com/@codemirror/lang-javascript/-/lang-javascript-0.20.0.tgz#64a7beaa634ad2163dbfdcff94bae8ff28bae476"
   integrity sha512-Wawq5+o1DlWtsqAyaa9NkiSXNT7geFcfdUael0hIQdM7P23gkQaD+xgZcyQP6QvPxVAdnY4VIWHFzFAqBti+WQ==
   dependencies:
     "@codemirror/autocomplete" "^0.20.0"
@@ -334,7 +334,7 @@
     "@codemirror/view" "^0.20.0"
     crelt "^1.0.5"
 
-"@codemirror/state@", "@codemirror/state@^0.20.0":
+"@codemirror/state@^0.20.0":
   version "0.20.0"
   resolved "https://registry.npmjs.org/@codemirror/state/-/state-0.20.0.tgz"
   integrity sha512-R3XrAWCS5Xm9lx+4pDET4EUPEg+8bDfAa5zoOFIhx+VChsfew9Vy33dAjCXS5ES4Q8UecW4WM4UudmUFpZ+86A==

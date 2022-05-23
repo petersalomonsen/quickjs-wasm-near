@@ -1,23 +1,23 @@
-import {basicSetup, EditorView} from '@codemirror/basic-setup';
-import {EditorState, Compartment} from '@codemirror/state';
-import {javascript} from '@codemirror/lang-javascript';
+import { EditorState, EditorView, basicSetup } from '@codemirror/basic-setup';
+import { javascript } from '@codemirror/lang-javascript';
+import { indentWithTab } from "@codemirror/commands"
+import { keymap } from "@codemirror/view";
 
-const language = new Compartment();
+const extensions = [basicSetup,
+    keymap.of([indentWithTab]),
+    javascript()];
 
 class CodeEditor extends HTMLElement {
     constructor() {
         super();
-        this.attachShadow({mode: 'open'});
+        this.attachShadow({ mode: 'open' });
         this.shadowRoot.innerHTML = `
         <style>
             .cm-editor { height: 250px }
         </style>
         <div id="editor"></div>`;
         let state = EditorState.create({
-            extensions: [
-              basicSetup,
-              language.of(javascript())
-            ]
+            extensions: extensions
         });
         this.editorView = new EditorView({
             state,
@@ -28,10 +28,7 @@ class CodeEditor extends HTMLElement {
     set value(val) {
         let state = EditorState.create({
             doc: this.editorView.state.toText(val),
-            extensions: [
-              basicSetup,
-              language.of(javascript())
-            ]
+            extensions: extensions
         });
         this.editorView.setState(state);
     }

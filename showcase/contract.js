@@ -43,7 +43,7 @@ export function newgame() {
   env.jsvm_storage_write(signerAccountId(), JSON.stringify(keypositions), 0);
 }
 
-export function viewGameState() {
+export function view_game_state() {
   const args = argsJSON();
   const gamestate = readGameState(args.account_id);
   if (gamestate) {    
@@ -58,7 +58,7 @@ export function viewGameState() {
 /*
 * example args: {"x": 1, "y": 1, "currentStep": 1}
 */
-export function tryFindKey() {
+export function try_find_key() {
   const args = argsJSON();
   
   const gamestate = readGameState(signerAccountId());

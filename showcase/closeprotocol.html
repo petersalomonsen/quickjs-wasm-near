@@ -40,8 +40,7 @@
     <div id="container">
         <div id="infotext"></div>
         <div id="imagediv"></div>
-
-        <button id="enterbutton">Enter</button>
+        <button id="enterbutton">New game</button>
     </div>
 </body>
 <script type="module">
@@ -88,11 +87,11 @@
         return wc;
     }
 
-    async function callJSContract(methodName, args = '') {
+    async function callJSContract(methodName, args = '', deposit = undefined) {
         const wc = await checkSignedin();
         const input = Buffer.concat([Buffer.from(contractAccount), Buffer.from([0]), Buffer.from(methodName), Buffer.from([0]), Buffer.from(JSON.stringify(args))]);
         try {
-            const result = await wc.account().functionCall(nearconfig.contractName, 'call_js_contract', input);
+            const result = await wc.account().functionCall(nearconfig.contractName, 'call_js_contract', input, undefined, deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
             return result.status.SuccessValue ? atob(result.status.SuccessValue) : ''
         } catch (e) {
             if (e.message.indexOf('insufficient deposit for storage') > 0) {
@@ -118,67 +117,45 @@
         return resultvalue;
     }
 
-    async function checkTransactionIdInQueryString() {
-        const wc = await walletConnection;
-        const accountId = wc.account().accountId;
-        if (accountId) {
-            const transactionIdMatch = location.search.match(/transactionHashes=([a-zA-Z0-9]+)/);
-            if (transactionIdMatch) {
-                const txhash = transactionIdMatch[1];
-                const result = (await fetch(nearconfig.nodeUrl, {
-                    method: 'POST',
-                    headers: {
-                        'content-type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        "jsonrpc": "2.0",
-                        "id": "dontcare",
-                        "method": "EXPERIMENTAL_tx_status",
-                        "params": [txhash, accountId]
-                    })
-                }).then(r => r.json())).result;
-
-                console.log(result);
-                setInfoText(`${result.status.SuccessValue ? atob(result.status.SuccessValue) : ''}`);
-            }
-        }
-    }
-
-    (async function () {
-        await checkTransactionIdInQueryString();
-
-        const enterbutton = document.getElementById('enterbutton');
-        const imagediv = document.getElementById('imagediv');
-        let currentStep = -1;
-        enterbutton.addEventListener('click', async () => {
-            enterbutton.style.display = 'none';
-            setInfoText('Calling smart contract');
-            if (await viewJSContract('hasgame') != 'true') {
-                setInfoText('Creating new game');
-                await callJSContract('newgame');
-            }
-            const result = JSON.parse(await callJSContract('nextstep', { currentStep }));
-            currentStep = result.currentStep;
-
+    async function updateGameState() {
+        const walletConnection = await checkSignedin();        
+        const gamestatejson = await viewJSContract('view_game_state',
+                {"account_id": walletConnection.account().accountId}
+        );
+        if (gamestatejson) {
+            const gamestate = JSON.parse(gamestatejson);
+            const currentStep = gamestate.reduce((prev,curr, ndx) => curr.keyFound ? ndx + 1 : prev,0);
+            const gameStateObj = gamestate[currentStep];
             const imageElement = new Image();
-            imageElement.src = result.image;
+            imageElement.src = gameStateObj.image;
 
             console.log(imageElement.src);
             imagediv.replaceChildren(imageElement);
             enterbutton.style.display = 'block';
-            enterbutton.innerHTML = 'Next';
-            setInfoText('');
+            setInfoText(`Click on the image and try to find the next key. You have made ${gameStateObj.attempts} attempts.`);
+        }
+    }
+
+    (async function () {
+        const walletConnection = await checkSignedin();        
+        await updateGameState();
+        
+        const enterbutton = document.getElementById('enterbutton');
+        const imagediv = document.getElementById('imagediv');
+
+        enterbutton.addEventListener('click', async () => {
+            enterbutton.style.display = 'none';
+
+            setInfoText('Creating new game');
+            await callJSContract('newgame', '', '0.1');
+            await updateGameState();
         });
         imagediv.addEventListener('click', async (e) => {
             const x = Math.floor(e.offsetX * 3 / imagediv.clientWidth);
             const y = Math.floor(e.offsetY * 3 / imagediv.clientHeight);
             setInfoText('Trying to find key');
-            const result = JSON.parse(await callJSContract('tryFindKey', { currentStep, x, y }));
-            if (result.keyFound) {
-                setInfoText(`Key found in ${result.attempts} attempts`);
-            } else {
-                setInfoText(`Key not found in ${result.attempts} attempts`);
-            }
+            await callJSContract('try_find_key', { x, y });
+            await updateGameState();
         });
     })();
 </script>

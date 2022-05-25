@@ -11,56 +11,65 @@ const imageUrls = ['https://fictionspawnsite.files.wordpress.com/2022/05/bus-clo
   'https://fictionspawnsite.files.wordpress.com/2022/05/dead-man-close-sketch.jpg?w=2048'
 ];
 
-const STORAGE_KEY_KEY_POSITIONS = "keypositions";
+function signerAccountId() {
+  env.signer_account_id(0)
+  return env.read_register(0)
+}
+
+function argsJSON() {
+  env.jsvm_args(0);
+  const input = env.read_register(0);
+  return JSON.parse(input);
+}
+
+function readGameState(account_id) {
+  env.jsvm_storage_read(account_id, 1);
+
+  const gamestatejson = env.read_register(1);
+  if (gamestatejson) {
+    return JSON.parse(gamestatejson);
+  } else {
+    return null;
+  }
+}
 
 export function newgame() {
   const keypositions = imageUrls.map((val, ndx) => ({
     x: Math.floor(Math.random() * 3),
     y: Math.floor(Math.random() * 3),
-    attempts: 0
+    attempts: 0,
+    keyFound: false
   }));
-  env.jsvm_storage_write(STORAGE_KEY_KEY_POSITIONS, JSON.stringify(keypositions), 0);
+  env.jsvm_storage_write(signerAccountId(), JSON.stringify(keypositions), 0);
+}
+
+export function viewGameState() {
+  const args = argsJSON();
+  const gamestate = readGameState(args.account_id);
+  if (gamestate) {    
+    env.jsvm_value_return(JSON.stringify(gamestate.map((step, ndx, arr) => ({
+      attempts: step.attempts,
+      keyFound: step.keyFound,
+      image: (step.keyFound || ndx == 0 || arr[ndx-1].keyFound) ? imageUrls[ndx] : null
+    }))));
+  }
 }
 
 /*
 * example args: {"x": 1, "y": 1, "currentStep": 1}
 */
 export function tryFindKey() {
-  env.jsvm_args(0);
-  const input = env.read_register(0);
-  const args = JSON.parse(input);
-  env.jsvm_storage_read(STORAGE_KEY_KEY_POSITIONS, 1)
-  const keypositions = JSON.parse(env.read_register(1));
-  const keyposition = keypositions[args.currentStep];
-  let keyFound = false;
-  if (!keyposition.keyFound) {
-    keyposition.attempts++;
-    
-    if (keyposition.x == args.x && keyposition.y == args.y) {
-      keyFound = true;
-      keyposition.keyFound = true;
-    } else {
-      keyFound = false;
-    }
-  } else {
-    keyFound = true;
-  }
-  env.jsvm_storage_write(STORAGE_KEY_KEY_POSITIONS, JSON.stringify(keypositions), 0);
-  env.jsvm_value_return(JSON.stringify({keyFound, attempts: keyposition.attempts}));
-}
+  const args = argsJSON();
+  
+  const gamestate = readGameState(signerAccountId());
+  const stateobj = gamestate.find(stateobj => !stateobj.keyFound);
 
-export function nextstep() {
-  env.jsvm_args(0)
-  const input = env.read_register(0)
-  const parsedInput = JSON.parse(input);
-  let currentStep = parsedInput.currentStep;
-  if (currentStep >= 0 && currentStep < imageUrls.length) {
-    currentStep++;
-  } else {
-    currentStep = 0;
+  if (!stateobj.keyFound) {
+    stateobj.attempts++;
+    
+    if (stateobj.x == args.x && stateobj.y == args.y) {
+      stateobj.keyFound = true;      
+    }
   }
-  env.jsvm_value_return(JSON.stringify({
-    currentStep,
-    image: imageUrls[currentStep]
-  }));
+  env.jsvm_storage_write(signerAccountId(), JSON.stringify(gamestate), 0);
 }

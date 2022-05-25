@@ -82,9 +82,12 @@ class CodePageComponent extends HTMLElement {
         this.simulationOutputArea = this.shadowRoot.querySelector('#simulationoutput');
         simulatebutton.addEventListener('click', async () => {
             const deposit = this.shadowRoot.querySelector('#depositinput').value;
-            const quickjs = await createQuickJSWithNearEnv(this.shadowRoot.querySelector('#argumentsinput').value,
+            const quickjs = await createQuickJSWithNearEnv(
+                    this.shadowRoot.querySelector('#argumentsinput').value,
                     deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined,
-                    getStorageObj());
+                    getStorageObj(),
+                    this.shadowRoot.querySelector('#signeraccountidinput').value
+                );
             const bytecode = quickjs.compileToByteCode(sourcecodeeditor.value, 'contractmodule');
             quickjs.evalByteCode(bytecode);
             quickjs.stdoutlines = [];

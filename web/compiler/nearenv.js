@@ -1,13 +1,13 @@
 import { createQuickJS } from "./quickjs.js";
 
-function createNearEnv(args = '', attached_deposit, storage = {}) {
+function createNearEnv(args = '', attached_deposit, storage = {}, signer_account_id) {
     const registers = {};
 
     return {
         "read_register": (register) => registers[register],
         "register_len": () => null,
         "write_register": () => null,
-        "signer_account_id": () => null,
+        "signer_account_id": (register) => registers[register] = signer_account_id,
         "signer_account_pk": () => null,
         "predecessor_account_id": () => null,
         "block_index": () => null,
@@ -66,13 +66,13 @@ export function getNearEnvSource() {
     return createNearEnv.toString();
 }
 
-export async function createQuickJSWithNearEnv(args, attached_deposit = '0', storage = {}) {
+export async function createQuickJSWithNearEnv(args, attached_deposit = '0', storage = {}, signer_account_id) {
     const argsBase64 = btoa(args);
     const quickjs = await createQuickJS();
     await quickjs.evalSource(await fetch('https://cdn.jsdelivr.net/npm/js-base64@3.7.2/base64.mjs').then(r => r.text()), 'js-base64');
     await quickjs.evalSource(`
     import { decode } from 'js-base64';
-    globalThis.env = (${getNearEnvSource()})(decode('${argsBase64}'),BigInt('${attached_deposit}'), ${JSON.stringify(storage)})
+    globalThis.env = (${getNearEnvSource()})(decode('${argsBase64}'),BigInt('${attached_deposit}'), ${JSON.stringify(storage)}, '${signer_account_id}')
 `, 'env');
     return quickjs;
 }

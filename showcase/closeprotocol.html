@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,7 +11,6 @@
             font-size: 30px;
             color: white;
         }
-
         #container {
             margin: auto;
             margin-top: 20px;
@@ -29,135 +27,13 @@
             border: none;
             padding: 10px;
         }
-
-        #imagediv img {
-            max-width: 100%;
-        }
     </style>
 </head>
 
 <body>
-    <div id="container">
-        <div id="infotext"></div>
-        <div id="imagediv"></div>
-        <button id="enterbutton">New game</button>
+    <div id="container">        
+        <button onclick="enterCloseProtocol();">Enter</button>
     </div>
 </body>
-<script type="module">
-    import 'https://cdn.jsdelivr.net/npm/near-api-js@0.44.2/dist/near-api-js.min.js';
-
-    const contractAccount = 'apsolomo.testnet';
-
-    const nearconfig = {
-        nodeUrl: 'https://rpc.testnet.near.org',
-        archiveNodeUrl: 'https://archival-rpc.testnet.near.org',
-        walletUrl: 'https://wallet.testnet.near.org',
-        helperUrl: 'https://helper.testnet.near.org',
-        networkId: 'testnet',
-        contractName: 'dev-1650702826986-24017505724534',
-        deps: {
-            keyStore: null
-        }
-    };
-
-    const walletConnection = new Promise(async resolve => {
-        nearconfig.deps.keyStore = new nearApi.keyStores.BrowserLocalStorageKeyStore();
-        const near = await nearApi.connect(nearconfig);
-        const wc = new nearApi.WalletConnection(near);
-        resolve(wc);
-    });
-
-    function setInfoText(txt = '') {
-        document.querySelector('#infotext').innerHTML = txt;
-    }
-
-    async function checkSignedin() {
-        const wc = await walletConnection;
-        const acc = wc.account();
-        if (!(await acc.connection.signer.getPublicKey(acc.accountId, acc.connection.networkId))) {
-            wc.signOut();
-        }
-
-        if (!wc.isSignedIn()) {
-            await wc.requestSignIn(
-                nearconfig.contractName,
-                'js-on-near'
-            );
-        }
-        return wc;
-    }
-
-    async function callJSContract(methodName, args = '', deposit = undefined) {
-        const wc = await checkSignedin();
-        const input = Buffer.concat([Buffer.from(contractAccount), Buffer.from([0]), Buffer.from(methodName), Buffer.from([0]), Buffer.from(JSON.stringify(args))]);
-        try {
-            const result = await wc.account().functionCall(nearconfig.contractName, 'call_js_contract', input, undefined, deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
-            return result.status.SuccessValue ? atob(result.status.SuccessValue) : ''
-        } catch (e) {
-            if (e.message.indexOf('insufficient deposit for storage') > 0) {
-                const result = await wc.account().functionCall(nearconfig.contractName, 'call_js_contract', input, undefined, nearApi.utils.format.parseNearAmount('0.1'));
-                return result.status.SuccessValue ? atob(result.status.SuccessValue) : ''
-            } else {
-                throw (e);
-            }
-        }
-    }
-
-    async function viewJSContract(methodName, args = '') {
-        const wc = await checkSignedin();
-        const input = Buffer.concat([Buffer.from(contractAccount), Buffer.from([0]), Buffer.from(methodName), Buffer.from([0]), Buffer.from(JSON.stringify(args))]);
-        const result = await wc._near.connection.provider.query({
-            request_type: "call_function",
-            account_id: nearconfig.contractName,
-            method_name: 'view_js_contract',
-            args_base64: btoa(input),
-            finality: "optimistic"
-        });
-        const resultvalue = result.result.map(c => String.fromCharCode(c)).join('');
-        return resultvalue;
-    }
-
-    async function updateGameState() {
-        const walletConnection = await checkSignedin();        
-        const gamestatejson = await viewJSContract('view_game_state',
-                {"account_id": walletConnection.account().accountId}
-        );
-        if (gamestatejson) {
-            const gamestate = JSON.parse(gamestatejson);
-            const currentStep = gamestate.reduce((prev,curr, ndx) => curr.keyFound ? ndx + 1 : prev,0);
-            const gameStateObj = gamestate[currentStep];
-            const imageElement = new Image();
-            imageElement.src = gameStateObj.image;
-
-            console.log(imageElement.src);
-            imagediv.replaceChildren(imageElement);
-            enterbutton.style.display = 'block';
-            setInfoText(`Click on the image and try to find the next key. You have made ${gameStateObj.attempts} attempts.`);
-        }
-    }
-
-    (async function () {
-        const walletConnection = await checkSignedin();        
-        await updateGameState();
-        
-        const enterbutton = document.getElementById('enterbutton');
-        const imagediv = document.getElementById('imagediv');
-
-        enterbutton.addEventListener('click', async () => {
-            enterbutton.style.display = 'none';
-
-            setInfoText('Creating new game');
-            await callJSContract('newgame', '', '0.1');
-            await updateGameState();
-        });
-        imagediv.addEventListener('click', async (e) => {
-            const x = Math.floor(e.offsetX * 3 / imagediv.clientWidth);
-            const y = Math.floor(e.offsetY * 3 / imagediv.clientHeight);
-            setInfoText('Trying to find key');
-            await callJSContract('try_find_key', { x, y });
-            await updateGameState();
-        });
-    })();
-</script>
-
+<script type="module" src="closeprotocol.component.js"></script>
 </html>

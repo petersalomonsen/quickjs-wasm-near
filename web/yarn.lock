@@ -744,6 +744,15 @@
     tslib "^2.0.1"
     wicg-inert "^3.0.0"
 
+"@material/mwc-fab@":
+  version "0.26.1"
+  resolved "https://registry.yarnpkg.com/@material/mwc-fab/-/mwc-fab-0.26.1.tgz#984efed589121bf02192a3e3ae885f3c07d6dc84"
+  integrity sha512-JmeoGb9WJbu8B0fdDo4bx72Mo17F+wOnMC19ofUM/6XkpbPNEgI+HppE4j/e4i5vGEd7pxswWNqGg1LFPLCV7w==
+  dependencies:
+    "@material/mwc-ripple" "^0.26.1"
+    lit "^2.0.0"
+    tslib "^2.0.1"
+
 "@material/mwc-floating-label@^0.26.1":
   version "0.26.1"
   resolved "https://registry.npmjs.org/@material/mwc-floating-label/-/mwc-floating-label-0.26.1.tgz"

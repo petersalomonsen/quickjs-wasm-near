@@ -5,12 +5,13 @@ importmapscriptelement.textContent = JSON.stringify({
   "imports": {
     "@codemirror/basic-setup": "https://ga.jspm.io/npm:@codemirror/basic-setup@0.20.0/dist/index.js",
     "@codemirror/commands": "https://ga.jspm.io/npm:@codemirror/commands@0.20.0/dist/index.js",
-    "@codemirror/lang-javascript": "https://ga.jspm.io/npm:@codemirror/lang-javascript@0.20.0/dist/index.js",
-    "@codemirror/state": "https://ga.jspm.io/npm:@codemirror/state@0.20.0/dist/index.js",
-    "@codemirror/view": "https://ga.jspm.io/npm:@codemirror/view@0.20.6/dist/index.js",
+    "@codemirror/lang-javascript": "https://ga.jspm.io/npm:@codemirror/lang-javascript@6.0.0/dist/index.js",
+    "@codemirror/state": "https://ga.jspm.io/npm:@codemirror/state@0.20.1/dist/index.js",
+    "@codemirror/view": "https://ga.jspm.io/npm:@codemirror/view@0.20.7/dist/index.js",
     "@material/mwc-button": "https://ga.jspm.io/npm:@material/mwc-button@0.26.1/mwc-button.js",
     "@material/mwc-dialog": "https://ga.jspm.io/npm:@material/mwc-dialog@0.26.1/mwc-dialog.js",
     "@material/mwc-drawer": "https://ga.jspm.io/npm:@material/mwc-drawer@0.26.1/mwc-drawer.js",
+    "@material/mwc-fab": "https://ga.jspm.io/npm:@material/mwc-fab@0.26.1/mwc-fab.js",
     "@material/mwc-icon-button": "https://ga.jspm.io/npm:@material/mwc-icon-button@0.26.1/mwc-icon-button.js",
     "@material/mwc-linear-progress": "https://ga.jspm.io/npm:@material/mwc-linear-progress@0.26.1/mwc-linear-progress.js",
     "@material/mwc-list": "https://ga.jspm.io/npm:@material/mwc-list@0.26.1/mwc-list.js",
@@ -22,14 +23,16 @@ importmapscriptelement.textContent = JSON.stringify({
   },
   "scopes": {
     "https://ga.jspm.io/": {
-      "@codemirror/autocomplete": "https://ga.jspm.io/npm:@codemirror/autocomplete@0.20.1/dist/index.js",
+      "@codemirror/autocomplete": "https://ga.jspm.io/npm:@codemirror/autocomplete@0.20.3/dist/index.js",
       "@codemirror/language": "https://ga.jspm.io/npm:@codemirror/language@0.20.2/dist/index.js",
-      "@codemirror/lint": "https://ga.jspm.io/npm:@codemirror/lint@0.20.2/dist/index.js",
+      "@codemirror/lint": "https://ga.jspm.io/npm:@codemirror/lint@0.20.3/dist/index.js",
       "@codemirror/search": "https://ga.jspm.io/npm:@codemirror/search@0.20.1/dist/index.js",
-      "@lezer/common": "https://ga.jspm.io/npm:@lezer/common@0.16.0/dist/index.js",
+      "@codemirror/state": "https://ga.jspm.io/npm:@codemirror/state@6.0.1/dist/index.js",
+      "@codemirror/view": "https://ga.jspm.io/npm:@codemirror/view@6.0.1/dist/index.js",
+      "@lezer/common": "https://ga.jspm.io/npm:@lezer/common@0.16.1/dist/index.js",
       "@lezer/highlight": "https://ga.jspm.io/npm:@lezer/highlight@0.16.0/dist/index.js",
-      "@lezer/javascript": "https://ga.jspm.io/npm:@lezer/javascript@0.16.0/dist/index.es.js",
-      "@lezer/lr": "https://ga.jspm.io/npm:@lezer/lr@0.16.3/dist/index.js",
+      "@lezer/javascript": "https://ga.jspm.io/npm:@lezer/javascript@1.0.0/dist/index.es.js",
+      "@lezer/lr": "https://ga.jspm.io/npm:@lezer/lr@1.0.0/dist/index.js",
       "@lit/reactive-element": "https://ga.jspm.io/npm:@lit/reactive-element@1.3.2/reactive-element.js",
       "@lit/reactive-element/decorators/custom-element.js": "https://ga.jspm.io/npm:@lit/reactive-element@1.3.2/decorators/custom-element.js",
       "@lit/reactive-element/decorators/event-options.js": "https://ga.jspm.io/npm:@lit/reactive-element@1.3.2/decorators/event-options.js",
@@ -86,26 +89,47 @@ importmapscriptelement.textContent = JSON.stringify({
       "@material/top-app-bar/standard/foundation.js": "https://ga.jspm.io/npm:@material/top-app-bar@14.0.0-canary.53b3cad2f.0/standard/foundation.js",
       "blocking-elements": "https://ga.jspm.io/npm:blocking-elements@0.1.1/dist/blocking-elements.js",
       "crelt": "https://ga.jspm.io/npm:crelt@1.0.5/index.es.js",
-      "lit": "https://ga.jspm.io/npm:lit@2.2.4/index.js",
+      "lit": "https://ga.jspm.io/npm:lit@2.2.6/index.js",
       "lit-element/lit-element.js": "https://ga.jspm.io/npm:lit-element@3.2.0/lit-element.js",
-      "lit-html": "https://ga.jspm.io/npm:lit-html@2.2.4/lit-html.js",
-      "lit-html/async-directive.js": "https://ga.jspm.io/npm:lit-html@2.2.4/async-directive.js",
-      "lit-html/directive.js": "https://ga.jspm.io/npm:lit-html@2.2.4/directive.js",
-      "lit-html/directives/class-map.js": "https://ga.jspm.io/npm:lit-html@2.2.4/directives/class-map.js",
-      "lit-html/directives/if-defined.js": "https://ga.jspm.io/npm:lit-html@2.2.4/directives/if-defined.js",
-      "lit-html/directives/live.js": "https://ga.jspm.io/npm:lit-html@2.2.4/directives/live.js",
-      "lit-html/directives/style-map.js": "https://ga.jspm.io/npm:lit-html@2.2.4/directives/style-map.js",
-      "lit/async-directive.js": "https://ga.jspm.io/npm:lit@2.2.4/async-directive.js",
-      "lit/decorators.js": "https://ga.jspm.io/npm:lit@2.2.4/decorators.js",
-      "lit/directive.js": "https://ga.jspm.io/npm:lit@2.2.4/directive.js",
-      "lit/directives/class-map.js": "https://ga.jspm.io/npm:lit@2.2.4/directives/class-map.js",
-      "lit/directives/if-defined.js": "https://ga.jspm.io/npm:lit@2.2.4/directives/if-defined.js",
-      "lit/directives/live.js": "https://ga.jspm.io/npm:lit@2.2.4/directives/live.js",
-      "lit/directives/style-map.js": "https://ga.jspm.io/npm:lit@2.2.4/directives/style-map.js",
+      "lit-html": "https://ga.jspm.io/npm:lit-html@2.2.6/lit-html.js",
+      "lit-html/async-directive.js": "https://ga.jspm.io/npm:lit-html@2.2.6/async-directive.js",
+      "lit-html/directive.js": "https://ga.jspm.io/npm:lit-html@2.2.6/directive.js",
+      "lit-html/directives/class-map.js": "https://ga.jspm.io/npm:lit-html@2.2.6/directives/class-map.js",
+      "lit-html/directives/if-defined.js": "https://ga.jspm.io/npm:lit-html@2.2.6/directives/if-defined.js",
+      "lit-html/directives/live.js": "https://ga.jspm.io/npm:lit-html@2.2.6/directives/live.js",
+      "lit-html/directives/style-map.js": "https://ga.jspm.io/npm:lit-html@2.2.6/directives/style-map.js",
+      "lit/async-directive.js": "https://ga.jspm.io/npm:lit@2.2.6/async-directive.js",
+      "lit/decorators.js": "https://ga.jspm.io/npm:lit@2.2.6/decorators.js",
+      "lit/directive.js": "https://ga.jspm.io/npm:lit@2.2.6/directive.js",
+      "lit/directives/class-map.js": "https://ga.jspm.io/npm:lit@2.2.6/directives/class-map.js",
+      "lit/directives/if-defined.js": "https://ga.jspm.io/npm:lit@2.2.6/directives/if-defined.js",
+      "lit/directives/live.js": "https://ga.jspm.io/npm:lit@2.2.6/directives/live.js",
+      "lit/directives/style-map.js": "https://ga.jspm.io/npm:lit@2.2.6/directives/style-map.js",
       "style-mod": "https://ga.jspm.io/npm:style-mod@4.0.0/src/style-mod.js",
       "tslib": "https://ga.jspm.io/npm:tslib@2.4.0/tslib.es6.js",
       "w3c-keyname": "https://ga.jspm.io/npm:w3c-keyname@2.2.4/index.es.js",
-      "wicg-inert": "https://ga.jspm.io/npm:wicg-inert@3.1.1/dist/inert.js"
+      "wicg-inert": "https://ga.jspm.io/npm:wicg-inert@3.1.2/dist/inert.esm.js"
+    },
+    "https://ga.jspm.io/npm:@codemirror/autocomplete@6.0.2/": {
+      "@codemirror/language": "https://ga.jspm.io/npm:@codemirror/language@6.0.0/dist/index.js"
+    },
+    "https://ga.jspm.io/npm:@codemirror/lang-javascript@6.0.0/": {
+      "@codemirror/autocomplete": "https://ga.jspm.io/npm:@codemirror/autocomplete@6.0.2/dist/index.js",
+      "@codemirror/language": "https://ga.jspm.io/npm:@codemirror/language@6.0.0/dist/index.js",
+      "@lezer/common": "https://ga.jspm.io/npm:@lezer/common@1.0.0/dist/index.js"
+    },
+    "https://ga.jspm.io/npm:@codemirror/language@6.0.0/": {
+      "@lezer/common": "https://ga.jspm.io/npm:@lezer/common@1.0.0/dist/index.js",
+      "@lezer/highlight": "https://ga.jspm.io/npm:@lezer/highlight@1.0.0/dist/index.js"
+    },
+    "https://ga.jspm.io/npm:@lezer/highlight@1.0.0/": {
+      "@lezer/common": "https://ga.jspm.io/npm:@lezer/common@1.0.0/dist/index.js"
+    },
+    "https://ga.jspm.io/npm:@lezer/javascript@1.0.0/": {
+      "@lezer/highlight": "https://ga.jspm.io/npm:@lezer/highlight@1.0.0/dist/index.js"
+    },
+    "https://ga.jspm.io/npm:@lezer/lr@1.0.0/": {
+      "@lezer/common": "https://ga.jspm.io/npm:@lezer/common@1.0.0/dist/index.js"
     }
   }
 });

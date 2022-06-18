@@ -83,7 +83,7 @@ async function playMusic() {
         samplerate: audioctx.sampleRate,
         wasm: wasmsynth
     });
-    
+
     audioworkletnode.connect(audioctx.destination);
 }
 
@@ -113,7 +113,7 @@ customElements.define('close-protocol', class CloseProtocolComponent extends HTM
             await callJSContract('try_find_key', { x, y });
             await this.updateGameState();
         });
-        
+
         await checkSignedin();
         await this.updateGameState();
     }
@@ -139,8 +139,20 @@ customElements.define('close-protocol', class CloseProtocolComponent extends HTM
             this.enterbutton.style.display = 'block';
             this.setInfoText(`Click on the image and try to find the next key. You have made ${gameStateObj.attempts} attempts.`);
 
+            const eventList = [];
+            const songparts = gamestate.map(gs => gs.music).filter(p => p != null);
+            songparts.forEach(songpart =>
+                songpart.patterns.forEach(pattern =>
+                    pattern.startTimes.forEach(startTime =>
+                        pattern.eventlistuncompressed.forEach(evt =>
+                            eventList.push(Object.assign({}, evt, { time: evt.time + startTime }))
+                        )
+                    )
+                )
+            );
+            eventList.sort((a, b) => a.time - b.time);
             audioworkletnode.port.postMessage({
-                sequencedata: gamestate.filter(m => m.music).map(m => m.music.eventlistuncompressed).flat().sort((a,b) => a.time - b.time)
+                sequencedata: eventList
             });
         }
     }

@@ -16,6 +16,7 @@ class CodePageComponent extends HTMLElement {
         this.attachStyleSheet(new URL('code-page.component.css', import.meta.url));
 
         const sourcecodeeditor = this.shadowRoot.getElementById('sourcecodeeditor');
+        await sourcecodeeditor.readyPromise;
         this.sourcecodeeditor = sourcecodeeditor;
         const lastSavedSourceCode = localStorage.getItem('lastSavedSourceCode');
         sourcecodeeditor.value = lastSavedSourceCode ? lastSavedSourceCode : `export function hello() {
@@ -43,12 +44,12 @@ class CodePageComponent extends HTMLElement {
                         await deployJScontract(bytecode, deposit);
                         toggleIndeterminateProgress(false);
                         this.shadowRoot.querySelector('#successDeploySnackbar').show();
-                    } catch(e) {
+                    } catch (e) {
                         console.error(e);
-                        if (e.message.indexOf('insufficient deposit for storage')>=0) {
+                        if (e.message.indexOf('insufficient deposit for storage') >= 0) {
                             await deployContract(getSuggestedDepositForContract(bytecode.length));
                         } else {
-                            const errorDeployContractDialog = this.shadowRoot.getElementById('error-deploying-contract-dialog');                            
+                            const errorDeployContractDialog = this.shadowRoot.getElementById('error-deploying-contract-dialog');
                             errorDeployContractDialog.querySelector('#errormessage').textContent = e.message;
                             errorDeployContractDialog.setAttribute('open', 'true');
                             toggleIndeterminateProgress(false);
@@ -73,21 +74,21 @@ class CodePageComponent extends HTMLElement {
             addStorageItem();
         });
 
-        const getStorageObj = () => [ ...storageitemsdiv.children ].reduce((p, c) => {
+        const getStorageObj = () => [...storageitemsdiv.children].reduce((p, c) => {
             p[c.querySelector('.storagekeyinput').value] = c.querySelector('.storagevalueinput').value;
             return p;
-        }, {}); 
+        }, {});
 
         const simulatebutton = this.shadowRoot.getElementById('simulatebutton');
         this.simulationOutputArea = this.shadowRoot.querySelector('#simulationoutput');
         simulatebutton.addEventListener('click', async () => {
             const deposit = this.shadowRoot.querySelector('#depositinput').value;
             const quickjs = await createQuickJSWithNearEnv(
-                    this.shadowRoot.querySelector('#argumentsinput').value,
-                    deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined,
-                    getStorageObj(),
-                    this.shadowRoot.querySelector('#signeraccountidinput').value
-                );
+                this.shadowRoot.querySelector('#argumentsinput').value,
+                deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined,
+                getStorageObj(),
+                this.shadowRoot.querySelector('#signeraccountidinput').value
+            );
             const bytecode = quickjs.compileToByteCode(sourcecodeeditor.value, 'contractmodule');
             quickjs.evalByteCode(bytecode);
             quickjs.stdoutlines = [];
@@ -106,10 +107,30 @@ class CodePageComponent extends HTMLElement {
                 for (const key in storageAfterRun) {
                     addStorageItem(key, storageAfterRun[key]);
                 }
+                this.simulationContext = {
+                    selectedMethod: selectedMethod,
+                    storage: storageAfterRun,
+                    arguments: this.shadowRoot.querySelector('#argumentsinput').value,
+                    deposit: this.shadowRoot.querySelector('#depositinput').value,
+                };
+                localStorage.setItem('lastSimulationContext', JSON.stringify(this.simulationContext));
             } else {
                 this.shadowRoot.querySelector('#selectMethodSnackbar').show();
             }
         });
+
+        const lastSimulationContextJSON = localStorage.getItem('lastSimulationContext');
+        if (lastSimulationContextJSON) {
+            this.simulationContext = JSON.parse(lastSimulationContextJSON);
+            this.shadowRoot.querySelector('#methodselect').value = this.simulationContext.selectedMethod;
+            this.shadowRoot.querySelector('#argumentsinput').value = this.simulationContext.arguments;
+            this.shadowRoot.querySelector('#depositinput').value = this.simulationContext.deposit;
+            const storageitemsdiv = this.shadowRoot.getElementById('storageitems');
+            storageitemsdiv.replaceChildren([]);
+            for (const key in this.simulationContext.storage) {
+                addStorageItem(key, this.simulationContext.storage[key]);
+            }
+        }
     }
 
     async save() {
@@ -130,6 +151,9 @@ class CodePageComponent extends HTMLElement {
                 methodselect.appendChild(option);
             });
             this.simulationOutputArea.innerHTML = '';
+            if (this.simulationContext) {
+                setTimeout(() => methodselect.value = this.simulationContext.selectedMethod, 0);
+            }
         } catch (e) {
             this.simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
             const compileErrorSnackbar = this.shadowRoot.querySelector('#compileErrorSnackbar');

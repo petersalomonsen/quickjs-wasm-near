@@ -17,6 +17,7 @@
         "@material/mwc-button": "",
         "@material/mwc-dialog": "",
         "@material/mwc-drawer": "",
+        "@material/mwc-fab": "",
         "@material/mwc-icon-button": "",
         "@material/mwc-linear-progress": "",
         "@material/mwc-list": "",

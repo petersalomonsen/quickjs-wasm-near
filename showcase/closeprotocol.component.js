@@ -28,7 +28,21 @@ const walletConnection = new Promise(async resolve => {
 async function checkSignedin() {
     const wc = await walletConnection;
     const acc = wc.account();
-    if (!(await acc.connection.signer.getPublicKey(acc.accountId, acc.connection.networkId))) {
+    const publicKey = await acc.connection.signer.getPublicKey(acc.accountId, acc.connection.networkId);
+    if (!publicKey) {
+        wc.signOut();
+    }
+
+    const accessKey = await acc.connection.provider.query({
+        request_type: "view_access_key",
+        finality: "final",
+        account_id: acc.accountId,
+        public_key: publicKey.toString(),
+    });
+
+    const remainingAllowance = parseFloat(nearApi.utils.format.formatNearAmount(accessKey.permission.FunctionCall.allowance));
+    console.log('remaining allowance', remainingAllowance);
+    if (remainingAllowance < 0.02) {
         wc.signOut();
     }
 

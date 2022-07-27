@@ -16,7 +16,8 @@ module.exports = function (config) {
         { pattern: '**/*.css', included: false },
         { pattern: '**/*.json', included: false },
         { pattern: '**/*.html', included: false },
-        { pattern: '**/*.wasm', included: false }
+        { pattern: '**/*.wasm', included: false },
+        { pattern: '**/*.wat', included: false }
       ],
 
       // list of files / patterns to exclude

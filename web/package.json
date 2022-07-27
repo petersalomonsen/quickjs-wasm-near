@@ -24,7 +24,8 @@
         "@material/mwc-select": "",
         "@material/mwc-snackbar": "",
         "@material/mwc-textfield": "",
-        "@material/mwc-top-app-bar": ""
+        "@material/mwc-top-app-bar": "",
+        "near-api-js": "^0.45.1"
     },
     "devDependencies": {
         "@jspm/generator": "^1.0.0-beta.31",

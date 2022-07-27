@@ -15,9 +15,10 @@ export default {
     plugins: [nodeResolve(), (() => ({
         transform(code, id) {
             let urlMatch;
+
             do {
                 urlMatch = code.match(/(new URL\([^),]+\,\s*import.meta.url\s*\))/);
-                
+
                 if (urlMatch) {
                     const urlWithAbsolutePath = urlMatch[1].replace('import.meta.url', `'file://${id}'`);
                     const func = new Function('return ' + urlWithAbsolutePath);
@@ -41,15 +42,20 @@ export default {
                             })()
                         ],
                             { type: 'text/javascript' }))`);
+                    } else {
+                        console.log('skipping', urlMatch[1]);
+                        urlMatch = null;
                     }
                 }
-            } while(urlMatch);
+            } while (urlMatch);
             return {
                 code: code
             }
         }
-    }))(), importMetaAssets(), html({ include: '**/*.html', minify: true,
-    transformHtml: (html) => {        
-        return html.replace(/<script type=\"importmap\">[^<]+<\/script>/g, "");        
-    } }), terser()],
+    }))(), importMetaAssets(), html({
+        include: '**/*.html', minify: true,
+        transformHtml: (html) => {
+            return html.replace(/<script type=\"importmap\">[^<]+<\/script>/g, "");
+        }
+    }), terser()],
 };

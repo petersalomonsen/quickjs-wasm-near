@@ -87,6 +87,23 @@ export async function deployJScontract(contractbytes, deposit = undefined) {
     }
 }
 
+export async function isStandaloneMode() {
+    const account = (await createWalletConnection()).account();
+    return (await account.findAccessKey()).accessKey.permission == 'FullAccess';
+}
+
+export async function deployStandaloneContract(wasmbytes) {
+    const wc = await createWalletConnection();
+    if (await checkSignedin()) {
+        if (await isStandaloneMode()) {
+            const result = await wc.account().deployContract(wasmbytes);
+            console.log(result);
+        } else {
+            throw('Full access key is required to deploy standalone contracts');
+        }
+    }
+}
+
 export async function callJSContract(contractAccount, methodName, args, deposit) {
     const wc = await checkSignedin();
     if (wc) {

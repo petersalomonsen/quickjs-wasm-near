@@ -19,7 +19,8 @@ importmapscriptelement.textContent = JSON.stringify({
     "@material/mwc-select": "https://ga.jspm.io/npm:@material/mwc-select@0.26.1/mwc-select.js",
     "@material/mwc-snackbar": "https://ga.jspm.io/npm:@material/mwc-snackbar@0.26.1/mwc-snackbar.js",
     "@material/mwc-textfield": "https://ga.jspm.io/npm:@material/mwc-textfield@0.26.1/mwc-textfield.js",
-    "@material/mwc-top-app-bar": "https://ga.jspm.io/npm:@material/mwc-top-app-bar@0.26.1/mwc-top-app-bar.js"
+    "@material/mwc-top-app-bar": "https://ga.jspm.io/npm:@material/mwc-top-app-bar@0.26.1/mwc-top-app-bar.js",
+    "near-api-js": "https://ga.jspm.io/npm:near-api-js@0.45.1/lib/browser-index.js"
   },
   "scopes": {
     "https://ga.jspm.io/": {
@@ -28,7 +29,7 @@ importmapscriptelement.textContent = JSON.stringify({
       "@codemirror/lint": "https://ga.jspm.io/npm:@codemirror/lint@0.20.3/dist/index.js",
       "@codemirror/search": "https://ga.jspm.io/npm:@codemirror/search@0.20.1/dist/index.js",
       "@codemirror/state": "https://ga.jspm.io/npm:@codemirror/state@6.0.1/dist/index.js",
-      "@codemirror/view": "https://ga.jspm.io/npm:@codemirror/view@6.0.1/dist/index.js",
+      "@codemirror/view": "https://ga.jspm.io/npm:@codemirror/view@6.0.2/dist/index.js",
       "@lezer/common": "https://ga.jspm.io/npm:@lezer/common@0.16.1/dist/index.js",
       "@lezer/highlight": "https://ga.jspm.io/npm:@lezer/highlight@0.16.0/dist/index.js",
       "@lezer/javascript": "https://ga.jspm.io/npm:@lezer/javascript@1.0.0/dist/index.es.js",
@@ -87,8 +88,21 @@ importmapscriptelement.textContent = JSON.stringify({
       "@material/textfield/foundation.js": "https://ga.jspm.io/npm:@material/textfield@14.0.0-canary.53b3cad2f.0/foundation.js",
       "@material/top-app-bar/constants.js": "https://ga.jspm.io/npm:@material/top-app-bar@14.0.0-canary.53b3cad2f.0/constants.js",
       "@material/top-app-bar/standard/foundation.js": "https://ga.jspm.io/npm:@material/top-app-bar@14.0.0-canary.53b3cad2f.0/standard/foundation.js",
+      "base-x": "https://ga.jspm.io/npm:base-x@3.0.9/src/index.js",
       "blocking-elements": "https://ga.jspm.io/npm:blocking-elements@0.1.1/dist/blocking-elements.js",
+      "bn.js": "https://ga.jspm.io/npm:bn.js@5.2.0/lib/bn.js",
+      "borsh": "https://ga.jspm.io/npm:borsh@0.7.0/lib/index.js",
+      "bs58": "https://ga.jspm.io/npm:bs58@4.0.1/index.js",
+      "buffer": "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.24/nodelibs/browser/buffer.js",
+      "capability": "https://ga.jspm.io/npm:capability@0.2.5/index.js",
+      "capability/es5": "https://ga.jspm.io/npm:capability@0.2.5/es5.js",
       "crelt": "https://ga.jspm.io/npm:crelt@1.0.5/index.es.js",
+      "crypto": "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.24/nodelibs/browser/crypto.js",
+      "depd": "https://ga.jspm.io/npm:depd@2.0.0/lib/browser/index.js",
+      "error-polyfill": "https://ga.jspm.io/npm:error-polyfill@0.1.3/index.js",
+      "http-errors": "https://ga.jspm.io/npm:http-errors@1.8.1/index.js",
+      "inherits": "https://ga.jspm.io/npm:inherits@2.0.4/inherits_browser.js",
+      "js-sha256": "https://ga.jspm.io/npm:js-sha256@0.9.0/src/sha256.js",
       "lit": "https://ga.jspm.io/npm:lit@2.2.6/index.js",
       "lit-element/lit-element.js": "https://ga.jspm.io/npm:lit-element@3.2.0/lit-element.js",
       "lit-html": "https://ga.jspm.io/npm:lit-html@2.2.6/lit-html.js",
@@ -105,20 +119,30 @@ importmapscriptelement.textContent = JSON.stringify({
       "lit/directives/if-defined.js": "https://ga.jspm.io/npm:lit@2.2.6/directives/if-defined.js",
       "lit/directives/live.js": "https://ga.jspm.io/npm:lit@2.2.6/directives/live.js",
       "lit/directives/style-map.js": "https://ga.jspm.io/npm:lit@2.2.6/directives/style-map.js",
+      "mustache": "https://ga.jspm.io/npm:mustache@4.2.0/mustache.js",
+      "o3": "https://ga.jspm.io/npm:o3@1.0.3/index.js",
+      "process": "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.24/nodelibs/browser/process-production.js",
+      "safe-buffer": "https://ga.jspm.io/npm:safe-buffer@5.2.1/index.js",
+      "setprototypeof": "https://ga.jspm.io/npm:setprototypeof@1.2.0/index.js",
+      "statuses": "https://ga.jspm.io/npm:statuses@1.5.0/index.js",
       "style-mod": "https://ga.jspm.io/npm:style-mod@4.0.0/src/style-mod.js",
+      "text-encoding-utf-8": "https://ga.jspm.io/npm:text-encoding-utf-8@1.0.2/lib/encoding.lib.js",
+      "toidentifier": "https://ga.jspm.io/npm:toidentifier@1.0.1/index.js",
       "tslib": "https://ga.jspm.io/npm:tslib@2.4.0/tslib.es6.js",
+      "tweetnacl": "https://ga.jspm.io/npm:tweetnacl@1.0.3/nacl-fast.js",
+      "u3": "https://ga.jspm.io/npm:u3@0.1.1/index.js",
       "w3c-keyname": "https://ga.jspm.io/npm:w3c-keyname@2.2.4/index.es.js",
       "wicg-inert": "https://ga.jspm.io/npm:wicg-inert@3.1.2/dist/inert.esm.js"
     },
     "https://ga.jspm.io/npm:@codemirror/autocomplete@6.0.2/": {
-      "@codemirror/language": "https://ga.jspm.io/npm:@codemirror/language@6.0.0/dist/index.js"
+      "@codemirror/language": "https://ga.jspm.io/npm:@codemirror/language@6.1.0/dist/index.js"
     },
     "https://ga.jspm.io/npm:@codemirror/lang-javascript@6.0.0/": {
       "@codemirror/autocomplete": "https://ga.jspm.io/npm:@codemirror/autocomplete@6.0.2/dist/index.js",
-      "@codemirror/language": "https://ga.jspm.io/npm:@codemirror/language@6.0.0/dist/index.js",
+      "@codemirror/language": "https://ga.jspm.io/npm:@codemirror/language@6.1.0/dist/index.js",
       "@lezer/common": "https://ga.jspm.io/npm:@lezer/common@1.0.0/dist/index.js"
     },
-    "https://ga.jspm.io/npm:@codemirror/language@6.0.0/": {
+    "https://ga.jspm.io/npm:@codemirror/language@6.1.0/": {
       "@lezer/common": "https://ga.jspm.io/npm:@lezer/common@1.0.0/dist/index.js",
       "@lezer/highlight": "https://ga.jspm.io/npm:@lezer/highlight@1.0.0/dist/index.js"
     },
@@ -130,6 +154,9 @@ importmapscriptelement.textContent = JSON.stringify({
     },
     "https://ga.jspm.io/npm:@lezer/lr@1.0.0/": {
       "@lezer/common": "https://ga.jspm.io/npm:@lezer/common@1.0.0/dist/index.js"
+    },
+    "https://ga.jspm.io/npm:http-errors@1.8.1/": {
+      "depd": "https://ga.jspm.io/npm:depd@1.1.2/lib/browser/index.js"
     }
   }
 });

@@ -1,8 +1,9 @@
 import './code-editor.component.js';
-import { deployJScontract, getSuggestedDepositForContract } from '../near/near.js';
+import { deployJScontract, deployStandaloneContract, getSuggestedDepositForContract, isStandaloneMode } from '../near/near.js';
 import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
+import { createStandalone } from '../compiler/standalone.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
@@ -56,7 +57,13 @@ class CodePageComponent extends HTMLElement {
                         }
                     }
                 };
-                await deployContract();
+                if (await isStandaloneMode()) {
+                    const standaloneWasmBytes = await createStandalone(bytecode,this.exportedMethodNames);
+                    await deployStandaloneContract(standaloneWasmBytes);
+                    toggleIndeterminateProgress(false);
+                } else {
+                    await deployContract();
+                }
             }
         });
 
@@ -143,6 +150,7 @@ class CodePageComponent extends HTMLElement {
             quickjs.evalSource(`import * as contract from 'contractmodule';
             print('method names:', Object.keys(contract));`, 'main');
             const methodnames = quickjs.stdoutlines.find(l => l.indexOf('method names:') == 0).substring('method names: '.length).split(',');
+            this.exportedMethodNames = methodnames;
             methodselect.querySelectorAll('mwc-list-item').forEach(li => li.remove());
             methodnames.forEach(methodname => {
                 const option = document.createElement('mwc-list-item');

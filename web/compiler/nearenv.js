@@ -1,11 +1,29 @@
 import { createQuickJS } from "./quickjs.js";
 
-function createNearEnv(args = '', attached_deposit, storage = {}, signer_account_id) {
+export function createNearEnv(args = '', attached_deposit, storage = {}, signer_account_id) {
     const registers = {};
 
     return {
+        "current_account_id": (register) => registers[register] = 'test',
+        "input": () => null,
+        "storage_usage": () => null,
+        "storage_write": () => null,
+        "storage_remove": () => null,
+        "account_balance": () => null,
+        "account_locked_balance": () => null,
+        "value_return": (val) => print(`return value: ${val}`),
+        "promise_batch_action_create_account": () => null,
+        "promise_batch_action_deploy_contract": () => null,
+        "promise_batch_action_function_call": () => null,
+        "promise_batch_action_transfer": () => null,
+        "promise_batch_action_stake": () => null,
+        "promise_batch_action_add_key_with_full_access": () => null,
+        "promise_batch_action_add_key_with_function_call": () => null,
+        "promise_batch_action_delete_key": () => null,
+        "promise_batch_action_delete_account": () => null,
+        // enclave
         "read_register": (register) => registers[register],
-        "register_len": () => null,
+        "register_len": () => BigInt(Object.keys(registers).length),
         "write_register": () => null,
         "signer_account_id": (register) => registers[register] = signer_account_id,
         "signer_account_pk": () => null,
@@ -25,7 +43,7 @@ function createNearEnv(args = '', attached_deposit, storage = {}, signer_account
         "panic": () => null,
         "panic_utf8": () => null,
         "log": (msg) => print(msg),
-        "log_utf8": () => null,
+        "log_utf8": (len, addr) => console.log(len, addr),
         "log_utf16": () => null,
         "promise_create": () => null,
         "promise_then": () => null,

@@ -15,11 +15,12 @@ export function createNearEnv(args = '', attached_deposit, storage = {}, signer_
     const storage_write = (key, value, register_id) => storage[key] = value;
     const storage_has_key = (key) => storage[key] != undefined;
     const storage_remove = (key) => delete storage[key];
+    const input = (register) => registers[register] = args;
 
     return {
         // added after standalone contract support
         "current_account_id": (register) => registers[register] = 'test',
-        "input": () => null,
+        "input": input,
         "storage_usage": () => null,
         "storage_write": storage_write,
         "storage_remove": storage_remove,
@@ -76,7 +77,7 @@ export function createNearEnv(args = '', attached_deposit, storage = {}, signer_
         "jsvm_account_id": () => null,
         "jsvm_js_contract_name": () => null,
         "jsvm_method_name": () => null,
-        "jsvm_args": (register) => registers[register] = args,
+        "jsvm_args": input,
         "jsvm_storage_write": storage_write,
         "jsvm_storage_read": storage_read,
         "jsvm_storage_has_key": storage_has_key,

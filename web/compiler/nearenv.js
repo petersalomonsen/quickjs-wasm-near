@@ -3,12 +3,26 @@ import { createQuickJS } from "./quickjs.js";
 export function createNearEnv(args = '', attached_deposit, storage = {}, signer_account_id) {
     const registers = {};
 
+    const storage_read = (key, register_id) => {
+        if (storage[key] != undefined) {
+            registers[register_id] = storage[key]
+            return 1;
+        } else {
+            return 0;
+        }
+    };
+
+    const storage_write = (key, value, register_id) => storage[key] = value;
+    const storage_has_key = (key) => storage[key] != undefined;
+    const storage_remove = (key) => delete storage[key];
+
     return {
+        // added after standalone contract support
         "current_account_id": (register) => registers[register] = 'test',
         "input": () => null,
         "storage_usage": () => null,
-        "storage_write": () => null,
-        "storage_remove": () => null,
+        "storage_write": storage_write,
+        "storage_remove": storage_remove,
         "account_balance": () => null,
         "account_locked_balance": () => null,
         "value_return": (val) => print(`return value: ${val}`),
@@ -53,8 +67,8 @@ export function createNearEnv(args = '', attached_deposit, storage = {}, signer_
         "promise_results_count": () => null,
         "promise_result": () => null,
         "promise_return": () => null,
-        "storage_read": () => null,
-        "storage_has_key": () => null,
+        "storage_read": storage_read,
+        "storage_has_key": storage_has_key,
         "validator_stake": () => null,
         "validator_total_stake": () => null,
 
@@ -63,17 +77,10 @@ export function createNearEnv(args = '', attached_deposit, storage = {}, signer_
         "jsvm_js_contract_name": () => null,
         "jsvm_method_name": () => null,
         "jsvm_args": (register) => registers[register] = args,
-        "jsvm_storage_write": (key, value, register_id) => storage[key] = value,
-        "jsvm_storage_read": (key, register_id) => {
-            if (storage[key] != undefined) {
-                registers[register_id] = storage[key]
-                return 1;
-            } else {
-                return 0;
-            }
-        },
-        "jsvm_storage_has_key": (key) => storage[key] != undefined,
-        "jsvm_storage_remove": (key) => delete storage[key],
+        "jsvm_storage_write": storage_write,
+        "jsvm_storage_read": storage_read,
+        "jsvm_storage_has_key": storage_has_key,
+        "jsvm_storage_remove": storage_remove,
         "jsvm_value_return": (val) => print(`return value: ${val}`),
         "jsvm_call": () => null,
         "print_storage": () => print(JSON.stringify(storage))

@@ -78,7 +78,7 @@ hello();
 `, 'main');
         expect(quickjs.stdoutlines).to.include('deposit is '+deposit.toString());
     });
-    it('should simulate storage', async () => {
+    it('should simulate storage for enclave', async () => {
         const quickjs = await createQuickJSWithNearEnv('some args',undefined,{
             'abc': 'def',
             'xxx': 'yyy'
@@ -107,5 +107,42 @@ export function teststorage() {
         expect(quickjs.stdoutlines).to.include('the value is testvalue');
         expect(quickjs.stdoutlines).to.include('the value of abc is def');
         expect(quickjs.stdoutlines).to.include('the value of xxx is yyy');
+    });
+    it('should simulate storage for standalone contract', async () => {
+        const quickjs = await createQuickJSWithNearEnv('some args',undefined,{
+            'abc': 'def',
+            'xxx': 'yyy'
+        });
+        const contractbytecode = quickjs.compileToByteCode(`
+export function teststorage() {
+    env.storage_write("testkey","testvalue");
+    env.storage_read("testkey",0);
+    let val = env.read_register(0);
+    env.log('the value is '+val);
+
+    env.storage_read("abc",0);
+    val = env.read_register(0);
+    env.log('the value of abc is '+val);
+
+    env.storage_read("xxx",0);
+    val = env.read_register(0);
+    env.log('the value of xxx is '+val);
+
+    env.log('storage has key xxx: ' + env.storage_has_key("xxx"));
+    env.log('storage has key xxxa: ' + env.storage_has_key("xxxa"));
+    env.storage_remove("xxx");
+    env.log('storage has key xxx after delete: ' + env.storage_has_key("xxx"));
+}
+`, 'contractmodule');
+        quickjs.evalByteCode(contractbytecode);
+        quickjs.evalSource(
+            `import { teststorage } from 'contractmodule';
+            teststorage();
+`, 'main');
+        expect(quickjs.stdoutlines).to.include('the value is testvalue');
+        expect(quickjs.stdoutlines).to.include('the value of abc is def');
+        expect(quickjs.stdoutlines).to.include('storage has key xxx: true');
+        expect(quickjs.stdoutlines).to.include('storage has key xxxa: false');
+        expect(quickjs.stdoutlines).to.include('storage has key xxx after delete: false');
     });
 });

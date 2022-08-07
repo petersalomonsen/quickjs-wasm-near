@@ -9,6 +9,7 @@ import '@material/mwc-select';
 import '@material/mwc-snackbar';
 import './code-editor/code-page.component.js';
 import './callcontract/callcontract-page.component.js';
+import './callcontract/callcontractstandalone-page.component.js';
 
 import { setAppComponent, toggleIndeterminateProgress } from './common/progressindicator.js';
 import { getNearConfig, createWalletConnection, checkSignedin, logout, clearWalletConnection } from './near/near.js';

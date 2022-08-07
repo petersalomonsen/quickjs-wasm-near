@@ -76,10 +76,10 @@ hello();
             `import { hello } from 'contractmodule';
             hello();
 `, 'main');
-        expect(quickjs.stdoutlines).to.include('deposit is '+deposit.toString());
+        expect(quickjs.stdoutlines).to.include('deposit is ' + deposit.toString());
     });
     it('should simulate storage for enclave', async () => {
-        const quickjs = await createQuickJSWithNearEnv('some args',undefined,{
+        const quickjs = await createQuickJSWithNearEnv('some args', undefined, {
             'abc': 'def',
             'xxx': 'yyy'
         });
@@ -109,7 +109,7 @@ export function teststorage() {
         expect(quickjs.stdoutlines).to.include('the value of xxx is yyy');
     });
     it('should simulate storage for standalone contract', async () => {
-        const quickjs = await createQuickJSWithNearEnv('some args',undefined,{
+        const quickjs = await createQuickJSWithNearEnv('some args', undefined, {
             'abc': 'def',
             'xxx': 'yyy'
         });
@@ -144,5 +144,45 @@ export function teststorage() {
         expect(quickjs.stdoutlines).to.include('storage has key xxx: true');
         expect(quickjs.stdoutlines).to.include('storage has key xxxa: false');
         expect(quickjs.stdoutlines).to.include('storage has key xxx after delete: false');
+    });
+    it('should handle args for enclave', async () => {
+        const args = {
+            'abc': 'def',
+            'xxx': 'yyy'
+        };
+        const quickjs = await createQuickJSWithNearEnv(JSON.stringify(args), undefined);
+        const contractbytecode = quickjs.compileToByteCode(`
+export function testargs() {
+    const val = env.jsvm_args(0);
+    const args = JSON.parse(env.read_register(0));
+    env.log(JSON.stringify(args));
+}
+`, 'contractmodule');
+        quickjs.evalByteCode(contractbytecode);
+        quickjs.evalSource(
+            `import { testargs } from 'contractmodule';
+            testargs();
+`, 'main');
+        expect(quickjs.stdoutlines[0]).to.equal(JSON.stringify(args));
+    });
+    it('should handle args for standalone', async () => {
+        const args = {
+            'abc': 'def',
+            'xxx': 'yyy'
+        };
+        const quickjs = await createQuickJSWithNearEnv(JSON.stringify(args), undefined);
+        const contractbytecode = quickjs.compileToByteCode(`
+export function testargs() {
+    const val = env.input(0);
+    const args = JSON.parse(env.read_register(0));
+    env.log(JSON.stringify(args));
+}
+`, 'contractmodule');
+        quickjs.evalByteCode(contractbytecode);
+        quickjs.evalSource(
+            `import { testargs } from 'contractmodule';
+            testargs();
+`, 'main');
+        expect(quickjs.stdoutlines[0]).to.equal(JSON.stringify(args));
     });
 });

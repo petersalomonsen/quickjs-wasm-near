@@ -2,6 +2,7 @@
 #include <string.h>
 
 JSValue global_obj;
+JSValue env;
 JSRuntime *rt = NULL;
 JSContext *ctx;
 
@@ -26,26 +27,49 @@ static JSValue js_print(JSContext *ctx, JSValueConst this_val,
     return JS_UNDEFINED;
 }
 
-void create_runtime() {
-    if (rt != NULL) {
+void create_runtime()
+{
+    if (rt != NULL)
+    {
         return;
     }
     rt = JS_NewRuntime();
     ctx = JS_NewContextRaw(rt);
-    JS_AddIntrinsicEval(ctx);
     JS_AddIntrinsicBaseObjects(ctx);
     JS_AddIntrinsicDate(ctx);
+    JS_AddIntrinsicEval(ctx);
     JS_AddIntrinsicStringNormalize(ctx);
     JS_AddIntrinsicRegExp(ctx);
     JS_AddIntrinsicJSON(ctx);
     JS_AddIntrinsicProxy(ctx);
     JS_AddIntrinsicMapSet(ctx);
     JS_AddIntrinsicTypedArrays(ctx);
+    JS_AddIntrinsicPromise(ctx);
     JS_AddIntrinsicBigInt(ctx);
 
     global_obj = JS_GetGlobalObject(ctx);
     JS_SetPropertyStr(ctx, global_obj, "print",
                       JS_NewCFunction(ctx, js_print, "print", 1));
+}
+
+void js_std_loop_no_os(JSContext *ctx)
+{
+    JSContext *ctx1;
+    int err;
+
+    /* execute the pending jobs */
+    for (;;)
+    {
+        err = JS_ExecutePendingJob(JS_GetRuntime(ctx), &ctx1);
+        if (err <= 0)
+        {
+            if (err < 0)
+            {
+                printf("%s\n", JS_ToCString(ctx, JS_GetException(ctx1)));
+            }
+            break;
+        }
+    }
 }
 
 int js_eval(const char *filename, const char *source, int module)
@@ -64,6 +88,7 @@ int js_eval(const char *filename, const char *source, int module)
     {
         printf("%s\n", JS_ToCString(ctx, JS_GetException(ctx)));
     }
+    js_std_loop_no_os(ctx);
     return JS_VALUE_GET_INT(val);
 }
 
@@ -97,5 +122,18 @@ int js_eval_bytecode(const uint8_t *buf, size_t buf_len)
     {
         printf("%s\n", JS_ToCString(ctx, JS_GetException(ctx)));
     }
+    js_std_loop_no_os(ctx);
     return JS_VALUE_GET_INT(val);
+}
+
+void createNearEnv()
+{
+    global_obj = JS_GetGlobalObject(ctx);
+    env = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, global_obj, "env", env);
+}
+
+void js_add_near_host_function(const char * name, JSCFunction * func, int length)
+{     
+    JS_SetPropertyStr(ctx, env, name, JS_NewCFunction(ctx, func, name, length));
 }

@@ -1,3 +1,4 @@
+import { bytesToBase64, base64ToBytes } from './base64.js';
 import { createQuickJS } from './quickjs.js';
 
 describe('compiler', () => {
@@ -69,5 +70,32 @@ describe('compiler', () => {
 
         `, 'main.js');
         expect(quickjs2.stdoutlines).to.include('hello from module');
+    });
+    it('should produce base64 encoded bytecode', async () => {
+        const quickjs = await createQuickJS();
+        const bytecode = await quickjs.compileToByteCode(`(() => 'test'.length)()`);
+
+        expect(await quickjs.evalByteCode(base64ToBytes(bytesToBase64(bytecode)))).to.equal('test'.length);
+    });
+    it('should be able to get the constructor of an async function', async () => {
+        const quickjs = await createQuickJS();
+        const bytecode = await quickjs.compileToByteCode(`print(Object.getPrototypeOf(async function () { }).constructor.name)`);
+        await quickjs.evalByteCode(bytecode);
+        expect(quickjs.stdoutlines).to.include('AsyncFunction');
+    });
+    it('should be to handle async contract functions (near-sdk-js) does not support this', async () => {
+        const quickjs = await createQuickJS();
+        const bytecode = await quickjs.compileToByteCode(`export async function test() {
+            print('before await');
+            await new Promise(resolve => resolve());
+            print('after await');
+            return 100;
+        }
+        test();
+        `,'test.js');
+        const result = await quickjs.evalByteCode(bytecode);
+        expect(quickjs.stdoutlines).to.include('before await');
+        expect(quickjs.stdoutlines).to.include('after await');
+        expect(result).to.equal(0);
     });
 });

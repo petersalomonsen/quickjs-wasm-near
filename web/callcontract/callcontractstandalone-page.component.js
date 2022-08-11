@@ -23,7 +23,9 @@ class CallContractStandalonePageComponent extends HTMLElement {
                 const result = await callStandaloneContract(contractnameinput.value, methodnameinput.value, argsinput.value ? JSON.parse(argsinput.value) : '', this.shadowRoot.querySelector('#depositinput').value);
                 contractOutputArea.textContent = `
 ${result.receipts_outcome.map(r => r.outcome.logs.join('\n')).join('\n')}
-${result.status.SuccessValue ? atob(result.status.SuccessValue) : ''}`;
+${result.status.SuccessValue ? atob(result.status.SuccessValue) : ''}
+
+${JSON.stringify(result, null, 1)}`;
             } catch(e) {
                 contractOutputArea.textContent = e.message;
             }
@@ -48,8 +50,13 @@ ${result.status.SuccessValue ? atob(result.status.SuccessValue) : ''}`;
                     })
                 }).then(r => r.json())).result;
 
-                contractOutputArea.innerHTML = `${result.receipts_outcome.map(r => r.outcome.logs.join('\n')).join('\n')}\n
-${result.status.SuccessValue ? atob(result.status.SuccessValue) : ''}`;
+                contractOutputArea.textContent = `
+${result.receipts_outcome.map(r => r.outcome.logs.join('\n')).join('\n')}\n
+${result.status.SuccessValue ? atob(result.status.SuccessValue) : ''}
+
+
+${JSON.stringify(result)}                
+                `;
         }
         
     }

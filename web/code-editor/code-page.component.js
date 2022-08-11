@@ -4,6 +4,7 @@ import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
 import { createStandalone } from '../compiler/standalone.js';
+import { bundle } from '../compiler/bundler.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
@@ -38,7 +39,7 @@ class CodePageComponent extends HTMLElement {
             }) == 'deploy') {
                 toggleIndeterminateProgress(true);
                 await this.save();
-                const bytecode = (await createQuickJS()).compileToByteCode(sourcecodeeditor.value, 'contract');
+                const bytecode = (await createQuickJS()).compileToByteCode(await bundle(sourcecodeeditor.value), 'contract');
                 const deployContract = async (deposit = undefined) => {
                     try {
                         console.log('deploy contract with deposit', deposit);
@@ -96,7 +97,7 @@ class CodePageComponent extends HTMLElement {
                 getStorageObj(),
                 this.shadowRoot.querySelector('#signeraccountidinput').value
             );
-            const bytecode = quickjs.compileToByteCode(sourcecodeeditor.value, 'contractmodule');
+            const bytecode = quickjs.compileToByteCode(await bundle(sourcecodeeditor.value), 'contractmodule');
             quickjs.evalByteCode(bytecode);
             quickjs.stdoutlines = [];
             quickjs.stdoutlines = [];
@@ -146,7 +147,7 @@ class CodePageComponent extends HTMLElement {
         const methodselect = this.shadowRoot.querySelector('#methodselect');
         const quickjs = await createQuickJS();
         try {
-            quickjs.evalSource(source, 'contractmodule');
+            quickjs.evalSource(await bundle(source), 'contractmodule');
             quickjs.evalSource(`import * as contract from 'contractmodule';
             print('method names:', Object.keys(contract));`, 'main');
             const methodnames = quickjs.stdoutlines.find(l => l.indexOf('method names:') == 0).substring('method names: '.length).split(',');

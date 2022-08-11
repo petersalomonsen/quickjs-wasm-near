@@ -6,9 +6,9 @@ export function createNearEnv(args = '', attached_deposit, storage = {}, signer_
     const storage_read = (key, register_id) => {
         if (storage[key] != undefined) {
             registers[register_id] = storage[key]
-            return 1;
+            return 1n;
         } else {
-            return 0;
+            return 0n;
         }
     };
 
@@ -42,9 +42,9 @@ export function createNearEnv(args = '', attached_deposit, storage = {}, signer_
         "write_register": () => null,
         "signer_account_id": (register) => registers[register] = signer_account_id,
         "signer_account_pk": () => null,
-        "predecessor_account_id": () => null,
+        "predecessor_account_id": (register) => registers[register] = signer_account_id,
         "block_index": () => null,
-        "block_timestamp": () => null,
+        "block_timestamp": () => new Date().getTime(),
         "epoch_height": () => null,
         "attached_deposit": () => attached_deposit,
         "prepaid_gas": () => null,

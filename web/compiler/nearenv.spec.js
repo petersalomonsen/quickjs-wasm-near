@@ -1,5 +1,6 @@
 import { createQuickJS } from "./quickjs.js";
 import { createQuickJSWithNearEnv, getNearEnvSource } from "./nearenv.js";
+import { bundle } from "./bundler.js";
 
 describe('nearenv', () => {
     it('should simulate logging through env', async () => {
@@ -184,5 +185,58 @@ export function testargs() {
             testargs();
 `, 'main');
         expect(quickjs.stdoutlines[0]).to.equal(JSON.stringify(args));
+    });
+    it('should be possible to use api.js from near-sdk-js', async () => {
+        let args = {
+            'abc': 'def',
+            'xxx': 'yyy'
+        };
+
+        const quickjscompiler = await createQuickJS();
+
+        let contractsource = `
+        export function testargs() {
+            const args = JSON.parse(input());
+            log(JSON.stringify(args));
+            valueReturn(signerAccountId());
+        }
+        export function report_state() {
+            const params = JSON.parse(input());
+            const ts = blockTimestamp();
+            log('blocktimestamp: '+ts);
+            storageWrite(params.service_name, ts);
+        }
+        
+        export function latest_state() {
+            const params = JSON.parse(input());
+            valueReturn(storageRead(params.service_name));
+        }
+       
+        `;
+        contractsource = await bundle(contractsource);
+        const contractByteCode = quickjscompiler.compileToByteCode(contractsource, 'contractmodule');
+
+        let quickjs = await createQuickJSWithNearEnv(JSON.stringify(args), '5000000000000', {}, 'tester');
+
+        quickjs.evalByteCode(contractByteCode);
+        quickjs.evalSource(
+            `import { testargs } from 'contractmodule';
+            testargs();
+        `, 'main');
+        expect(quickjs.stdoutlines[0]).to.equal(JSON.stringify(args));
+        expect(quickjs.stdoutlines[1]).to.equal('return value: tester');
+
+        args = {
+            'servicename': 'test'
+        };
+
+        quickjs = await createQuickJSWithNearEnv(JSON.stringify(args), undefined, {}, 'tester');
+        quickjs.evalByteCode(contractByteCode);
+        quickjs.evalSource(
+            `import { report_state, latest_state } from 'contractmodule';
+            report_state();
+            latest_state();
+        `, 'main');
+        expect(quickjs.stdoutlines[1]).to.equal(quickjs.stdoutlines[0].replace('blocktimestamp', 'return value'));
     });
 });

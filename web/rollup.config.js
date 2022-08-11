@@ -24,6 +24,7 @@ export default {
                     const func = new Function('return ' + urlWithAbsolutePath);
                     const resolvedUrl = func();
                     const pathname = resolvedUrl.pathname;
+
                     if (pathname.endsWith('.html')) {
                         const datauri = `data:text/html;base64,${readFileSync(pathname).toString('base64')}`;
                         code = code.replace(urlMatch[0], `new URL('${datauri}')`);
@@ -34,14 +35,8 @@ export default {
                         const datauri = `data:application/wasm;base64,${readFileSync(pathname).toString('base64')}`;
                         code = code.replace(urlMatch[0], `new URL('${datauri}')`);
                     } else if (pathname.endsWith('.js')) {
-                        code = code.replace(urlMatch[0], `URL.createObjectURL(new Blob([
-                            (() => {
-                                function jsFunc() {${readFileSync(pathname).toString()}}
-                                const jsFuncSource = jsFunc.toString();
-                                return jsFuncSource.substring( jsFuncSource.indexOf('{') + 1,  jsFuncSource.lastIndexOf('}'));
-                            })()
-                        ],
-                            { type: 'text/javascript' }))`);
+                        const datauri = `data:text/javascript;base64,${readFileSync(pathname).toString('base64')}`;
+                        code = code.replace(urlMatch[0], `new URL('${datauri}')`);
                     } else {
                         console.log('skipping', urlMatch[1]);
                         urlMatch = null;

@@ -115,7 +115,7 @@ export async function callJSContract(contractAccount, methodName, args, deposit)
 export async function callStandaloneContract(contractAccount, methodName, args, deposit) {
     const wc = await checkSignedin();
     if (wc) {        
-        return await wc.account().functionCall(nearconfig.contractName, methodName, args, null, deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
+        return await wc.account().functionCall(contractAccount, methodName, args, null, deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
     }
 }
 

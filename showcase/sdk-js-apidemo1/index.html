@@ -25,9 +25,7 @@
   };
 
 
-    (async function() {
-      
-
+    (async function() {      
       const connection = await nearApi.connect(nearconfig);
       const account = await connection.account();
       const result = await account.viewFunction(contractAccount,'latest_state', {"service_name": "testservice"});

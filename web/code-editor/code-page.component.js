@@ -27,8 +27,9 @@ class CodePageComponent extends HTMLElement {
 
         const savebutton = this.shadowRoot.getElementById('savebutton');
         savebutton.addEventListener('click', () => this.save());
-        const deploybutton = this.shadowRoot.getElementById('deploybutton');
 
+        const compileByteCode = async () => (await createQuickJS()).compileToByteCode(await bundle(sourcecodeeditor.value), 'contract');
+        const deploybutton = this.shadowRoot.getElementById('deploybutton');
         deploybutton.addEventListener('click', async () => {
             const deployContractDialog = this.shadowRoot.getElementById('deploy-contract-dialog');
             deployContractDialog.setAttribute('open', 'true');
@@ -39,7 +40,7 @@ class CodePageComponent extends HTMLElement {
             }) == 'deploy') {
                 toggleIndeterminateProgress(true);
                 await this.save();
-                const bytecode = (await createQuickJS()).compileToByteCode(await bundle(sourcecodeeditor.value), 'contract');
+                const bytecode = await compileByteCode();
                 const deployContract = async (deposit = undefined) => {
                     try {
                         console.log('deploy contract with deposit', deposit);
@@ -59,13 +60,25 @@ class CodePageComponent extends HTMLElement {
                     }
                 };
                 if (await isStandaloneMode()) {
-                    const standaloneWasmBytes = await createStandalone(bytecode,this.exportedMethodNames);
+                    const standaloneWasmBytes = await createStandalone(bytecode, this.exportedMethodNames);
                     await deployStandaloneContract(standaloneWasmBytes);
                     toggleIndeterminateProgress(false);
                 } else {
                     await deployContract();
                 }
             }
+        });
+        const downloadbytecodebutton = this.shadowRoot.getElementById('downloadbytecodebutton');
+        downloadbytecodebutton.addEventListener('click', async () => {
+            const bytecode = await compileByteCode();
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob([bytecode], { type: 'application/octet-stream' }));
+            link.download = 'quickjsbytecode.bin';
+            document.documentElement.appendChild(link);
+            link.click();
+            document.documentElement.removeChild(link);
+            URL.revokeObjectURL(link.href);
         });
 
         const addstorageitembutton = this.shadowRoot.getElementById('addstorageitembutton');

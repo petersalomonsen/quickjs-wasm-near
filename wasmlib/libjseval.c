@@ -111,11 +111,12 @@ uint8_t *js_compile_to_bytecode(const char *filename, const char *source, size_t
     return JS_WriteObject(ctx, out_buf_len, obj, JS_WRITE_OBJ_BYTECODE);
 }
 
-int js_eval_bytecode(const uint8_t *buf, size_t buf_len)
+JSValue js_eval_bytecode(const uint8_t *buf, size_t buf_len)
 {
-    create_runtime();
-
     JSValue obj, val;
+
+    create_runtime();
+ 
     obj = JS_ReadObject(ctx, buf, buf_len, JS_READ_OBJ_BYTECODE);
     val = JS_EvalFunction(ctx, obj);
     if (JS_IsException(val))
@@ -123,7 +124,7 @@ int js_eval_bytecode(const uint8_t *buf, size_t buf_len)
         printf("%s\n", JS_ToCString(ctx, JS_GetException(ctx)));
     }
     js_std_loop_no_os(ctx);
-    return JS_VALUE_GET_INT(val);
+    return val;
 }
 
 void createNearEnv()
@@ -136,4 +137,12 @@ void createNearEnv()
 void js_add_near_host_function(const char * name, JSCFunction * func, int length)
 {     
     JS_SetPropertyStr(ctx, env, name, JS_NewCFunction(ctx, func, name, length));
+}
+
+JSValue js_get_property(JSValue obj, const char * name) {
+    return JS_GetPropertyStr(ctx, obj, name);
+}
+
+const char *js_get_string(JSValue val) {
+    return JS_ToCString(ctx, val);
 }

@@ -1,5 +1,23 @@
 import { Wasi } from './wasi.js';
 
+const JS_TAG_FIRST       = -11; /* first negative tag */
+const JS_TAG_BIG_DECIMAL = -11;
+const JS_TAG_BIG_INT     = -10;
+const JS_TAG_BIG_FLOAT   = -9;
+const JS_TAG_SYMBOL      = -8;
+const JS_TAG_STRING      = -7;
+const JS_TAG_MODULE      = -3; /* used internally */
+const JS_TAG_FUNCTION_BYTECODE = -2; /* used internally */
+const JS_TAG_OBJECT      = -1;
+
+const JS_TAG_INT         = 0;
+const JS_TAG_BOOL        = 1;
+const JS_TAG_NULL        = 2;
+const JS_TAG_UNDEFINED   = 3;
+const JS_TAG_UNINITIALIZED = 4;
+const JS_TAG_CATCH_OFFSET = 5;
+const JS_TAG_EXCEPTION   = 6;
+const JS_TAG_FLOAT64     = 7;
 class QuickJS {
     constructor() {
         this.wasmInstancePromise = (async () => {
@@ -40,10 +58,36 @@ class QuickJS {
         return straddr;
     }
 
+    ptrToString(ptr) {
+        const memorybuf = new Uint8Array(this.wasmInstance.memory.buffer.slice(ptr));
+        const length = memorybuf.findIndex(v => v == 0);
+        return new TextDecoder().decode(memorybuf.slice(0, length));
+    }
+
     evalSource(src, modulefilename='<evalsource>') {
         const instance = this.wasmInstance;
         
         return instance.eval_js_source(this.allocateString(modulefilename), this.allocateString(src), modulefilename!='<evalsource>');
+    }
+
+    getObjectPropertyValue(jsval, propertyname) {
+        return this.convertReturnValue(this.wasmInstance.get_js_obj_property(jsval, this.allocateString(propertyname)));
+    }
+
+    convertReturnValue(jsval) {
+        const tag = Number(jsval >> 32n);
+        switch(tag) {
+            case JS_TAG_INT:
+                return Number(jsval);
+            case JS_TAG_STRING:
+                return this.ptrToString(this.wasmInstance.get_js_string(jsval));
+            case JS_TAG_OBJECT:
+                return jsval;
+            case JS_TAG_NULL:
+                return null;
+            case JS_TAG_UNDEFINED:
+                return undefined;
+        }
     }
 
     evalByteCode(bytecode) {
@@ -56,7 +100,7 @@ class QuickJS {
             bytecodebuf[n] = bytecode[n];
         }
 
-        return instance.eval_js_bytecode(bytecodebufaddr, bytecodebuf.length);
+        return this.convertReturnValue(instance.eval_js_bytecode(bytecodebufaddr, bytecodebuf.length));
     }
 
     compileToByteCode(src, modulefilename='<evalsource>') {

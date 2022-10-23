@@ -92,7 +92,7 @@ describe('compiler', () => {
             return 100;
         }
         test();
-        `,'test.js');
+        `, 'test.js');
         const result = await quickjs.evalByteCode(bytecode);
         expect(quickjs.stdoutlines).to.include('before await');
         expect(quickjs.stdoutlines).to.include('after await');
@@ -102,7 +102,19 @@ describe('compiler', () => {
         const quickjs = await createQuickJS();
         const bytecode = await quickjs.compileToByteCode(`(function () { return {"hello": "world", "thenumberis": 42}; })()`);
         const result = quickjs.evalByteCode(bytecode);
-        expect(quickjs.getObjectPropertyValue(result,'hello')).to.equal('world');
-        expect(quickjs.getObjectPropertyValue(result,'thenumberis')).to.equal(42);
+        expect(quickjs.getObjectPropertyValue(result, 'hello')).to.equal('world');
+        expect(quickjs.getObjectPropertyValue(result, 'thenumberis')).to.equal(42);
+    });
+    it('should call function from bytecode', async () => {
+        const quickjs = await createQuickJS();
+        const bytecode = await quickjs.compileToByteCode(`
+export function get_obj() {
+    return {"hello": "world", "thenumberis": 42};
+}
+`, 'test');
+        const mod = quickjs.loadByteCode(bytecode);
+        const result = quickjs.callModFunction(mod, 'get_obj');
+        expect(quickjs.getObjectPropertyValue(result, 'hello')).to.equal('world');
+        expect(quickjs.getObjectPropertyValue(result, 'thenumberis')).to.equal(42);
     });
 });

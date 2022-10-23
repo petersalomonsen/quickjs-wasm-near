@@ -28158,6 +28158,10 @@ JSValue JS_GetImportMeta(JSContext *ctx, JSModuleDef *m)
     return JS_DupValue(ctx, obj);
 }
 
+JSValue JS_GetModule_NS(JSContext *ctx, JSModuleDef *m) {
+    return js_get_module_ns(ctx, m);
+}
+
 static JSValue js_import_meta(JSContext *ctx)
 {
     JSAtom filename;

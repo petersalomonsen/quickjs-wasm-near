@@ -116,9 +116,35 @@ JSValue js_eval_bytecode(const uint8_t *buf, size_t buf_len)
     JSValue obj, val;
 
     create_runtime();
- 
+
     obj = JS_ReadObject(ctx, buf, buf_len, JS_READ_OBJ_BYTECODE);
     val = JS_EvalFunction(ctx, obj);
+    if (JS_IsException(val))
+    {
+        printf("%s\n", JS_ToCString(ctx, JS_GetException(ctx)));
+    }
+    js_std_loop_no_os(ctx);
+    return val;
+}
+
+JSValue js_load_bytecode(const uint8_t *buf, size_t buf_len)
+{
+    JSValue module_obj;
+    JSModuleDef *m;
+
+    create_runtime();
+
+    module_obj = JS_ReadObject(ctx, buf, buf_len, JS_READ_OBJ_BYTECODE);
+    JS_EvalFunction(ctx, module_obj);
+    return JS_GetModule_NS(ctx, JS_VALUE_GET_PTR(module_obj));
+}
+
+JSValue js_call_function(JSValue mod_obj, const char *function_name)
+{
+    JSValue fun_obj, val;
+
+    fun_obj = JS_GetProperty(ctx, mod_obj, JS_NewAtom(ctx, function_name));
+    val = JS_Call(ctx, fun_obj, mod_obj, 0, NULL);
     if (JS_IsException(val))
     {
         printf("%s\n", JS_ToCString(ctx, JS_GetException(ctx)));
@@ -134,15 +160,17 @@ void createNearEnv()
     JS_SetPropertyStr(ctx, global_obj, "env", env);
 }
 
-void js_add_near_host_function(const char * name, JSCFunction * func, int length)
-{     
+void js_add_near_host_function(const char *name, JSCFunction *func, int length)
+{
     JS_SetPropertyStr(ctx, env, name, JS_NewCFunction(ctx, func, name, length));
 }
 
-JSValue js_get_property(JSValue obj, const char * name) {
+JSValue js_get_property(JSValue obj, const char *name)
+{
     return JS_GetPropertyStr(ctx, obj, name);
 }
 
-const char *js_get_string(JSValue val) {
+const char *js_get_string(JSValue val)
+{
     return JS_ToCString(ctx, val);
 }

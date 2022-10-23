@@ -90,17 +90,32 @@ class QuickJS {
         }
     }
 
-    evalByteCode(bytecode) {
+    allocateBuf(binarydata) {
         const instance = this.wasmInstance;
-        const bytecodebufaddr = instance.malloc(bytecode.length);
-        const bytecodebuf = new Uint8Array(instance.memory.buffer,
-            bytecodebufaddr,
-            bytecode.length);
-        for (let n = 0; n < bytecode.length; n++) {
-            bytecodebuf[n] = bytecode[n];
+        const bufaddr = instance.malloc(binarydata.length);
+        const buf = new Uint8Array(instance.memory.buffer,
+            bufaddr,
+            binarydata.length);
+        for (let n = 0; n < binarydata.length; n++) {
+            buf[n] = binarydata[n];
         }
+        return {addr: bufaddr, len: buf.length};
+    }
 
-        return this.convertReturnValue(instance.eval_js_bytecode(bytecodebufaddr, bytecodebuf.length));
+    loadByteCode(bytecode) {
+        const {addr, len} = this.allocateBuf(bytecode);
+        return this.wasmInstance.load_js_bytecode(addr, len);
+    }
+
+    callModFunction(mod, functionname) {
+        return this.convertReturnValue(
+            this.wasmInstance.call_js_function(mod, this.allocateString(functionname))
+        );
+    }
+
+    evalByteCode(bytecode) {
+        const {addr, len} = this.allocateBuf(bytecode);
+        return this.convertReturnValue(this.wasmInstance.eval_js_bytecode(addr, len));
     }
 
     compileToByteCode(src, modulefilename='<evalsource>') {

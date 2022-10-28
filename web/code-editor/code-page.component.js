@@ -28,8 +28,10 @@ class CodePageComponent extends HTMLElement {
         const savebutton = this.shadowRoot.getElementById('savebutton');
         savebutton.addEventListener('click', () => this.save());
 
-        const compileByteCode = async () => (await createQuickJS()).compileToByteCode(await bundle(sourcecodeeditor.value), 'contract');
+        const compileByteCode = async () => (await createQuickJS()).compileToByteCode(await bundle(sourcecodeeditor.value, this.bundletypeselect.value), 'contract');
         const deploybutton = this.shadowRoot.getElementById('deploybutton');
+        this.bundletypeselect = this.shadowRoot.getElementById('bundletypeselect');
+
         deploybutton.addEventListener('click', async () => {
             const deployContractDialog = this.shadowRoot.getElementById('deploy-contract-dialog');
             deployContractDialog.setAttribute('open', 'true');
@@ -110,7 +112,7 @@ class CodePageComponent extends HTMLElement {
                 getStorageObj(),
                 this.shadowRoot.querySelector('#signeraccountidinput').value
             );
-            const bytecode = quickjs.compileToByteCode(await bundle(sourcecodeeditor.value), 'contractmodule');
+            const bytecode = quickjs.compileToByteCode(await bundle(sourcecodeeditor.value, this.bundletypeselect.value), 'contractmodule');
             quickjs.evalByteCode(bytecode);
             quickjs.stdoutlines = [];
             quickjs.stdoutlines = [];
@@ -160,7 +162,7 @@ class CodePageComponent extends HTMLElement {
         const methodselect = this.shadowRoot.querySelector('#methodselect');
         const quickjs = await createQuickJS();
         try {
-            quickjs.evalSource(await bundle(source), 'contractmodule');
+            quickjs.evalSource(await bundle(source, this.bundletypeselect.value), 'contractmodule');
             quickjs.evalSource(`import * as contract from 'contractmodule';
             print('method names:', Object.keys(contract));`, 'main');
             const methodnames = quickjs.stdoutlines.find(l => l.indexOf('method names:') == 0).substring('method names: '.length).split(',');

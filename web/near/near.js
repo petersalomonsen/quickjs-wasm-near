@@ -80,10 +80,24 @@ export function getSuggestedDepositForContract(contractbytelength) {
     return nearApi.utils.format.parseNearAmount(`${contractbytelength / 1000}`);
 }
 
-export async function deployJScontract(contractbytes, deposit = undefined) {
+export async function deployJScontract(contractbytes, deposit = undefined, deployMethodName = 'deploy_js_contract') {
     const wc = await createWalletConnection();
     if (await checkSignedin()) {
-        await wc.account().functionCall(nearconfig.contractName, 'deploy_js_contract', contractbytes, null, deposit);
+        if (deployMethodName == 'deploy_js_contract') {
+            await wc.account().functionCall(nearconfig.contractName, deployMethodName, contractbytes, null, deposit);
+        } else {
+            await wc.account().functionCall(nearconfig.contractName, deployMethodName, {
+                "bytecodebase64": await byteArrayToBase64(contractbytes)
+            }, null, deposit);
+        }
+    }
+}
+
+export async function initNFTContract() {
+    const wc = await createWalletConnection();
+    if (await checkSignedin()) {
+        console.log('initializing NFT contract');
+        await wc.account().functionCall(nearconfig.contractName, 'new', {});
     }
 }
 

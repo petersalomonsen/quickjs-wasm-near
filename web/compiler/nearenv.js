@@ -84,7 +84,16 @@ export function createNearEnv(args = '', attached_deposit, storage = {}, signer_
         "jsvm_storage_remove": storage_remove,
         "jsvm_value_return": (val) => print(`return value: ${val}`),
         "jsvm_call": () => null,
-        "print_storage": () => print(JSON.stringify(storage))
+        "print_storage": () => print(JSON.stringify(storage)),
+
+        // APIs unique to Rust NFT example
+        "base64_encode": (val) => encode(val),
+        "sha256_utf8_to_base64": () => null,
+        "get_content_base64": () => null,
+        "contract_owner": () => null,
+        "nft_token": () => null,
+        "nft_supply_for_owner": () => null,
+        "nft_tokens": () => null
     }
 };
 
@@ -97,8 +106,9 @@ export async function createQuickJSWithNearEnv(args, attached_deposit = '0', sto
     const quickjs = await createQuickJS();
     await quickjs.evalSource(await fetch('https://cdn.jsdelivr.net/npm/js-base64@3.7.2/base64.mjs').then(r => r.text()), 'js-base64');
     await quickjs.evalSource(`
-    import { decode } from 'js-base64';
-    globalThis.env = (${getNearEnvSource()})(decode('${argsBase64}'),BigInt('${attached_deposit}'), ${JSON.stringify(storage)}, '${signer_account_id}')
+    import { decode, encode } from 'js-base64';
+    globalThis.env = (${getNearEnvSource()})(decode('${argsBase64}'),BigInt('${attached_deposit}'), ${JSON.stringify(storage)}, '${signer_account_id}');
 `, 'env');
+    
     return quickjs;
 }

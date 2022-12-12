@@ -1,10 +1,11 @@
 <h3>Call contract on-chain (standalone)</h3>
 <p>Here you can call any NEAR contract.</p>
 <p>
-    <mwc-textfield label="Contract name" id="contractnameinput"></mwc-textfield>
+    <mwc-textfield label="Contract name" id="contractnameinput" aria-readonly="true" readonly></mwc-textfield>
     <mwc-textfield label="Method name" id="methodnameinput"></mwc-textfield>
     <mwc-textfield label="arguments (JSON)" id="argsinput"></mwc-textfield>
     <mwc-textfield id="depositinput" label="attached deposit" type="number"></mwc-textfield>
+    <mwc-textfield id="gasinput" label="gas" type="number"></mwc-textfield>
 </p>
 <p>
     <mwc-button raised id="callcontractbutton">Call contract</mwc-button>

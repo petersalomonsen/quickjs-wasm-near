@@ -133,6 +133,13 @@ export async function callStandaloneContract(contractAccount, methodName, args, 
     }
 }
 
+export async function viewStandaloneContract(contractAccount, methodName, args) {
+    const wc = await checkSignedin();
+    if (wc) {        
+        return await wc.account().viewFunction(contractAccount, methodName, args);
+    }
+}
+
 export async function logout() {
     const wc = await checkSignedin();
     await wc.signOut();

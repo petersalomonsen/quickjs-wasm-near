@@ -1,4 +1,4 @@
-import { getNearConfig, createWalletConnection, callStandaloneContract } from '../near/near.js';
+import { getNearConfig, createWalletConnection, callStandaloneContract, viewStandaloneContract } from '../near/near.js';
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 
 class CallContractStandalonePageComponent extends HTMLElement {
@@ -26,6 +26,17 @@ ${result.receipts_outcome.map(r => r.outcome.logs.join('\n')).join('\n')}
 ${result.status.SuccessValue ? atob(result.status.SuccessValue) : ''}
 
 ${JSON.stringify(result, null, 1)}`;
+            } catch(e) {
+                contractOutputArea.textContent = e.message;
+            }
+            toggleIndeterminateProgress(false);
+        });
+        const viewcontractmethodbutton = this.shadowRoot.getElementById('viewcontractmethodbutton');
+        viewcontractmethodbutton.addEventListener('click', async () => {
+            toggleIndeterminateProgress(true);
+            try {
+                const result = await viewStandaloneContract(contractnameinput.value, methodnameinput.value, argsinput.value ? JSON.parse(argsinput.value) : '');
+                contractOutputArea.textContent = JSON.stringify(result);
             } catch(e) {
                 contractOutputArea.textContent = e.message;
             }

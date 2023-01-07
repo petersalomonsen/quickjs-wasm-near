@@ -21,6 +21,7 @@ class CodePageComponent extends HTMLElement {
         await sourcecodeeditor.readyPromise;
         this.sourcecodeeditor = sourcecodeeditor;
         const lastSavedSourceCode = localStorage.getItem('lastSavedSourceCode');
+        const lastSelectedBundleType = localStorage.getItem('lastSelectedBundleType');
         sourcecodeeditor.value = lastSavedSourceCode ? lastSavedSourceCode : `export function hello() {
             env.log("Hello Near");
         }`;
@@ -31,6 +32,7 @@ class CodePageComponent extends HTMLElement {
         const compileByteCode = async () => (await createQuickJS()).compileToByteCode(await bundle(sourcecodeeditor.value, this.bundletypeselect.value), 'contract');
         const deploybutton = this.shadowRoot.getElementById('deploybutton');
         this.bundletypeselect = this.shadowRoot.getElementById('bundletypeselect');
+        this.bundletypeselect.value = lastSelectedBundleType;
 
         deploybutton.addEventListener('click', async () => {
             const deployContractDialog = this.shadowRoot.getElementById('deploy-contract-dialog');
@@ -178,6 +180,7 @@ class CodePageComponent extends HTMLElement {
     async save() {
         const source = this.sourcecodeeditor.value;
         localStorage.setItem('lastSavedSourceCode', source);
+        localStorage.setItem('lastSelectedBundleType', this.bundletypeselect.value);
         const methodselect = this.shadowRoot.querySelector('#methodselect');
         const quickjs = await createQuickJS();
         try {

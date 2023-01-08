@@ -80,10 +80,24 @@ export function getSuggestedDepositForContract(contractbytelength) {
     return nearApi.utils.format.parseNearAmount(`${contractbytelength / 1000}`);
 }
 
-export async function deployJScontract(contractbytes, deposit = undefined) {
+export async function deployJScontract(contractbytes, deposit = undefined, deployMethodName = 'deploy_js_contract') {
     const wc = await createWalletConnection();
     if (await checkSignedin()) {
-        await wc.account().functionCall(nearconfig.contractName, 'deploy_js_contract', contractbytes, null, deposit);
+        if (deployMethodName == 'deploy_js_contract') {
+            await wc.account().functionCall(nearconfig.contractName, deployMethodName, contractbytes, null, deposit);
+        } else {
+            await wc.account().functionCall(nearconfig.contractName, deployMethodName, {
+                "bytecodebase64": await byteArrayToBase64(contractbytes)
+            }, null, deposit);
+        }
+    }
+}
+
+export async function initNFTContract() {
+    const wc = await createWalletConnection();
+    if (await checkSignedin()) {
+        console.log('initializing NFT contract');
+        await wc.account().functionCall(nearconfig.contractName, 'new', {});
     }
 }
 
@@ -112,10 +126,17 @@ export async function callJSContract(contractAccount, methodName, args, deposit)
     }
 }
 
-export async function callStandaloneContract(contractAccount, methodName, args, deposit) {
+export async function callStandaloneContract(contractAccount, methodName, args, deposit, gas) {
     const wc = await checkSignedin();
     if (wc) {        
-        return await wc.account().functionCall(nearconfig.contractName, methodName, args, null, deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
+        return await wc.account().functionCall(nearconfig.contractName, methodName, args, gas ? gas : (30n * 100_00000_00000n).toString(), deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
+    }
+}
+
+export async function viewStandaloneContract(contractAccount, methodName, args) {
+    const wc = await checkSignedin();
+    if (wc) {        
+        return await wc.account().viewFunction(contractAccount, methodName, args);
     }
 }
 

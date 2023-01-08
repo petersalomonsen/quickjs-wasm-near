@@ -1,5 +1,5 @@
 import './code-editor.component.js';
-import { deployJScontract, deployStandaloneContract, getSuggestedDepositForContract, isStandaloneMode } from '../near/near.js';
+import { initNFTContract, deployJScontract, deployStandaloneContract, getSuggestedDepositForContract, isStandaloneMode } from '../near/near.js';
 import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
@@ -21,6 +21,7 @@ class CodePageComponent extends HTMLElement {
         await sourcecodeeditor.readyPromise;
         this.sourcecodeeditor = sourcecodeeditor;
         const lastSavedSourceCode = localStorage.getItem('lastSavedSourceCode');
+        const lastSelectedBundleType = localStorage.getItem('lastSelectedBundleType');
         sourcecodeeditor.value = lastSavedSourceCode ? lastSavedSourceCode : `export function hello() {
             env.log("Hello Near");
         }`;
@@ -28,8 +29,11 @@ class CodePageComponent extends HTMLElement {
         const savebutton = this.shadowRoot.getElementById('savebutton');
         savebutton.addEventListener('click', () => this.save());
 
-        const compileByteCode = async () => (await createQuickJS()).compileToByteCode(await bundle(sourcecodeeditor.value), 'contract');
+        const compileByteCode = async () => (await createQuickJS()).compileToByteCode(await bundle(sourcecodeeditor.value, this.bundletypeselect.value), 'contract');
         const deploybutton = this.shadowRoot.getElementById('deploybutton');
+        this.bundletypeselect = this.shadowRoot.getElementById('bundletypeselect');
+        this.bundletypeselect.value = lastSelectedBundleType;
+
         deploybutton.addEventListener('click', async () => {
             const deployContractDialog = this.shadowRoot.getElementById('deploy-contract-dialog');
             deployContractDialog.setAttribute('open', 'true');
@@ -41,30 +45,49 @@ class CodePageComponent extends HTMLElement {
                 toggleIndeterminateProgress(true);
                 await this.save();
                 const bytecode = await compileByteCode();
+                let deployMethodName = 'deploy_js_contract';
                 const deployContract = async (deposit = undefined) => {
                     try {
                         console.log('deploy contract with deposit', deposit);
-                        await deployJScontract(bytecode, deposit);
+                        await deployJScontract(bytecode, deposit, deployMethodName);
                         toggleIndeterminateProgress(false);
                         this.shadowRoot.querySelector('#successDeploySnackbar').show();
                     } catch (e) {
                         console.error(e);
                         if (e.message.indexOf('insufficient deposit for storage') >= 0) {
                             await deployContract(getSuggestedDepositForContract(bytecode.length));
+                            toggleIndeterminateProgress(false);
+                        } else if (e.message.indexOf('Contract method is not found') >= 0) {
+                            console.log('Deploying NFT contract wasm since post_quickjs_bytecode message not found');
+                            await deployStandaloneContract(
+                                new Uint8Array(await fetch(new URL('../near/nft.wasm', import.meta.url))
+                                    .then(r => r.arrayBuffer()))
+                            );
+                            await deployJScontract(bytecode, deposit, deployMethodName);
+                            toggleIndeterminateProgress(false);
+                        } else if (e.message.indexOf('The contract is not initialized') >= 0) {
+                            await initNFTContract();
+                            await deployJScontract(bytecode, deposit, deployMethodName);
+                            toggleIndeterminateProgress(false);
                         } else {
                             const errorDeployContractDialog = this.shadowRoot.getElementById('error-deploying-contract-dialog');
                             errorDeployContractDialog.querySelector('#errormessage').textContent = e.message;
                             errorDeployContractDialog.setAttribute('open', 'true');
-                            toggleIndeterminateProgress(false);
                         }
                     }
                 };
-                if (await isStandaloneMode()) {
-                    const standaloneWasmBytes = await createStandalone(bytecode, this.exportedMethodNames);
-                    await deployStandaloneContract(standaloneWasmBytes);
-                    toggleIndeterminateProgress(false);
-                } else {
+                if (this.bundletypeselect.value == 'nft') {
+                    console.log('NFT contract');
+                    deployMethodName = 'post_quickjs_bytecode';
                     await deployContract();
+                } else if (this.bundletypeselect.value == 'nearapi') {
+                    if (await isStandaloneMode()) {
+                        const standaloneWasmBytes = await createStandalone(bytecode, this.exportedMethodNames);
+                        await deployStandaloneContract(standaloneWasmBytes);
+                        toggleIndeterminateProgress(false);
+                    } else {
+                        await deployContract();
+                    }
                 }
             }
         });
@@ -110,7 +133,7 @@ class CodePageComponent extends HTMLElement {
                 getStorageObj(),
                 this.shadowRoot.querySelector('#signeraccountidinput').value
             );
-            const bytecode = quickjs.compileToByteCode(await bundle(sourcecodeeditor.value), 'contractmodule');
+            const bytecode = quickjs.compileToByteCode(await bundle(sourcecodeeditor.value, this.bundletypeselect.value), 'contractmodule');
             quickjs.evalByteCode(bytecode);
             quickjs.stdoutlines = [];
             quickjs.stdoutlines = [];
@@ -157,10 +180,11 @@ class CodePageComponent extends HTMLElement {
     async save() {
         const source = this.sourcecodeeditor.value;
         localStorage.setItem('lastSavedSourceCode', source);
+        localStorage.setItem('lastSelectedBundleType', this.bundletypeselect.value);
         const methodselect = this.shadowRoot.querySelector('#methodselect');
         const quickjs = await createQuickJS();
         try {
-            quickjs.evalSource(await bundle(source), 'contractmodule');
+            quickjs.evalSource(await bundle(source, this.bundletypeselect.value), 'contractmodule');
             quickjs.evalSource(`import * as contract from 'contractmodule';
             print('method names:', Object.keys(contract));`, 'main');
             const methodnames = quickjs.stdoutlines.find(l => l.indexOf('method names:') == 0).substring('method names: '.length).split(',');

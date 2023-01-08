@@ -213,7 +213,7 @@ export function testargs() {
         }
        
         `;
-        contractsource = await bundle(contractsource);
+        contractsource = await bundle(contractsource,'nearapi');
         const contractByteCode = quickjscompiler.compileToByteCode(contractsource, 'contractmodule');
 
         let quickjs = await createQuickJSWithNearEnv(JSON.stringify(args), '5000000000000', {}, 'tester');

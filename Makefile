@@ -68,7 +68,7 @@ CROSS_PREFIX=em
 ifdef CONFIG_CLANG
   HOST_CC=emcc
   CC=$(CROSS_PREFIX)cc
-  CFLAGS=-g -Wall -Wemcc -MMD -MF $(OBJDIR)/$(@F).d
+  CFLAGS=-Wall -Wemcc -MMD -MF $(OBJDIR)/$(@F).d
   CFLAGS += -Wextra
   CFLAGS += -Wno-sign-compare
   CFLAGS += -Wno-missing-field-initializers
@@ -112,7 +112,7 @@ endif
 CFLAGS+=$(DEFINES)
 CFLAGS_DEBUG=$(CFLAGS) -O0
 CFLAGS_SMALL=$(CFLAGS) -Os
-CFLAGS_OPT=$(CFLAGS) -O2
+CFLAGS_OPT=$(CFLAGS) -Oz
 CFLAGS_NOLTO:=$(CFLAGS_OPT)
 LDFLAGS=-g
 ifdef CONFIG_LTO

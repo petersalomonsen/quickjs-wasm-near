@@ -11,7 +11,6 @@ addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {    
     event.respondWith((async () => {
         const request = event.request;
-        console.log(location.origin, request.url);
         if(request.url.indexOf(location.origin) == 0 && request.url.substring(location.origin.length).indexOf('.') == -1) {
             return await fetch('index.html');
         }

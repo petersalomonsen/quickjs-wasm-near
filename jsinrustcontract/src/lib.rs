@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use near_sdk::PublicKey;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::env::signer_account_pk;
 use near_sdk::{base64::encode, env, near_bindgen, Promise};
 
 static CONTRACT_WASM: &'static [u8] = include_bytes!("../../web/near/nft.wasm");
@@ -51,5 +50,9 @@ impl JSInRust {
             env::attached_deposit(),
             near_sdk::Gas(30000000000000),
         );
+    }
+
+    pub fn fs_store(&mut self) {
+
     }
 }

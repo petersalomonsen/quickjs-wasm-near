@@ -3,7 +3,6 @@ import { initNFTContract, deployJScontract, deployStandaloneContract, getSuggest
 import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
-import { createStandalone } from '../compiler/standalone.js';
 import { bundle } from '../compiler/bundler.js';
 
 class CodePageComponent extends HTMLElement {
@@ -57,7 +56,7 @@ class CodePageComponent extends HTMLElement {
                         if (e.message.indexOf('insufficient deposit for storage') >= 0) {
                             await deployContract(getSuggestedDepositForContract(bytecode.length));
                             toggleIndeterminateProgress(false);
-                        } else if (e.message.indexOf('Contract method is not found') >= 0) {
+                        } else if (e.message.indexOf('complete the action because account') >= 0) {
                             console.log('Deploying NFT contract wasm since post_quickjs_bytecode message not found');
                             await deployStandaloneContract(
                                 new Uint8Array(await fetch(new URL('../near/nft.wasm', import.meta.url))

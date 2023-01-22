@@ -79,7 +79,7 @@ export async function deployJScontract(contractbytes, deposit = undefined, deplo
     if (await checkSignedin()) {
         await wc.account().functionCall(nearconfig.contractName, deployMethodName, {
             "bytecodebase64": await byteArrayToBase64(contractbytes)
-        }, null, deposit);
+        }, '300000000000000', deposit);
     }
 }
 
@@ -94,12 +94,30 @@ export async function initNFTContract() {
 export async function deployStandaloneContract(wasmbytes) {
     const wc = await createWalletConnection();
     if (await checkSignedin()) {
+        const acc = wc.account();
         const minimumStorageDeposit = BigInt(1_000_000_000_000_000_000_000_000 + wasmbytes.length * 10_000_000_000_000_000_000);
-
         const result = await wc.account().functionCall(nearconfig.contractName, 'deploy_sub_contract', 
-            {},
+            {full_access_key: (await acc.connection.signer.getPublicKey(acc.accountId, acc.connection.networkId)).toString()},
             300000000000000,
             minimumStorageDeposit);
+        console.log(result);
+    }
+}
+
+export async function deleteSubContract() {
+    const wc = await createWalletConnection();
+    if (await checkSignedin()) {
+        
+        const nearConnection = await nearApi.connect(nearconfig);
+        
+        const accountPrefix = wc.account().accountId.substring(0,wc.account().accountId.lastIndexOf(nearconfig.networkId)-1);
+
+        const account = await nearConnection.account(`${accountPrefix}-nft.${nearconfig.contractName}`);
+        const keypair =  await wc.account().connection.signer.keyStore.getKey(nearconfig.networkId, wc.account().accountId);
+        
+        await account.connection.signer.keyStore.setKey(nearconfig.networkId, account.accountId, keypair);
+
+        const result = await account.deleteAccount(await wc.account().accountId);
         console.log(result);
     }
 }

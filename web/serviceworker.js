@@ -1,17 +1,15 @@
-const version = '12';
 addEventListener("install", (event) => {
-    console.log('install from '+version);
     self.skipWaiting();
 });
 
 addEventListener("activate", (event) => {
-    console.log('activate from '+version);
 });
 
 self.addEventListener("fetch", (event) => {    
     event.respondWith((async () => {
         const request = event.request;
-        if(request.url.indexOf(location.origin) == 0 && request.url.substring(location.origin.length).indexOf('.') == -1) {
+        const urlWithoutSearch = request.url.split('?')[0];
+        if(urlWithoutSearch.indexOf(location.origin) == 0 && urlWithoutSearch.substring(location.origin.length).indexOf('.') == -1) {
             return await fetch('index.html');
         }
         const responseFromNetwork = await fetch(event.request);

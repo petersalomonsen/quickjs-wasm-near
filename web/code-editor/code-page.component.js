@@ -1,5 +1,5 @@
 import './code-editor.component.js';
-import { initNFTContract, deployJScontract, deployStandaloneContract, getSuggestedDepositForContract, isStandaloneMode } from '../near/near.js';
+import { initNFTContract, deployJScontract, deployStandaloneContract, getSuggestedDepositForContract } from '../near/near.js';
 import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
@@ -80,14 +80,6 @@ class CodePageComponent extends HTMLElement {
                     console.log('NFT contract');
                     deployMethodName = 'post_quickjs_bytecode';
                     await deployContract();
-                } else if (this.bundletypeselect.value == 'nearapi') {
-                    if (await isStandaloneMode()) {
-                        const standaloneWasmBytes = await createStandalone(bytecode, this.exportedMethodNames);
-                        await deployStandaloneContract(standaloneWasmBytes);
-                        toggleIndeterminateProgress(false);
-                    } else {
-                        await deployContract();
-                    }
                 }
             }
         });

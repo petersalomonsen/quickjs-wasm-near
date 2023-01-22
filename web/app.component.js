@@ -51,19 +51,7 @@ class AppComponent extends HTMLElement {
             drawer.type = 'dismissible';
             drawer.open = true;
         }
-        const mainContainer = this.shadowRoot.querySelector('#mainContainer')
-        window.goToPage = (page) => {
-            const pageElement = document.createElement(`${page}-page`);
-            history.pushState({}, null, `/${page}`);
-            mainContainer.replaceChildren(pageElement);
-            if (widthmatcher.matches) {
-                drawer.open = false;
-            }
-        }
-        if (location.pathname.length > 1) {
-            goToPage(location.pathname.substring(1));
-        }
-
+        
         const accountId = (await createWalletConnection()).account().accountId;
         const loggedInUserSpan = this.shadowRoot.getElementById('loggedinuserspan');
         const logoutMenuItemTemplate = this.shadowRoot.getElementById('logout-menuitem-template');
@@ -88,10 +76,24 @@ class AppComponent extends HTMLElement {
         } else {
             showNotLoggedIn();
         }
+
+        const mainContainer = this.shadowRoot.querySelector('#mainContainer')
+        window.goToPage = (page) => {
+            const pageElement = document.createElement(`${page}-page`);
+            history.pushState({}, null, `/${page}`);
+            mainContainer.replaceChildren(pageElement);
+            if (widthmatcher.matches) {
+                drawer.open = false;
+            }
+        }
+        if (location.pathname.length > 1) {
+            goToPage(location.pathname.substring(1));
+        }
         if (location.search.indexOf('transactionHashes=') > 0) {
             goToPage('callcontract');
             this.shadowRoot.getElementById('callcontract-menuitem').selected = true;
         }
+
         toggleIndeterminateProgress(false);
     }
 }

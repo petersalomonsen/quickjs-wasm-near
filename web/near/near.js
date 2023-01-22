@@ -3,10 +3,11 @@ import 'https://cdn.jsdelivr.net/npm/near-api-js@0.44.2/dist/near-api-js.min.js'
 import { showLoginDialog } from './near.component.js';
 
 const networkId = 'testnet';
+const accountPostFix = networkId == 'testnet' ? networkId : 'near';
 const nearconfig = {
     nodeUrl: `https://rpc.${networkId}.near.org`,
     archiveNodeUrl: `https://archival-rpc.${networkId}.near.org`,
-    contractName: `jsinrust.${networkId}`,
+    contractName: `jsinrust.${accountPostFix}`,
     walletUrl: `https://wallet.${networkId}.near.org`,
     helperUrl: `https://helper.${networkId}.near.org`,
     networkId: networkId,
@@ -110,7 +111,7 @@ export async function deleteSubContract() {
         
         const nearConnection = await nearApi.connect(nearconfig);
         
-        const accountPrefix = wc.account().accountId.substring(0,wc.account().accountId.lastIndexOf(nearconfig.networkId)-1);
+        const accountPrefix = wc.account().accountId.substring(0,wc.account().accountId.lastIndexOf(nearconfig.accountPostFix)-1);
 
         const account = await nearConnection.account(`${accountPrefix}-nft.${nearconfig.contractName}`);
         const keypair =  await wc.account().connection.signer.keyStore.getKey(nearconfig.networkId, wc.account().accountId);

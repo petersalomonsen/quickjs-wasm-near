@@ -1,8 +1,9 @@
 use std::str::FromStr;
-
+mod web4;
 use near_sdk::PublicKey;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{base64::encode, env, near_bindgen, Promise};
+use near_sdk::{env, near_bindgen, Promise};
+use web4::{Web4Request,Web4Response};
 
 static CONTRACT_WASM: &'static [u8] = include_bytes!("../../web/near/nft.wasm");
 
@@ -12,15 +13,12 @@ pub struct JSInRust {}
 
 #[near_bindgen]
 impl JSInRust {
-    pub fn web4_get(&self) {
-        let json_string = format!(
-            "{{ \
-            \"contentType\": \"text/html; charset=UTF-8\", \
-            \"body\": \"{}\"\
-          }}",
-            encode("JS in Rust coming soon")
-        );
-        env::value_return(json_string.as_bytes());
+    pub fn web4_get(&self, request: Web4Request) -> Web4Response {
+        return match request.path.as_str() {
+            "/serviceworker.js" => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreib7supsnm6kre7yk7r7suxsjlq6etqce4zid37idjz2jsxjvmipsm?filename=serviceworker.js".to_string()) },
+            "/app.3828a223.js" => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreiarci7zzae5seudpm5aih5spvanomebikxkbcwtobn7vwxozib2z4?filename=app.3828a223.js".to_string()) },
+            _ => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreicdmfmpx32gvppz5idwdkbsscjxfmxgj5flgawsgikqlozjfbdjzq?filename=index.html".to_string()) }
+        };
     }
 
     fn target_account_id(&mut self) -> String {

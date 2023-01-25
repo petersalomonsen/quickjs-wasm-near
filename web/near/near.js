@@ -1,9 +1,7 @@
 import 'https://cdn.jsdelivr.net/npm/near-api-js@0.44.2/dist/near-api-js.min.js';
 
-import { showLoginDialog } from './near.component.js';
-
-const networkId = 'mainnet';
-const accountPostFix = networkId == 'testnet' ? networkId : 'near';
+const networkId = 'testnet';
+const accountPostFix = (networkId == 'testnet' ? networkId : 'near');
 const nearconfig = {
     nodeUrl: `https://rpc.${networkId}.near.org`,
     archiveNodeUrl: `https://archival-rpc.${networkId}.near.org`,
@@ -97,25 +95,30 @@ export async function deployStandaloneContract(wasmbytes) {
     if (await checkSignedin()) {
         const acc = wc.account();
         const minimumStorageDeposit = BigInt(1_000_000_000_000_000_000_000_000 + wasmbytes.length * 10_000_000_000_000_000_000);
-        const result = await wc.account().functionCall(nearconfig.contractName, 'deploy_sub_contract', 
-            {full_access_key: (await acc.connection.signer.getPublicKey(acc.accountId, acc.connection.networkId)).toString()},
+        const result = await wc.account().functionCall(nearconfig.contractName, 'deploy_sub_contract',
+            { full_access_key: (await acc.connection.signer.getPublicKey(acc.accountId, acc.connection.networkId)).toString() },
             300000000000000,
             minimumStorageDeposit);
         console.log(result);
     }
 }
-
-export async function deleteSubContract() {
+export async function getTargetContractName() {
     const wc = await createWalletConnection();
     if (await checkSignedin()) {
-        
-        const nearConnection = await nearApi.connect(nearconfig);
-        
-        const accountPrefix = wc.account().accountId.substring(0,wc.account().accountId.lastIndexOf(nearconfig.accountPostFix)-1);
+        const accountPrefix = wc.account().accountId.substring(0, wc.account().accountId.lastIndexOf(accountPostFix) - 1);
+        return `${accountPrefix}-nft.${nearconfig.contractName}`
+    }
+}
 
-        const account = await nearConnection.account(`${accountPrefix}-nft.${nearconfig.contractName}`);
-        const keypair =  await wc.account().connection.signer.keyStore.getKey(nearconfig.networkId, wc.account().accountId);
-        
+export async function deleteSubContract() {
+    const targetContractName = await getTargetContractName();
+    if (targetContractName) {
+        const nearConnection = await nearApi.connect(nearconfig);
+
+        const account = await nearConnection.account(targetContractName);
+        const wc = await createWalletConnection();
+        const keypair = await wc.account().connection.signer.keyStore.getKey(nearconfig.networkId, wc.account().accountId);
+
         await account.connection.signer.keyStore.setKey(nearconfig.networkId, account.accountId, keypair);
 
         const result = await account.deleteAccount(await wc.account().accountId);
@@ -133,14 +136,14 @@ export async function callJSContract(contractAccount, methodName, args, deposit)
 
 export async function callStandaloneContract(contractAccount, methodName, args, deposit, gas) {
     const wc = await checkSignedin();
-    if (wc) {        
+    if (wc) {
         return await wc.account().functionCall(nearconfig.contractName, methodName, args, gas ? gas : (30n * 100_00000_00000n).toString(), deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
     }
 }
 
 export async function viewStandaloneContract(contractAccount, methodName, args) {
     const wc = await checkSignedin();
-    if (wc) {        
+    if (wc) {
         return await wc.account().viewFunction(contractAccount, methodName, args);
     }
 }

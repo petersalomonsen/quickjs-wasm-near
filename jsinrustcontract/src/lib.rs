@@ -16,7 +16,7 @@ impl JSInRust {
     pub fn web4_get(&self, request: Web4Request) -> Web4Response {
         return match request.path.as_str() {
             "/serviceworker.js" => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreib7supsnm6kre7yk7r7suxsjlq6etqce4zid37idjz2jsxjvmipsm?filename=serviceworker.js".to_string()) },
-            "/app.3828a223.js" => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreiarci7zzae5seudpm5aih5spvanomebikxkbcwtobn7vwxozib2z4?filename=app.3828a223.js".to_string()) },
+            "/app.beda6f7c.js" => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreiarci7zzae5seudpm5aih5spvanomebikxkbcwtobn7vwxozib2z4?filename=app.beda6f7c.js".to_string()) },
             _ => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreicdmfmpx32gvppz5idwdkbsscjxfmxgj5flgawsgikqlozjfbdjzq?filename=index.html".to_string()) }
         };
     }

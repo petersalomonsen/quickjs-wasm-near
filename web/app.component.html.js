@@ -1,10 +1,10 @@
-<mwc-drawer hasHeader type="modal">
+export default /*html*/`<mwc-drawer hasHeader type="modal">
     <span slot="title">JS in Rust</span>
     <span slot="subtitle" id="loggedinuserspan"></span>
     <div class="drawer-content">
       <mwc-list activatable id="leftmenu">
         <mwc-list-item id="code-menuitem" selected activated onclick="goToPage('code')">Code</mwc-list-item>
-        <mwc-list-item id="callcontractstandalone-menuitem" onclick="goToPage('callcontractstandalone')">Call contract</mwc-list-item>
+        <mwc-list-item id="callcontract-menuitem" onclick="goToPage('callcontract')">Call contract</mwc-list-item>
         <mwc-list-item id="deletecontract-menuitem" onclick="goToPage('deletecontract')">Delete contract</mwc-list-item>
         <mwc-list-item id="nearfs-menuitem" onclick="goToPage('nearfs')">NEARFS</mwc-list-item>        
         <template id="logout-menuitem-template">
@@ -27,16 +27,13 @@
             <div slot="title"></div>
             
             <div class="container" id="mainContainer">
-                <h1>Javascript smart contracts on NEAR</h1>
+                <h1>Javascript in Rust smart contracts on NEAR protocol</h1>
                 <p>
-                    <a href="https://github.com/near/near-sdk-js" target="_blank">near-sdk-js</a> makes it possible to deploy Javascript smart contracts on <a href="https://near.org" target="_blank">NEAR protocol</a>.
-                    This web application let you write, simulate, deploy and call your javascript smart contracts in the web browser.                    
+                    Use Javascript to configure and write custom logic for a standard reference implementation
+                    Rust smart contract on NEAR protocol.
                 </p>
                 <p>
-                    Note: Currently you can only create low-level ( <a href="https://github.com/near/near-sdk-js/tree/master/examples/low-level" target="_blank">see examples here</a> ) contracts from here.
-                </p>
-                <p>Open the menu to edit code for your Javascript contract, deploy, or call it on-chain.</p>
             </div>
         </mwc-top-app-bar>
     </div>
-</mwc-drawer>
+</mwc-drawer>`;

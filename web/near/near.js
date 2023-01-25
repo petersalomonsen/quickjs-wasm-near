@@ -1,6 +1,6 @@
 import 'https://cdn.jsdelivr.net/npm/near-api-js@0.44.2/dist/near-api-js.min.js';
 
-const networkId = 'testnet';
+const networkId = (location.origin == 'https://jsinrust.near.page' ? 'mainnet' : 'testnet');
 const accountPostFix = (networkId == 'testnet' ? networkId : 'near');
 const nearconfig = {
     nodeUrl: `https://rpc.${networkId}.near.org`,

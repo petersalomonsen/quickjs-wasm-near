@@ -9,9 +9,10 @@ import '@material/mwc-select';
 import '@material/mwc-snackbar';
 import './code-editor/code-page.component.js';
 import './callcontract/callcontract-page.component.js';
-import './callcontract/callcontractstandalone-page.component.js';
 import './nearfs/nearfs-page.component.js';
 import './deletecontract/deletecontract-page.component.js';
+import css from './app.component.css.js';
+import html from './app.component.html.js';
 
 import { setAppComponent, toggleIndeterminateProgress } from './common/progressindicator.js';
 import { getNearConfig, createWalletConnection, checkSignedin, logout, clearWalletConnection } from './near/near.js';
@@ -31,8 +32,7 @@ class AppComponent extends HTMLElement {
     }
 
     async loadHTML() {
-        this.shadowRoot.innerHTML = await fetch(new URL('app.component.html', import.meta.url)).then(r => r.text());
-        this.attachStyleSheet(new URL('app.component.css', import.meta.url));
+        this.shadowRoot.innerHTML = `<style>${css}</style>${html}`;
         setAppComponent(this);
         toggleIndeterminateProgress(true);
         const drawer = this.shadowRoot.querySelector('mwc-drawer');
@@ -52,7 +52,7 @@ class AppComponent extends HTMLElement {
             drawer.type = 'dismissible';
             drawer.open = true;
         }
-        
+
         const accountId = (await createWalletConnection()).account().accountId;
         const loggedInUserSpan = this.shadowRoot.getElementById('loggedinuserspan');
         const logoutMenuItemTemplate = this.shadowRoot.getElementById('logout-menuitem-template');
@@ -115,12 +115,12 @@ const registerServiceWorker = async () => {
             if (registration.installing) {
                 console.log("Service worker installing");
             } else if (registration.waiting) {
-                console.log("Service worker installed");                
+                console.log("Service worker installed");
             } else if (registration.active) {
-                console.log("Service worker active");                
+                console.log("Service worker active");
                 await registration.update();
             }
-            
+
         } catch (error) {
             console.error(`Registration failed with ${error}`);
         }

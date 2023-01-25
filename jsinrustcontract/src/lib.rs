@@ -16,8 +16,8 @@ impl JSInRust {
     pub fn web4_get(&self, request: Web4Request) -> Web4Response {
         return match request.path.as_str() {
             "/serviceworker.js" => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreib7supsnm6kre7yk7r7suxsjlq6etqce4zid37idjz2jsxjvmipsm?filename=serviceworker.js".to_string()) },
-            "/app.beda6f7c.js" => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreiarci7zzae5seudpm5aih5spvanomebikxkbcwtobn7vwxozib2z4?filename=app.beda6f7c.js".to_string()) },
-            _ => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreicdmfmpx32gvppz5idwdkbsscjxfmxgj5flgawsgikqlozjfbdjzq?filename=index.html".to_string()) }
+            "/app.c19303f0.js" => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreihvxl7h3enpxev5gauxvvzxuv4awhuefam3677ajdtbsukwmy6xgq?filename=app.c19303f0.js".to_string()) },
+            _ => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreieo5y46ww2vx37rjayojhknmfxaiktt2cr7xwafiwojs73o46babi?filename=index.html".to_string()) }
         };
     }
 

@@ -1,4 +1,4 @@
-import { getNearConfig, createWalletConnection, callStandaloneContract, viewStandaloneContract } from '../near/near.js';
+import { getNearConfig, createWalletConnection, callStandaloneContract, viewStandaloneContract, getTargetContractName } from '../near/near.js';
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 
 class CallContractStandalonePageComponent extends HTMLElement {
@@ -44,7 +44,7 @@ ${JSON.stringify(result, null, 1)}`;
         });
 
         const accountId = (await createWalletConnection()).account().accountId;
-        contractnameinput.value = accountId;
+        contractnameinput.value = await getTargetContractName();
         const transactionIdMatch = location.search.match(/transactionHashes=([a-zA-Z0-9]+)/);
         if (transactionIdMatch) {
             const txhash = transactionIdMatch[1];

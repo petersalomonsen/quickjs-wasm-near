@@ -9,7 +9,8 @@ customElements.define('deletecontract-page', class extends HTMLElement {
         <p><span id="targetContractNameSpan"></span></p>
         <mwc-button icon="delete" id="deletecontractbutton">Delete contract</mwc-button>
         <mwc-dialog id="delete-contract-dialog" heading="Really delete contract and account?">
-            <div>This will delete the contract and the account.</div>
+            <div><p>This will delete the contract and the account</p>
+            <p><span id="dialogTargetContractNameSpan"></span></p></div>
             <mwc-button slot="primaryAction" dialogAction="delete">
                 Delete
             </mwc-button>
@@ -17,8 +18,14 @@ customElements.define('deletecontract-page', class extends HTMLElement {
                 Cancel
             </mwc-button>
         </mwc-dialog>
+        <mwc-snackbar id="snackbar" labelText="">
+            <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
+        </mwc-snackbar>
         `;
-        getTargetContractName().then(targetContractName => this.shadowRoot.getElementById('targetContractNameSpan').innerHTML = targetContractName);        
+        getTargetContractName().then(targetContractName => {
+            this.shadowRoot.getElementById('targetContractNameSpan').innerHTML = targetContractName;
+            this.shadowRoot.getElementById('dialogTargetContractNameSpan').innerHTML = targetContractName;
+        });
         this.shadowRoot.getElementById('deletecontractbutton').addEventListener('click', async () => {
             const deleteContractDialog = this.shadowRoot.getElementById('delete-contract-dialog');
             deleteContractDialog.setAttribute('open', 'true');
@@ -28,7 +35,14 @@ customElements.define('deletecontract-page', class extends HTMLElement {
                 }))
             }) == 'delete') {
                 toggleIndeterminateProgress(true);
-                await deleteSubContract();
+                const snackbar = this.shadowRoot.getElementById('snackbar');
+                try {
+                    await deleteSubContract();
+                    snackbar.labelText="Contract deleted";
+                } catch (e) {
+                    snackbar.labelText=e.message;
+                }
+                snackbar.show();
                 toggleIndeterminateProgress(false);
             }
         });

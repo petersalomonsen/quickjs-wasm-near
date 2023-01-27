@@ -1,11 +1,7 @@
-use std::str::FromStr;
 mod web4;
-use near_sdk::PublicKey;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{env, near_bindgen, Promise};
+use near_sdk::{near_bindgen};
 use web4::{Web4Request,Web4Response};
-
-static CONTRACT_WASM: &'static [u8] = include_bytes!("../../web/near/nft.wasm");
 
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
@@ -16,38 +12,9 @@ impl JSInRust {
     pub fn web4_get(&self, request: Web4Request) -> Web4Response {
         return match request.path.as_str() {
             "/serviceworker.js" => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreib7supsnm6kre7yk7r7suxsjlq6etqce4zid37idjz2jsxjvmipsm?filename=serviceworker.js".to_string()) },
-            "/app.c19303f0.js" => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreihvxl7h3enpxev5gauxvvzxuv4awhuefam3677ajdtbsukwmy6xgq?filename=app.c19303f0.js".to_string()) },
-            _ => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreieo5y46ww2vx37rjayojhknmfxaiktt2cr7xwafiwojs73o46babi?filename=index.html".to_string()) }
+            "/app.7b86ec58.js" => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreiahdbhurooquyfuhraj4d6lfvaj4nlrxrgag6cy2wrdfdb2vjhzie?filename=app.7b86ec58.js".to_string()) },
+            _ => Web4Response::BodyUrl { body_url: ("https://ipfs.web4.near.page/ipfs/bafkreigh523loaxetoj6yeflb6rwccpy2kqv7aelg64dyhggkmbhiogh6u?filename=index.html".to_string()) }
         };
-    }
-
-    fn target_account_id(&mut self) -> String {
-        let signer_account = env::signer_account_id().to_string();
-        let signer_account_parts = signer_account.split(".").collect::<Vec<&str>>();
-        let prefix = signer_account_parts.first().unwrap();
-
-        return prefix.to_string() + "-nft." + &env::current_account_id().to_string();
-    }
-
-    #[payable]
-    pub fn deploy_sub_contract(&mut self, full_access_key: String) -> Promise {
-        let target_account_id = self.target_account_id();
-        return Promise::new(target_account_id.parse().unwrap())
-            .create_account()
-            .transfer(env::attached_deposit())
-            .add_full_access_key(PublicKey::from_str(full_access_key.as_str()).unwrap())
-            .deploy_contract(CONTRACT_WASM.to_vec())
-            .function_call("new".to_string(), vec![], 0, near_sdk::Gas(30000000000000));
-    }
-
-    pub fn post_quickjs_bytecode(&mut self) -> Promise {
-        let target_account_id = self.target_account_id();
-        return Promise::new(target_account_id.parse().unwrap()).function_call(
-            "post_quickjs_bytecode".to_string(),
-            env::input().unwrap(),
-            env::attached_deposit(),
-            near_sdk::Gas(30000000000000),
-        );
     }
 
     pub fn fs_store(&mut self) {

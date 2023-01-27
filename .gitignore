@@ -5,3 +5,5 @@
 .vscode
 emsdk
 standalonejstest.testnet.txt
+dist
+.DS_Store

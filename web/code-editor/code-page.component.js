@@ -60,7 +60,7 @@ class CodePageComponent extends HTMLElement {
                         } else if (e.message.indexOf('Contract method is not found') >= 0) {
                             console.log('Deploying NFT contract wasm since post_quickjs_bytecode message not found');
                             await deployStandaloneContract(
-                                new Uint8Array(await fetch(new URL('../near/nft.wasm', import.meta.url))
+                                new Uint8Array(await fetch(new URL('https://ipfs.web4.near.page/ipfs/bafkreic2ktlue3456wdmnrxf4zupu4ayvnzabgvkixihc4xc73zftoztwy?filename=nft-a61c4543.wasm'))
                                     .then(r => r.arrayBuffer()))
                             );
                             await deployJScontract(bytecode, deposit, deployMethodName);

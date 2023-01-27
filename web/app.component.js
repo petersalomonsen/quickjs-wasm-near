@@ -10,7 +10,6 @@ import '@material/mwc-snackbar';
 import './code-editor/code-page.component.js';
 import './callcontract/callcontract-page.component.js';
 import './nearfs/nearfs-page.component.js';
-import './deletecontract/deletecontract-page.component.js';
 import css from './app.component.css.js';
 import html from './app.component.html.js';
 

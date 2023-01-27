@@ -59,8 +59,13 @@ class CodePageComponent extends HTMLElement {
                             toggleIndeterminateProgress(false);
                         } else if (e.message.indexOf('Contract method is not found') >= 0) {
                             console.log('Deploying NFT contract wasm since post_quickjs_bytecode message not found');
+                            let wasmUrl = {
+                                "nft": 'https://ipfs.web4.near.page/ipfs/bafkreic2ktlue3456wdmnrxf4zupu4ayvnzabgvkixihc4xc73zftoztwy?filename=nft-a61c4543.wasm',
+                                "minimum-web4": 'https://ipfs.web4.near.page/ipfs/bafkreigjjyocek3mdqk6rilzaxleg2swuka2nhzfx2gq4u7yicgdmvlh2a?filename=minimum_web4.wasm'
+                            }[this.bundletypeselect.value];
+
                             await deployStandaloneContract(
-                                new Uint8Array(await fetch(new URL('https://ipfs.web4.near.page/ipfs/bafkreic2ktlue3456wdmnrxf4zupu4ayvnzabgvkixihc4xc73zftoztwy?filename=nft-a61c4543.wasm'))
+                                new Uint8Array(await fetch(new URL(wasmUrl))
                                     .then(r => r.arrayBuffer()))
                             );
                             await deployJScontract(bytecode, deposit, deployMethodName);
@@ -76,11 +81,8 @@ class CodePageComponent extends HTMLElement {
                         }
                     }
                 };
-                if (this.bundletypeselect.value == 'nft') {
-                    console.log('NFT contract');
-                    deployMethodName = 'post_quickjs_bytecode';
-                    await deployContract();
-                } else if (this.bundletypeselect.value == 'nearapi') {
+                
+                if (this.bundletypeselect.value == 'nearapi') {
                     if (await isStandaloneMode()) {
                         const standaloneWasmBytes = await createStandalone(bytecode, this.exportedMethodNames);
                         await deployStandaloneContract(standaloneWasmBytes);
@@ -88,6 +90,9 @@ class CodePageComponent extends HTMLElement {
                     } else {
                         await deployContract();
                     }
+                } else {
+                    deployMethodName = 'post_quickjs_bytecode';
+                    await deployContract();
                 }
             }
         });

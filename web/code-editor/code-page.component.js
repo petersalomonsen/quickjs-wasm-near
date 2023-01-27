@@ -57,8 +57,11 @@ class CodePageComponent extends HTMLElement {
                         if (e.message.indexOf('insufficient deposit for storage') >= 0) {
                             await deployContract(getSuggestedDepositForContract(bytecode.length));
                             toggleIndeterminateProgress(false);
-                        } else if (e.message.indexOf('Contract method is not found') >= 0) {
-                            console.log('Deploying NFT contract wasm since post_quickjs_bytecode message not found');
+                        } else if (
+                            e.message.indexOf('Contract method is not found') >= 0 ||
+                            e.message.indexOf('Cannot find contract code for account') >= 0
+                        ) {
+                            console.log('Deploying contract wasm because of '+e.message);
                             let wasmUrl = {
                                 "nft": 'https://ipfs.web4.near.page/ipfs/bafkreic2ktlue3456wdmnrxf4zupu4ayvnzabgvkixihc4xc73zftoztwy?filename=nft-a61c4543.wasm',
                                 "minimum-web4": 'https://ipfs.web4.near.page/ipfs/bafkreigjjyocek3mdqk6rilzaxleg2swuka2nhzfx2gq4u7yicgdmvlh2a?filename=minimum_web4.wasm'

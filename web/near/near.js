@@ -65,13 +65,12 @@ export async function checkSignedin() {
     }
 
     if (!wc.isSignedIn()) {
-        const contractname = await showLoginDialog(contracts);
-        if (contractname) {
-            localStorage.setItem(LOGGED_IN_CONTRACT_NAME, contractname);
-            await wc.requestSignIn(
-                contractname,
-                'JS in Rust'
-            );
+        const contractId = await showLoginDialog(contracts);
+        if (contractId) {
+            localStorage.setItem(LOGGED_IN_CONTRACT_NAME, contractId);
+            await wc.requestSignIn({
+                contractId
+            });
         } else {
             return null;
         }

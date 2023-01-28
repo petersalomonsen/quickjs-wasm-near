@@ -40,7 +40,7 @@ describe('codepage-component', function () {
         quickjs.evalByteCode(bytecode);
         expect(quickjs.stdoutlines.indexOf('hello')).to.be.greaterThan(-1);
     });
-    it.only('should deploy js contract to new account', async () => {
+    it('should deploy js contract to new account', async () => {
         const randomNumber = Math.floor(Math.random() * (99999999999999 - 10000000000000) + 10000000000000);
 
         const accountId = `dev-${Date.now()}-${randomNumber}`;

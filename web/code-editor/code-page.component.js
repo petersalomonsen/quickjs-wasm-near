@@ -35,6 +35,11 @@ class CodePageComponent extends HTMLElement {
         this.bundletypeselect.value = lastSelectedBundleType;
 
         deploybutton.addEventListener('click', async () => {
+            if (this.bundletypeselect.value == '') {
+                this.shadowRoot.querySelector('#selectTargetContractTypeSnackbar').show();
+                return;
+            }
+
             const deployContractDialog = this.shadowRoot.getElementById('deploy-contract-dialog');
             deployContractDialog.setAttribute('open', 'true');
             if (await new Promise(resolve => {

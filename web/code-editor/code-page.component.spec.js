@@ -1,5 +1,5 @@
 import { createQuickJS } from '../compiler/quickjs.js';
-import { getNearConfig, createWalletConnection, callStandaloneContract, viewStandaloneContract } from '../near/near.js';
+import { getNearConfig, viewStandaloneContract, clearWalletConnection } from '../near/near.js';
 
 async function waitForElement(rootElement, selector) {
     return await new Promise(resolve => {
@@ -53,8 +53,8 @@ describe('codepage-component', function () {
         await keyStore.setKey(nearConfig.networkId, accountId, keyPair);
         localStorage.setItem('lastSelectedBundleType', 'minimum-web4');
         localStorage.setItem('loggedincontractname', accountId);
-        localStorage.setItem('undefined_wallet_auth_key',
-            JSON.stringify({ accountId: accountId, allKeys: [keyPair.publicKey] }));
+        localStorage.setItem('undefined_wallet_auth_key', JSON.stringify({ accountId: accountId, allKeys: [keyPair.publicKey] }));
+        clearWalletConnection();
 
         const appRootElement = document.createElement('app-root');
         document.documentElement.appendChild(appRootElement);

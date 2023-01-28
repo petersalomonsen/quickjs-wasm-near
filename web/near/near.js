@@ -1,11 +1,11 @@
-import 'https://cdn.jsdelivr.net/npm/near-api-js@0.44.2/dist/near-api-js.min.js';
+import 'https://cdn.jsdelivr.net/npm/near-api-js@1.1.0/dist/near-api-js.min.js';
 import { showLoginDialog } from './near.component.js';
 
 const networkId = (location.origin == 'https://jsinrust.near.page' ? 'mainnet' : 'testnet');
 const accountPostFix = (networkId == 'testnet' ? networkId : 'near');
 const contracts = [`jsinrust.${accountPostFix}`]
 
-const LOGGED_IN_CONTRACT_NAME = 'loggedincontractname';
+export const LOGGED_IN_CONTRACT_NAME = 'loggedincontractname';
 const nearconfig = {
     nodeUrl: `https://rpc.${networkId}.near.org`,
     archiveNodeUrl: `https://archival-rpc.${networkId}.near.org`,
@@ -13,9 +13,7 @@ const nearconfig = {
     walletUrl: `https://wallet.${networkId}.near.org`,
     helperUrl: `https://helper.${networkId}.near.org`,
     networkId: networkId,
-    deps: {
-        keyStore: null
-    }
+    keyStore: null
 };
 let walletConnection;
 
@@ -42,8 +40,9 @@ export function createWalletConnection() {
         return walletConnection;
     }
     walletConnection = new Promise(async resolve => {
-        nearconfig.deps.keyStore = new nearApi.keyStores.BrowserLocalStorageKeyStore();
+        nearconfig.keyStore = new nearApi.keyStores.BrowserLocalStorageKeyStore();
         nearconfig.contractName = localStorage.getItem(LOGGED_IN_CONTRACT_NAME);
+
         const near = await nearApi.connect(nearconfig);
         const wc = new nearApi.WalletConnection(near);
         resolve(wc);
@@ -88,11 +87,20 @@ export async function deployJScontract(contractbytes, deposit = undefined, deplo
     const wc = await createWalletConnection();
     if (await checkSignedin()) {
         if (deployMethodName == 'deploy_js_contract') {
-            await wc.account().functionCall(nearconfig.contractName, deployMethodName, contractbytes, null, deposit);
+            await wc.account().functionCall({
+                contractId: nearconfig.contractName,
+                methodName: deployMethodName,
+                args: contractbytes,
+                attachedDeposit: deposit
+            });
         } else {
-            await wc.account().functionCall(nearconfig.contractName, deployMethodName, {
-                "bytecodebase64": await byteArrayToBase64(contractbytes)
-            }, '300000000000000', deposit);
+            await wc.account().functionCall({
+                contractId: nearconfig.contractName,
+                methodName: deployMethodName,
+                args: {
+                    "bytecodebase64": await byteArrayToBase64(contractbytes)
+                }, gas: '300000000000000', attachedDeposit: deposit
+            });
         }
     }
 }
@@ -101,7 +109,7 @@ export async function initNFTContract() {
     const wc = await createWalletConnection();
     if (await checkSignedin()) {
         console.log('initializing NFT contract');
-        await wc.account().functionCall(nearconfig.contractName, 'new', {});
+        await wc.account().functionCall({ contractId: nearconfig.contractName, methodName: 'new', args: {} });
     }
 }
 
@@ -117,7 +125,7 @@ export async function deployStandaloneContract(wasmbytes) {
             const result = await wc.account().deployContract(wasmbytes);
             console.log(result);
         } else {
-            throw('Full access key is required to deploy standalone contracts');
+            throw ('Full access key is required to deploy standalone contracts');
         }
     }
 }
@@ -126,20 +134,20 @@ export async function callJSContract(contractAccount, methodName, args, deposit)
     const wc = await checkSignedin();
     if (wc) {
         let input = Buffer.concat([Buffer.from(contractAccount), Buffer.from([0]), Buffer.from(methodName), Buffer.from([0]), Buffer.from(args)]);
-        return await wc.account().functionCall(nearconfig.contractName, 'call_js_contract', input, null, deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
+        return await wc.account().functionCall({ contractId: nearconfig.contractName, methodName: 'call_js_contract', args: input, attachedDeposit: deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined });
     }
 }
 
 export async function callStandaloneContract(contractAccount, methodName, args, deposit, gas) {
     const wc = await checkSignedin();
-    if (wc) {        
-        return await wc.account().functionCall(contractAccount, methodName, args, gas ? gas : (30n * 100_00000_00000n).toString(), deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined);
+    if (wc) {
+        return await wc.account().functionCall({ contractId: contractAccount, methodName, args, gas: gas ? gas : (30n * 100_00000_00000n).toString(), attachedDeposit: deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined });
     }
 }
 
 export async function viewStandaloneContract(contractAccount, methodName, args) {
     const wc = await checkSignedin();
-    if (wc) {        
+    if (wc) {
         return await wc.account().viewFunction(contractAccount, methodName, args);
     }
 }

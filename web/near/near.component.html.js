@@ -1,4 +1,4 @@
-<mwc-dialog id="login-dialog" heading="Login to Javascript VM contract">
+export default /*html*/ `<mwc-dialog id="login-dialog" heading="Login to Javascript VM contract">
     <h4>Select a JS in Rust contract ( no deployments supported, only uploading files )</h4>
     <mwc-select id="contractselect" label="contract">
         
@@ -12,4 +12,4 @@
     <mwc-button slot="secondaryAction" dialogAction="cancel">
         Cancel
     </mwc-button>
-</mwc-dialog>
+</mwc-dialog>`;

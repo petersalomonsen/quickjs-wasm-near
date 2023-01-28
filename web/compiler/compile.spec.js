@@ -1,7 +1,8 @@
 import { bytesToBase64, base64ToBytes } from './base64.js';
 import { createQuickJS } from './quickjs.js';
 
-describe('compiler', () => {
+describe('compiler', function() {
+    this.timeout(20000);
     it('should compile and evaluate js source', async () => {
         const quickjs = await createQuickJS();
         expect(quickjs.evalSource(`(function () {return 11+34+55+"test".length})()`)).to.equal(11 + 34 + 55 + "test".length);

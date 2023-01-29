@@ -43,7 +43,6 @@ class CodePageComponent extends HTMLElement {
             }
 
             const deployContractDialog = this.shadowRoot.getElementById('deploy-contract-dialog');
-            document.body.appendChild(deployContractDialog);
             deployContractDialog.show();
             if (await new Promise(resolve => {
                 deployContractDialog.querySelectorAll('mwc-button').forEach(b => b.addEventListener('click', (e) => {

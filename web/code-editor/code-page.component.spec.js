@@ -23,7 +23,7 @@ describe('codepage-component', function () {
     this.timeout(60000);
     it('should download bytecode', async () => {
         const codePageElement = document.createElement('code-page');
-        document.documentElement.appendChild(codePageElement);
+        document.body.appendChild(codePageElement);
         const sourcecodeeditor = await waitForElement(codePageElement, '#sourcecodeeditor');
         expect(sourcecodeeditor).not.to.be.undefined;
         await codePageElement.readyPromise;
@@ -58,7 +58,7 @@ describe('codepage-component', function () {
         clearWalletConnection();
 
         const codePageElement = document.createElement('code-page');
-        document.documentElement.appendChild(codePageElement);
+        document.body.appendChild(codePageElement);
 
         const sourcecodeeditor = await waitForElement(codePageElement, '#sourcecodeeditor');
         await codePageElement.readyPromise;
@@ -116,7 +116,7 @@ describe('codepage-component', function () {
         clearWalletConnection();
 
         const codePageElement = document.createElement('code-page');
-        document.documentElement.appendChild(codePageElement);
+        document.body.appendChild(codePageElement);
 
         const sourcecodeeditor = await waitForElement(codePageElement, '#sourcecodeeditor');
         await codePageElement.readyPromise;
@@ -159,4 +159,46 @@ describe('codepage-component', function () {
         expect(response).to.deep.equal({ contentType: 'text/html; charset=UTF-8', body: 'aGVsbG8gZnJvbSBuZnQ=' });
         console.log('nft contract is deployed');
     });
+    it('deploy dialog should be possible to cancel', async () => {
+        localStorage.setItem('lastSelectedBundleType', 'nft');
+
+        const codePageElement = document.createElement('code-page');
+        document.body.appendChild(codePageElement);
+
+        const sourcecodeeditor = await waitForElement(codePageElement, '#sourcecodeeditor');
+        await codePageElement.readyPromise;
+
+        sourcecodeeditor.value = `export function web4_get() {
+            const request = JSON.parse(env.input()).request;
+        
+            let response;
+        
+            if (request.path == '/index.html') {
+                response = {
+                    contentType: "text/html; charset=UTF-8",
+                    body: env.base64_encode('hello from nft')
+                };
+            }
+            env.value_return(JSON.stringify(response));
+        }
+        `;
+
+        const deployButton = codePageElement.shadowRoot.querySelector('#deploybutton');
+        const deployContractDialog = codePageElement.shadowRoot.querySelector('#deploy-contract-dialog');
+        deployButton.click();
+
+        await new Promise(r => setTimeout(() => r(), 300));
+        expect(deployContractDialog.open).to.be.true;
+
+        deployContractDialog.querySelector('mwc-button[dialogAction=cancel]').click();
+        await new Promise(r => setTimeout(() => r(), 300));
+        expect(deployContractDialog.open).to.be.false;
+
+        deployButton.click();
+        await new Promise(r => setTimeout(() => r(), 300));
+        expect(deployContractDialog.open).to.be.true;
+
+        deployContractDialog.querySelector('mwc-button[dialogAction=cancel]').click();
+        expect(deployContractDialog.open).to.be.false;
+    })
 });

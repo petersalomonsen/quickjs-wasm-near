@@ -1,82 +1,117 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <style>
-            #loginbutton {
-                display: none;
-            }
-            #logged_in_content {
-                display: none;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Mint NFT</h1>
-    
-        <p>
-            <button id="loginbutton">Login</button>
-        </p>    
-
-        <div id="logged_in_content">
-            <button id="logoutbutton">Logout</button>
-            <p>Token id: <input type="text" id="token_id_input" value="22" />
-                <button id="mint_button">Mint</button>
-            </p>            
-        </div>
-        <div>
-            <pre id="mintresultview"></pre>
-        </div>
-    </body>
-    <script src="https://cdn.jsdelivr.net/npm/near-api-js@1.1.0/dist/near-api-js.js" integrity="sha256-P4UWOeQu3ArN0DbPCzdyfYBaeKLzKu+7V+BZcmxFigE=" crossorigin="anonymous"></script>
-    <script type="module">
-const { connect, keyStores, WalletConnection, Contract, utils } = nearApi;
-
-const contractAccountId = 'standalonejstest.testnet';
-const networkId = 'testnet';
-
-const connectionConfig = {
-    networkId: networkId,
-    keyStore: new keyStores.BrowserLocalStorageKeyStore(),
-    nodeUrl: `https://rpc.${networkId}.near.org`,
-    walletUrl: `https://wallet.${networkId}.near.org`,
-    helperUrl: `https://helper.${networkId}.near.org`,
-    explorerUrl: `https://explorer.${networkId}.near.org`,
-};
-const nearConnection = await connect(connectionConfig);
-const walletConnection = new WalletConnection(nearConnection);
-
-if (!walletConnection.isSignedIn()) {
-    const loginbutton = document.getElementById('loginbutton');
-    loginbutton.style.display = 'block';
-    loginbutton.addEventListener('click', () => {
-        walletConnection.requestSignIn(
-            {contractId: contractAccountId, methodNames: ['nft_mint']}
-        );
-    });
-} else {
-    document.getElementById('logoutbutton').addEventListener('click', async () => {
-        await walletConnection.signOut();
-        location.reload();
-    });
-    const mintButton = document.getElementById('mint_button');
-    document.getElementById('logged_in_content').style.display = 'block';
-    mintButton.addEventListener('click', async () => {
-        mintButton.disabled = true;
-        document.getElementById('mintresultview').innerHTML = 'Please wait while executing transaction';
-        const account = walletConnection.account();
-        const contract = new Contract(account, contractAccountId, {
-            changeMethods: ['nft_mint']
-        });
-        try {
-            const result = await contract.nft_mint({
-                token_id: document.getElementById('token_id_input').value,
-                token_owner_id: account.accountId
-            }, undefined, utils.format.parseNearAmount("0.1"));
-            document.getElementById('mintresultview').innerHTML = JSON.stringify(result, null, 1);
-        } catch(e) {
-            document.getElementById('mintresultview').innerHTML = e.toString();
+<head>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
         }
-    });
-}
-    </script>
+
+        input {
+            padding: 5px;
+            border: #55c solid 4px;
+            background-color: white;
+            color: black;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            background-color: white;
+            color: black;
+        }
+
+        button:hover {
+            background-color: #555;
+            color: white;
+        }
+
+        #loginbutton {
+            display: none;
+        }
+
+        #logged_in_content {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Mint NFT</h1>
+    <p>Simple miniting to <span id="contractidspan"></span></p>
+    <p>
+        <button id="loginbutton">Login</button>
+    </p>
+
+    <div id="logged_in_content">
+        <button id="logoutbutton">Logout</button>
+        <p>Token id: <input type="text" id="token_id_input" value="22" />
+            <button id="mint_button">Mint</button>
+        </p>
+    </div>
+    <div>
+        <pre id="mintresultview"></pre>
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/near-api-js@1.1.0/dist/near-api-js.js"
+    integrity="sha256-P4UWOeQu3ArN0DbPCzdyfYBaeKLzKu+7V+BZcmxFigE=" crossorigin="anonymous"></script>
+<script type="module">
+    const { connect, keyStores, WalletConnection, Contract, utils } = nearApi;
+
+    const origin = location.origin;
+    //const origin = 'https://superduper77.testnet.page';
+    const contractAccountId = origin.substring(origin.lastIndexOf('/') + 1).replace('.page', '');
+    const networkId = (suffix => suffix == 'near' ? 'mainnet' : suffix)(contractAccountId.split('.')[1]);
+
+    const connectionConfig = {
+        networkId: networkId,
+        keyStore: new keyStores.BrowserLocalStorageKeyStore(),
+        nodeUrl: `https://rpc.${networkId}.near.org`,
+        walletUrl: `https://wallet.${networkId}.near.org`,
+        helperUrl: `https://helper.${networkId}.near.org`,
+        explorerUrl: `https://explorer.${networkId}.near.org`,
+    };
+
+    (async () => {
+        const nearConnection = await connect(connectionConfig);
+        const walletConnection = new WalletConnection(nearConnection);
+
+        document.getElementById('contractidspan').innerHTML = contractAccountId;
+        if (!(await walletConnection.isSignedInAsync())) {
+            const loginbutton = document.getElementById('loginbutton');
+            loginbutton.style.display = 'block';
+            loginbutton.addEventListener('click', () => {
+                walletConnection.requestSignIn(
+                    { contractId: contractAccountId, methodNames: ['nft_mint'] }
+                );
+            });
+        } else {
+            document.getElementById('logoutbutton').addEventListener('click', async () => {
+                await walletConnection.signOut();
+                location.reload();
+            });
+            const mintButton = document.getElementById('mint_button');
+            document.getElementById('logged_in_content').style.display = 'block';
+            mintButton.addEventListener('click', async () => {
+                mintButton.disabled = true;
+                document.getElementById('mintresultview').innerHTML = 'Please wait while executing transaction';
+                const account = walletConnection.account();
+                const contract = new Contract(account, contractAccountId, {
+                    changeMethods: ['nft_mint']
+                });
+                try {
+                    const result = await contract.nft_mint({
+                        token_id: document.getElementById('token_id_input').value,
+                        token_owner_id: account.accountId
+                    }, undefined, utils.format.parseNearAmount("0.1"));
+                    document.getElementById('mintresultview').innerHTML = JSON.stringify(result, null, 1);
+                } catch (e) {
+                    document.getElementById('mintresultview').innerHTML = e.toString();
+                }
+            });
+        }
+    })();
+</script>
+
 </html>

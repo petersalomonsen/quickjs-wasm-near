@@ -27,11 +27,10 @@ customElements.define('nearfs-page', class extends HTMLElement {
                 const cid = await getCIDForFileData(fileData);
 
                 const downloadUrl = `https://ipfs.web4.near.page/ipfs/${cid}?filename=${file.name}`;
-                
 
                 const response = await fetch(downloadUrl);
                 if (response.status == 404) {
-                    await callStandaloneContract(null, 'fs_store', fileData);
+                    await callStandaloneContract('jsinrust.near', 'fs_store', fileData);
                 }
 
                 const downloadLink = this.shadowRoot.getElementById('downloadlink');

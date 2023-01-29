@@ -14,7 +14,7 @@ import css from './app.component.css.js';
 import html from './app.component.html.js';
 
 import { setAppComponent, toggleIndeterminateProgress } from './common/progressindicator.js';
-import { getNearConfig, createWalletConnection, checkSignedin, logout, clearWalletConnection } from './near/near.js';
+import { getNearConfig, createWalletConnection, checkSignedin, logout } from './near/near.js';
 
 HTMLElement.prototype.attachStyleSheet = function (url) {
     const linkElement = document.createElement('link');
@@ -27,7 +27,7 @@ class AppComponent extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        this.loadHTML();
+        this.readyPromise = this.loadHTML();
     }
 
     async loadHTML() {
@@ -51,8 +51,10 @@ class AppComponent extends HTMLElement {
             drawer.type = 'dismissible';
             drawer.open = true;
         }
+        const walletConnection = await createWalletConnection();
+        await walletConnection.isSignedInAsync();
 
-        const accountId = (await createWalletConnection()).account().accountId;
+        const accountId = walletConnection.account().accountId;
         const loggedInUserSpan = this.shadowRoot.getElementById('loggedinuserspan');
         const logoutMenuItemTemplate = this.shadowRoot.getElementById('logout-menuitem-template');
         const loginMenuItemTemplate = this.shadowRoot.getElementById('login-menuitem-template');
@@ -80,7 +82,10 @@ class AppComponent extends HTMLElement {
         const mainContainer = this.shadowRoot.querySelector('#mainContainer')
         window.goToPage = (page) => {
             const pageElement = document.createElement(`${page}-page`);
-            history.pushState({}, null, `/${page}`);
+            const path = `/${page}`;
+            if (location.pathname != path || location.search.indexOf('?account_id') == 0) {
+                history.pushState({}, null, path);
+            }
             mainContainer.replaceChildren(pageElement);
             if (widthmatcher.matches) {
                 drawer.open = false;

@@ -1,4 +1,4 @@
-<style>
+export default `<style>
     #editor {
         position: relative;
         height: 250px;
@@ -25,4 +25,4 @@
     }
     .editorfullscreen .cm-editor { height: 100%; }
 </style>
-<div id="editor"><mwc-fab mini id="toggleFullScreenButton" icon="fullscreen"></mwc-fab></div>
+<div id="editor"><mwc-fab mini id="toggleFullScreenButton" icon="fullscreen"></mwc-fab></div>`;

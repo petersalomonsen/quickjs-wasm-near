@@ -5,17 +5,18 @@ import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
 import { createStandalone } from '../compiler/standalone.js';
 import { bundle } from '../compiler/bundler.js';
+import html from './code-page.component.html.js';
+import css from './code-page.component.css.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        this.loadHTML();
+        this.readyPromise = this.loadHTML();
     }
 
     async loadHTML() {
-        this.shadowRoot.innerHTML = await fetch(new URL('code-page.component.html', import.meta.url)).then(r => r.text());
-        this.attachStyleSheet(new URL('code-page.component.css', import.meta.url));
+        this.shadowRoot.innerHTML = `<style>${css}</style>${html}`;
 
         const sourcecodeeditor = this.shadowRoot.getElementById('sourcecodeeditor');
         await sourcecodeeditor.readyPromise;
@@ -32,6 +33,7 @@ class CodePageComponent extends HTMLElement {
         const compileByteCode = async () => (await createQuickJS()).compileToByteCode(await bundle(sourcecodeeditor.value, this.bundletypeselect.value), 'contract');
         const deploybutton = this.shadowRoot.getElementById('deploybutton');
         this.bundletypeselect = this.shadowRoot.getElementById('bundletypeselect');
+        await new Promise(r => setTimeout(() => r(), 100));
         this.bundletypeselect.value = lastSelectedBundleType;
 
         deploybutton.addEventListener('click', async () => {
@@ -41,7 +43,8 @@ class CodePageComponent extends HTMLElement {
             }
 
             const deployContractDialog = this.shadowRoot.getElementById('deploy-contract-dialog');
-            deployContractDialog.setAttribute('open', 'true');
+            document.body.appendChild(deployContractDialog);
+            deployContractDialog.show();
             if (await new Promise(resolve => {
                 deployContractDialog.querySelectorAll('mwc-button').forEach(b => b.addEventListener('click', (e) => {
                     resolve(e.target.getAttribute('dialogaction'));
@@ -68,7 +71,7 @@ class CodePageComponent extends HTMLElement {
                                 e.message.indexOf('Contract method is not found') >= 0 ||
                                 e.message.indexOf('Cannot find contract code for account') >= 0
                             ) {
-                                console.log('Deploying contract wasm because of '+e.message);
+                                console.log(`Deploying ${this.bundletypeselect.value} contract wasm because of ${e.message}`);
                                 let wasmUrl = {
                                     "nft": 'https://ipfs.web4.near.page/ipfs/bafkreic2ktlue3456wdmnrxf4zupu4ayvnzabgvkixihc4xc73zftoztwy?filename=nft-a61c4543.wasm',
                                     "minimum-web4": 'https://ipfs.web4.near.page/ipfs/bafkreigjjyocek3mdqk6rilzaxleg2swuka2nhzfx2gq4u7yicgdmvlh2a?filename=minimum_web4.wasm'
@@ -83,7 +86,7 @@ class CodePageComponent extends HTMLElement {
                             } else {
                                 const errorDeployContractDialog = this.shadowRoot.getElementById('error-deploying-contract-dialog');
                                 errorDeployContractDialog.querySelector('#errormessage').textContent = e.message;
-                                errorDeployContractDialog.setAttribute('open', 'true');
+                                errorDeployContractDialog.show();
                                 retryDeploying = false;
                             }
                         }

@@ -1,7 +1,7 @@
-<mwc-select id="bundletypeselect" label="target contract type" value="nft">  
+export default /*html*/ `
+<mwc-select id="bundletypeselect" label="target contract type">  
   <mwc-list-item value="minimum-web4" selected>Minimum Web4</mwc-list-item>
   <mwc-list-item value="nft">NFT</mwc-list-item>
-  <!--<mwc-list-item value="nearapi">near-sdk-js</mwc-list-item>-->
 </mwc-select>
 
 <p>
@@ -77,4 +77,4 @@
 
 <mwc-snackbar id="selectTargetContractTypeSnackbar" labelText="Select target contract type">
   <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
-</mwc-snackbar>
+</mwc-snackbar>`;

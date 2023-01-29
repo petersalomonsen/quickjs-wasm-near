@@ -1,3 +1,4 @@
+import { setAppComponent } from '../common/progressindicator.js';
 import { createQuickJS } from '../compiler/quickjs.js';
 import { getNearConfig, viewStandaloneContract, clearWalletConnection } from '../near/near.js';
 
@@ -25,7 +26,7 @@ describe('codepage-component', function () {
         document.documentElement.appendChild(codePageElement);
         const sourcecodeeditor = await waitForElement(codePageElement, '#sourcecodeeditor');
         expect(sourcecodeeditor).not.to.be.undefined;
-        await sourcecodeeditor.readyPromise;
+        await codePageElement.readyPromise;
         sourcecodeeditor.value = `print('hello')`;
 
         const downloadByteCodeButton = codePageElement.shadowRoot.querySelector('#downloadbytecodebutton');
@@ -56,14 +57,11 @@ describe('codepage-component', function () {
         localStorage.setItem('undefined_wallet_auth_key', JSON.stringify({ accountId: accountId, allKeys: [keyPair.publicKey] }));
         clearWalletConnection();
 
-        const appRootElement = document.createElement('app-root');
-        document.documentElement.appendChild(appRootElement);
-        const mainContainer = await waitForElement(appRootElement, '#mainContainer');
         const codePageElement = document.createElement('code-page');
-        mainContainer.replaceChildren(codePageElement);
+        document.documentElement.appendChild(codePageElement);
 
         const sourcecodeeditor = await waitForElement(codePageElement, '#sourcecodeeditor');
-        await sourcecodeeditor.readyPromise;
+        await codePageElement.readyPromise;
 
         sourcecodeeditor.value = `export function web4_get() {
             const request = JSON.parse(env.input()).request;
@@ -89,14 +87,16 @@ describe('codepage-component', function () {
 
         const successDeploySnackbar = codePageElement.shadowRoot.querySelector('#successDeploySnackbar');
         await new Promise(resolve => {
-            new MutationObserver((mutationsList, observer) => resolve())
-                .observe(successDeploySnackbar, { attributeFilter: ['open'] });
+            new MutationObserver((mutationsList, observer) => {
+                observer.disconnect();
+                resolve();
+            }).observe(successDeploySnackbar, { attributeFilter: ['open'] });
         });
 
         const response = await viewStandaloneContract(accountId, 'web4_get', { request: { path: '/index.html' } });
         console.log(response);
         expect(response).to.deep.equal({ contentType: 'text/html; charset=UTF-8', body: 'aGVsbG8=' });
-        console.log('contract is deployed');
+        console.log('web4-minimum contract is deployed');
     });
 
     it('should deploy minimum nft js contract to new account', async () => {
@@ -115,14 +115,11 @@ describe('codepage-component', function () {
         localStorage.setItem('undefined_wallet_auth_key', JSON.stringify({ accountId: accountId, allKeys: [keyPair.publicKey] }));
         clearWalletConnection();
 
-        const appRootElement = document.createElement('app-root');
-        document.documentElement.appendChild(appRootElement);
-        const mainContainer = await waitForElement(appRootElement, '#mainContainer');
         const codePageElement = document.createElement('code-page');
-        mainContainer.replaceChildren(codePageElement);
+        document.documentElement.appendChild(codePageElement);
 
         const sourcecodeeditor = await waitForElement(codePageElement, '#sourcecodeeditor');
-        await sourcecodeeditor.readyPromise;
+        await codePageElement.readyPromise;
 
         sourcecodeeditor.value = `export function web4_get() {
             const request = JSON.parse(env.input()).request;
@@ -140,16 +137,18 @@ describe('codepage-component', function () {
         `;
 
         const deployButton = codePageElement.shadowRoot.querySelector('#deploybutton');
-
         const deployContractDialog = codePageElement.shadowRoot.querySelector('#deploy-contract-dialog');
         deployButton.click();
+        
         await new Promise(r => setTimeout(() => r(), 300));
         deployContractDialog.querySelector('mwc-button[dialogAction=deploy]').click();
 
         const successDeploySnackbar = codePageElement.shadowRoot.querySelector('#successDeploySnackbar');
         await new Promise(resolve => {
-            new MutationObserver((mutationsList, observer) => resolve())
-                .observe(successDeploySnackbar, { attributeFilter: ['open'] });
+            new MutationObserver((mutationsList, observer) => {
+                observer.disconnect();
+                resolve();
+            }).observe(successDeploySnackbar, { attributeFilter: ['open'] });
         });
 
         const nft_tokens_response = await viewStandaloneContract(accountId, 'nft_tokens', {});
@@ -158,6 +157,6 @@ describe('codepage-component', function () {
         const response = await viewStandaloneContract(accountId, 'web4_get', { request: { path: '/index.html' } });
         console.log(response);
         expect(response).to.deep.equal({ contentType: 'text/html; charset=UTF-8', body: 'aGVsbG8gZnJvbSBuZnQ=' });
-        console.log('contract is deployed');
+        console.log('nft contract is deployed');
     });
 });

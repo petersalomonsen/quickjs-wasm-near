@@ -152,7 +152,7 @@ export async function viewStandaloneContract(contractAccount, methodName, args) 
 }
 
 export async function logout() {
-    const wc = await checkSignedin();
+    const wc = await createWalletConnection();
     await wc.signOut();
     console.log('logged out');
     clearWalletConnection();

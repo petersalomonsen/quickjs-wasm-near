@@ -31,9 +31,6 @@ export default {
                     } else if (pathname.endsWith('.css')) {
                         const datauri = `data:text/css;base64,${readFileSync(pathname).toString('base64')}`;
                         code = code.replace(urlMatch[0], `new URL('${datauri}')`);
-                    } else if (pathname.endsWith('.wasm')) {
-                        const datauri = `data:application/wasm;base64,${readFileSync(pathname).toString('base64')}`;
-                        code = code.replace(urlMatch[0], `new URL('${datauri}')`);
                     } else if (pathname.endsWith('.js')) {
                         const datauri = `data:text/javascript;base64,${readFileSync(pathname).toString('base64')}`;
                         code = code.replace(urlMatch[0], `new URL('${datauri}')`);

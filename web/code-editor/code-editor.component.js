@@ -4,6 +4,7 @@ import { indentWithTab } from "@codemirror/commands"
 import { keymap } from "@codemirror/view";
 import { EditorState } from '@codemirror/state';
 import { autocompletion } from '@codemirror/autocomplete';
+import html from './code-editor.component.html.js';
 
 import '@material/mwc-fab';
 import * as nearsdkjsapi from '../near-sdk-js/api.js';
@@ -33,7 +34,7 @@ class CodeEditor extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
         this.readyPromise = new Promise(async resolve => {
-            this.shadowRoot.innerHTML = await fetch(new URL('code-editor.component.html', import.meta.url)).then(r => r.text());;
+            this.shadowRoot.innerHTML = html;
             const editorDiv = this.shadowRoot.getElementById('editor');
             let state = EditorState.create({
                 extensions: extensions

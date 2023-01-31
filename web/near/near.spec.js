@@ -1,4 +1,4 @@
-import { checkSignedin, clearWalletConnection, createWalletConnection, getNearConfig } from "./near.js";
+import { LOGGED_IN_CONTRACT_NAME, checkSignedin, clearWalletConnection, createWalletConnection, getNearConfig } from "./near.js";
 
 describe('near', () => {
     beforeEach(() => {
@@ -8,7 +8,7 @@ describe('near', () => {
     afterEach(() => {
         document.querySelector('app-root').remove();
     });
-    
+
     it('should sign out if loggedincontractname is not in localstorage', async () => {
         clearWalletConnection();
         localStorage.setItem('undefined_wallet_auth_key', '{"accountId":"psalomo.testnet","allKeys":["ed25519:eNRiyM1MhKyM3bof1XvAEoLfP75YgY8D3EbKfa1yMxb"]}');
@@ -69,13 +69,14 @@ describe('near', () => {
     });
 
     it('should not sign out if loggedincontractname is in localstorage', async () => {
+        clearWalletConnection();
         localStorage.setItem('undefined_wallet_auth_key', '{"accountId":"psalomo.testnet","allKeys":["ed25519:eNRiyM1MhKyM3bof1XvAEoLfP75YgY8D3EbKfa1yMxb"]}');
         localStorage.setItem('near-api-js:keystore:psalomo.testnet:testnet', 'ed25519:QVuKCUH8AHt6WqxFnsjbaR8pSdjJBXAsnwfB83C5dgsmCMEP6EAmfULWm6bXWNQXCecGcsv2ATBeJKjJjFdEooG');
-        localStorage.setItem('loggedincontractname', 'jsvm.testnet');
+        localStorage.setItem(LOGGED_IN_CONTRACT_NAME, 'psalomo.testnet');
 
         const wc = await createWalletConnection();
 
-        console.log(wc.account().accountId);
+        expect(wc.account().accountId).to.equal('psalomo.testnet');
         if (!wc._signOut) {
             wc._signOut = wc.signOut;
         }

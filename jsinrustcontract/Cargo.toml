@@ -1,0 +1,18 @@
+[package]
+name = "jsinrustcontract"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+
+[profile.release]
+codegen-units = 1
+lto = true
+debug = false
+opt-level = "z"
+
+[dependencies]
+near-sdk = "4.0.0"

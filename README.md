@@ -1,31 +1,29 @@
-QuickJS for WebAssembly on NEAR protocol
-========================================
+QuickJS for WebAssembly and Javascript contracts inside Rust on NEAR protocol
+=============================================================================
 
-QuickJS compiled to WebAssembly and a Web application for creating NEAR smart contracts in Javascript to run on smart contract VMs created with near-js-sdk.
+QuickJS compiled to WebAssembly and a Web application for creating and deploying NEAR smart contracts in Javascript embedded into Rust smart contracts.
 
-[near-sdk-js](https://github.com/near/near-sdk-js>) makes it possible to deploy Javascript smart contracts on NEAR protocol.
+The Rust smart contracts you can extend using Javascript are:
 
-This web application let you write, simulate, deploy and call your javascript smart contracts in the web browser.                    
+- [Web4 minimum contract]() ( implement `web4_get` to serve web content directly from the smart contract )
+- [NFT](https://github.com/petersalomonsen/quickjs-rust-near/tree/master/examples/nft)
 
-Note: Currently you can only create low-level ( [see examples here](https://github.com/near/near-sdk-js/tree/master/examples/low-level) ) contracts from here.
+A live example of the NFT with all the content served from and stored with the smart contract can be found at https://webassemblymusic.near.page - so in effect the NFTs you implement here can be more than links to external content, but also include the content itself and a full website to be stored and live forever on the blockchain.
 
-# How to use?
+This Rust smart contracts for this project can be found in https://github.com/petersalomonsen/quickjs-rust-near
 
-Check out the deployment at https://petersalomonsen.github.io/quickjs-wasm-near/dist/index.html where you can choose between coding or calling contract in the left menu.
+# How to use
 
-Choose `Code` and enter some source code in the code editor:
+You can create both mainnet and testnet contracts from the sites here:
 
-```
-export function hello() {
-    env.log("Hello Near");
-}
-```
+- https://jsinrust.near.page ( mainnet and also with support for uploading files to NEARFS )
+- https://jsinrust.testnet.page ( testnet )
 
-Now click `save` and you'll see that the `hello` method shows up in the method dropdown under `Simulation`. Click the `run` button to see the simulation output. You can also add arguments, deposits and storage to the simulation. If your code alters storage then that will affect the storage items after running.
+Some videos can be found in this playlist below. Note that some of these videos was made for an earlier version targeting the early near-sdk-js. Go back to tag [before-js-in-rust](https://github.com/petersalomonsen/quickjs-wasm-near/releases/tag/before-js-in-rust) to see that version.
 
-Finally click `deploy` to upload your code on-chain. Note that deploying needs deposit, read more about it here: https://github.com/near/near-sdk-js#usage
+https://www.youtube.com/playlist?list=PLv5wm4YuO4Iyw7hWEDjq-vYIqvVRvMtux 
 
-After deploying you can call your contract, and test with arguments and deposit.
+Here's an example of a [web4](https://web4.near.page) minimum contract that you can paste into the code editor for creating a smart contract to serve a website: [showcase/web4nft/contract.js](./showcase/web4nft/contract.js)
 
 # Building
 

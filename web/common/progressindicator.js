@@ -7,10 +7,13 @@ export function setAppComponent(c) {
 }
 
 export function toggleIndeterminateProgress(state) {
+    if (!appComponent) {
+        return;
+    }
     const alreadyExists = appComponent.querySelector('mwc-linear-progress');
     if (!alreadyExists && state) {
         const progressElement = document.createElement('mwc-linear-progress');
-        progressElement.setAttribute('indeterminate','true');
+        progressElement.setAttribute('indeterminate', 'true');
         const mainContainer = appComponent.querySelector('#mainContainer');
         mainContainer.parentNode.insertBefore(progressElement, mainContainer);
     } else if (alreadyExists && !state) {

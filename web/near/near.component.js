@@ -1,16 +1,12 @@
+import nearComponentHtml from "./near.component.html.js";
 class NearComponents extends HTMLElement {
     constructor() {
         super();
-        this.attachShadow({mode: 'open'});
-        this.readyPromise = this.loadHTML();
-    }
-
-    async loadHTML() {
-        this.shadowRoot.innerHTML = await fetch(new URL('near.component.html', import.meta.url)).then(r => r.text());
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot.innerHTML = nearComponentHtml;
     }
 
     async showLoginDialog(targetContractNames) {
-        await this.readyPromise;
         const contractselect = this.shadowRoot.getElementById('contractselect');
         targetContractNames.forEach(contractname => {
             const option = document.createElement('mwc-list-item');
@@ -37,7 +33,7 @@ customElements.define('near-dialogs', NearComponents);
 export async function showLoginDialog(targetContractNames) {
     const dialogElement = document.createElement('near-dialogs');
     document.querySelector('app-root').shadowRoot.appendChild(dialogElement);
-    const ret = await dialogElement.showLoginDialog(targetContractNames);    
+    const ret = await dialogElement.showLoginDialog(targetContractNames);
     dialogElement.remove();
     return ret;
 }

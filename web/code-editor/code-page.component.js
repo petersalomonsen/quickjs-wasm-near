@@ -5,17 +5,18 @@ import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
 import { createStandalone } from '../compiler/standalone.js';
 import { bundle } from '../compiler/bundler.js';
+import html from './code-page.component.html.js';
+import css from './code-page.component.css.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        this.loadHTML();
+        this.readyPromise = this.loadHTML();
     }
 
     async loadHTML() {
-        this.shadowRoot.innerHTML = await fetch(new URL('code-page.component.html', import.meta.url)).then(r => r.text());
-        this.attachStyleSheet(new URL('code-page.component.css', import.meta.url));
+        this.shadowRoot.innerHTML = `<style>${css}</style>${html}`;
 
         const sourcecodeeditor = this.shadowRoot.getElementById('sourcecodeeditor');
         await sourcecodeeditor.readyPromise;
@@ -32,11 +33,17 @@ class CodePageComponent extends HTMLElement {
         const compileByteCode = async () => (await createQuickJS()).compileToByteCode(await bundle(sourcecodeeditor.value, this.bundletypeselect.value), 'contract');
         const deploybutton = this.shadowRoot.getElementById('deploybutton');
         this.bundletypeselect = this.shadowRoot.getElementById('bundletypeselect');
+        await new Promise(r => setTimeout(() => r(), 100));
         this.bundletypeselect.value = lastSelectedBundleType;
 
         deploybutton.addEventListener('click', async () => {
+            if (this.bundletypeselect.value == '') {
+                this.shadowRoot.querySelector('#selectTargetContractTypeSnackbar').show();
+                return;
+            }
+
             const deployContractDialog = this.shadowRoot.getElementById('deploy-contract-dialog');
-            deployContractDialog.setAttribute('open', 'true');
+            deployContractDialog.show();
             if (await new Promise(resolve => {
                 deployContractDialog.querySelectorAll('mwc-button').forEach(b => b.addEventListener('click', (e) => {
                     resolve(e.target.getAttribute('dialogaction'));
@@ -47,40 +54,46 @@ class CodePageComponent extends HTMLElement {
                 const bytecode = await compileByteCode();
                 let deployMethodName = 'deploy_js_contract';
                 const deployContract = async (deposit = undefined) => {
-                    try {
-                        console.log('deploy contract with deposit', deposit);
-                        await deployJScontract(bytecode, deposit, deployMethodName);
-                        toggleIndeterminateProgress(false);
-                        this.shadowRoot.querySelector('#successDeploySnackbar').show();
-                    } catch (e) {
-                        console.error(e);
-                        if (e.message.indexOf('insufficient deposit for storage') >= 0) {
-                            await deployContract(getSuggestedDepositForContract(bytecode.length));
-                            toggleIndeterminateProgress(false);
-                        } else if (e.message.indexOf('Contract method is not found') >= 0) {
-                            console.log('Deploying NFT contract wasm since post_quickjs_bytecode message not found');
-                            await deployStandaloneContract(
-                                new Uint8Array(await fetch(new URL('../near/nft.wasm', import.meta.url))
-                                    .then(r => r.arrayBuffer()))
-                            );
+                    let retryDeploying = true;
+                    while (retryDeploying) {
+                        try {
+                            console.log('deploy contract with deposit', deposit);
                             await deployJScontract(bytecode, deposit, deployMethodName);
-                            toggleIndeterminateProgress(false);
-                        } else if (e.message.indexOf('The contract is not initialized') >= 0) {
-                            await initNFTContract();
-                            await deployJScontract(bytecode, deposit, deployMethodName);
-                            toggleIndeterminateProgress(false);
-                        } else {
-                            const errorDeployContractDialog = this.shadowRoot.getElementById('error-deploying-contract-dialog');
-                            errorDeployContractDialog.querySelector('#errormessage').textContent = e.message;
-                            errorDeployContractDialog.setAttribute('open', 'true');
+                            this.shadowRoot.querySelector('#successDeploySnackbar').show();
+                            retryDeploying = false;
+                        } catch (e) {
+                            console.error(e);
+                            if (e.message.indexOf('insufficient deposit for storage') >= 0) {
+                                await deployContract(getSuggestedDepositForContract(bytecode.length));
+                                toggleIndeterminateProgress(false);
+                            } else if (
+                                e.message.indexOf('Contract method is not found') >= 0 ||
+                                e.message.indexOf('Cannot find contract code for account') >= 0
+                            ) {
+                                console.log(`Deploying ${this.bundletypeselect.value} contract wasm because of ${e.message}`);
+                                let wasmUrl = {
+                                    "nft": 'https://ipfs.web4.near.page/ipfs/bafkreic2ktlue3456wdmnrxf4zupu4ayvnzabgvkixihc4xc73zftoztwy?filename=nft-a61c4543.wasm',
+                                    "minimum-web4": 'https://ipfs.web4.near.page/ipfs/bafkreigjjyocek3mdqk6rilzaxleg2swuka2nhzfx2gq4u7yicgdmvlh2a?filename=minimum_web4.wasm'
+                                }[this.bundletypeselect.value];
+
+                                await deployStandaloneContract(
+                                    new Uint8Array(await fetch(new URL(wasmUrl))
+                                        .then(r => r.arrayBuffer()))
+                                );
+                            } else if (e.message.indexOf('The contract is not initialized') >= 0) {
+                                await initNFTContract();
+                            } else {
+                                const errorDeployContractDialog = this.shadowRoot.getElementById('error-deploying-contract-dialog');
+                                errorDeployContractDialog.querySelector('#errormessage').textContent = e.message;
+                                errorDeployContractDialog.show();
+                                retryDeploying = false;
+                            }
                         }
                     }
+                    toggleIndeterminateProgress(false);
                 };
-                if (this.bundletypeselect.value == 'nft') {
-                    console.log('NFT contract');
-                    deployMethodName = 'post_quickjs_bytecode';
-                    await deployContract();
-                } else if (this.bundletypeselect.value == 'nearapi') {
+                
+                if (this.bundletypeselect.value == 'nearapi') {
                     if (await isStandaloneMode()) {
                         const standaloneWasmBytes = await createStandalone(bytecode, this.exportedMethodNames);
                         await deployStandaloneContract(standaloneWasmBytes);
@@ -88,6 +101,9 @@ class CodePageComponent extends HTMLElement {
                     } else {
                         await deployContract();
                     }
+                } else {
+                    deployMethodName = 'post_quickjs_bytecode';
+                    await deployContract();
                 }
             }
         });

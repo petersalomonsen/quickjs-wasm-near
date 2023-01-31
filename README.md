@@ -12,6 +12,19 @@ A live example of the NFT with all the content served from and stored with the s
 
 This Rust smart contracts for this project can be found in https://github.com/petersalomonsen/quickjs-rust-near
 
+# How to use
+
+You can create both mainnet and testnet contracts from the sites here:
+
+- https://jsinrust.near.page ( mainnet and also with support for uploading files to NEARFS )
+- https://jsinrust.testnet.page ( testnet )
+
+Some videos can be found in this playlist below. Note that some of these videos was made for an earlier version targeting the early near-sdk-js. Go back to tag [before-js-in-rust](https://github.com/petersalomonsen/quickjs-wasm-near/releases/tag/before-js-in-rust) to see that version.
+
+https://www.youtube.com/playlist?list=PLv5wm4YuO4Iyw7hWEDjq-vYIqvVRvMtux 
+
+Here's an example of a [web4](https://web4.near.page) minimum contract that you can paste into the code editor for creating a smart contract to serve a website: [showcase/web4nft/contract.js](./showcase/web4nft/contract.js)
+
 # Building
 
 Building this projects involves compiling QuickJS as a static library using [emscripten](https://emscripten.org) and link to a Webassembly binary with the simple wrapper library in the [wasmlib](wasmlib) folder. This provides the in-browser simulation capacity.

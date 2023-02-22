@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
         body {
             background-color: black;
@@ -34,6 +36,11 @@
         #logged_in_content {
             display: none;
         }
+
+        #previewresultview {
+            width: 500px;
+            max-width: 100%;
+        }
     </style>
 </head>
 
@@ -47,11 +54,17 @@
     <div id="logged_in_content">
         <button id="logoutbutton">Logout</button>
         <p>Token id: <input type="text" id="token_id_input" value="22" />
+            &nbsp; Font size: <input type="number" id="font_size_input" value="3" min="1" max="4"/>
+        </p>
             <button id="mint_button">Mint</button>
+            <button id="preview_button">Preview</button>
         </p>
     </div>
     <div>
         <pre id="mintresultview"></pre>
+    </div>
+    <div id="previewresultview">
+
     </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/near-api-js@1.1.0/dist/near-api-js.js"
@@ -103,9 +116,30 @@
                 try {
                     const result = await contract.nft_mint({
                         token_id: document.getElementById('token_id_input').value,
-                        token_owner_id: account.accountId
+                        token_owner_id: account.accountId,
+                        font_size: document.getElementById('font_size_input').value
                     }, undefined, utils.format.parseNearAmount("0.1"));
                     document.getElementById('mintresultview').innerHTML = JSON.stringify(result, null, 1);
+                } catch (e) {
+                    document.getElementById('mintresultview').innerHTML = e.toString();
+                }
+                mintButton.disabled = false;
+            });
+
+            const previewButton = document.getElementById('preview_button');
+            previewButton.addEventListener('click', async () => {
+                document.getElementById('previewresultview').innerHTML = 'Please wait while generating preview';
+                const account = walletConnection.account();
+                const contract = new Contract(account, contractAccountId, {
+                    viewMethods: ['call_js_func']
+                });
+                try {
+                    const result = await contract.call_js_func({
+                        function_name: 'svg_preview',
+                        token_id: document.getElementById('token_id_input').value,
+                        font_size: document.getElementById('font_size_input').value,
+                    });
+                    document.getElementById('previewresultview').innerHTML = result.svg;
                 } catch (e) {
                     document.getElementById('mintresultview').innerHTML = e.toString();
                 }

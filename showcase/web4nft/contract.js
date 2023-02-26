@@ -12,7 +12,7 @@ export function web4_get() {
   } else {
     response = {
       contentType: "text/html; charset=UTF-8",
-      bodyUrl: 'https://ipfs.web4.near.page/ipfs/bafkreidtdbs3ufb2hddodw6adszsre4gqn7aslzeq7iwykybvhvrk36bry?filename=index.html'
+      bodyUrl: 'https://ipfs.web4.near.page/ipfs/bafkreiexljj6ii5vkvvbiletuenwd2yd2xy6cvpn3zlti6c2boy4cqyvrm?filename=index.html'
     };
   }
   env.value_return(JSON.stringify(response));
@@ -35,19 +35,30 @@ export function nft_metadata() {
   };
 }
 
+function create_svg(token_id, font_size) {
+  const svgstring = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9">
+    <rect y="0" width="9" height="3" fill="#0bf"/>
+    <rect y="3" width="6" height="3" fill="#f82"/>
+    <rect x="6" y="3" width="3" height="3" fill="#333" />
+    <rect y="6" width="3" height="3" fill="#2aa"/>
+    <rect x="3" y="6" width="6" height="3" fill="#666" />
+    <text x="4.5" y="5.5" text-anchor="middle" font-size="${font_size ?? 3}"
+            font-family="system-ui" fill="white">
+        ${token_id}
+    </text>
+  </svg>`;
+    return svgstring;
+}
+export function svg_preview() {
+  const args = JSON.parse(env.input());
+  env.value_return(JSON.stringify({
+    svg: create_svg(args.token_id, args.font_size)
+  }));
+}
+
 export function nft_mint() {
   const args = JSON.parse(env.input());
-  const svgstring = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9">
-  <rect y="0" width="9" height="3" fill="#0bf"/>
-  <rect y="3" width="6" height="3" fill="#f82"/>
-  <rect x="6" y="3" width="3" height="3" fill="#333" />
-  <rect y="6" width="3" height="3" fill="#2aa"/>
-  <rect x="3" y="6" width="6" height="3" fill="#666" />
-  <text x="4.5" y="5.5" text-anchor="middle" font-size="3"
-          font-family="system-ui" fill="white">
-      ${args.token_id}
-  </text>
-</svg>`;
+  const svgstring = create_svg(args.token_id, args.font_size);
 
   return JSON.stringify({
     title: `JSinRust NFT token number #${args.token_id}`,

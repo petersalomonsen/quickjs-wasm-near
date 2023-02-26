@@ -7,6 +7,7 @@ import { createStandalone } from '../compiler/standalone.js';
 import { bundle } from '../compiler/bundler.js';
 import html from './code-page.component.html.js';
 import css from './code-page.component.css.js';
+import { WASM_URLS } from '../compiler/jsinrust/contract-wasms.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
@@ -71,10 +72,7 @@ class CodePageComponent extends HTMLElement {
                                 e.message.indexOf('Cannot find contract code for account') >= 0
                             ) {
                                 console.log(`Deploying ${this.bundletypeselect.value} contract wasm because of ${e.message}`);
-                                let wasmUrl = {
-                                    "nft": 'https://ipfs.web4.near.page/ipfs/bafkreic2ktlue3456wdmnrxf4zupu4ayvnzabgvkixihc4xc73zftoztwy?filename=nft-a61c4543.wasm',
-                                    "minimum-web4": 'https://ipfs.web4.near.page/ipfs/bafkreigjjyocek3mdqk6rilzaxleg2swuka2nhzfx2gq4u7yicgdmvlh2a?filename=minimum_web4.wasm'
-                                }[this.bundletypeselect.value];
+                                let wasmUrl = WASM_URLS[this.bundletypeselect.value];
 
                                 await deployStandaloneContract(
                                     new Uint8Array(await fetch(new URL(wasmUrl))

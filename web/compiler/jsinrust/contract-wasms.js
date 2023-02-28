@@ -11,6 +11,7 @@ export async function fetchWasm(wasm_contract_type) {
 }
 
 export async function getBuiltinJSProperties(wasm_contract_type) {
+    nearenv.reset_near_env();
     const wasmbinary = prepareWASM(await fetchWasm(wasm_contract_type));
 
     const proxy = {};
@@ -35,12 +36,15 @@ export async function getBuiltinJSProperties(wasm_contract_type) {
     });
     const instanceExports = wasmmod.instance.exports;
 
-    instanceExports.new();
-    
-    nearenv.set_args({javascript:`export function test() {env.value_return(JSON.stringify(Object.keys(env))); }`});
-    instanceExports.post_javascript();
-    nearenv.set_args({function_name: 'test'});
-    instanceExports.call_js_func();
+    if (instanceExports.new) {
+        instanceExports.new();
+    }
 
+    nearenv.set_args({ javascript: `export function test() {env.value_return(JSON.stringify(Object.keys(env))); }` });
+    instanceExports.post_javascript();
+    nearenv.set_args({ function_name: 'test' });
+    console.log('before call');
+    instanceExports.call_js_func();
+    console.log('after call');
     return JSON.parse(nearenv.latest_return_value);
 }

@@ -12,7 +12,7 @@
 // https://coinexsmartchain.medium.com/wasm-introduction-part-1-binary-format-57895d851580
 
 function debug(...args) {
-    console.log('preparewasm', ...args);
+    // console.log('preparewasm', ...args);
 }
 
 export function prepareWASM(inputBytes) {

@@ -1,5 +1,5 @@
-export const storage = {};
-export const registers = {};
+export let storage = {};
+export let registers = {};
 
 export let memory;
 export let latest_return_value;
@@ -9,18 +9,12 @@ export let _signer_account_id = 'test';
 export let _predecessor_account_id = 'test';
 export let _attached_deposit = 0n;
 export let _input = {};
-/*const storage_read = (key, register_id) => {
-    if (storage[key] != undefined) {
-        registers[register_id] = storage[key]
-        return 1n;
-    } else {
-        return 0n;
-    }
-};*/
 
-/*const storage_write = (key, value, register_id) => storage[key] = value;
-const storage_has_key = (key) => storage[key] != undefined;
-const storage_remove = (key) => delete storage[key];*/
+export function reset_near_env() {
+    storage = {};
+    registers = {};
+    _args = '{}';
+}
 
 export function set_args(args) {
     _args = JSON.stringify(args);
@@ -39,7 +33,7 @@ export function attached_deposit(balance_ptr) {
 }
 
 export function current_account_id(register) {
-    registers[register] = _current_account_id;
+    set_register_string_value(register, _current_account_id);
 }
 
 export function input(register_id) {
@@ -55,20 +49,36 @@ export function storage_usage() {
     return BigInt(usage);
 }
 
+/// Writes key-value into storage.
+/// * If key is not in use it inserts the key-value pair and does not modify the register. Returns `0`;
+/// * If key is in use it inserts the key-value and copies the old value into the `register_id`. Returns `1`.
+///
+/// # Errors
+///
+/// * If `key_len + key_ptr` or `value_len + value_ptr` exceeds the memory container or points
+///   to an unused register it returns `MemoryAccessViolation`;
+/// * If returning the preempted value into the registers exceed the memory container it returns
+///   `MemoryAccessViolation`.
+/// * If the length of the key exceeds `max_length_storage_key` returns `KeyLengthExceeded`.
+/// * If the length of the value exceeds `max_length_storage_value` returns
+///   `ValueLengthExceeded`.
+/// * If called as view function returns `ProhibitedInView``.
+///
 export function storage_write(key_len, key_ptr, value_len, value_ptr, register_id) {
     const key = new TextDecoder().decode(memory.buffer.slice(Number(key_ptr), Number(key_ptr + key_len)));
     const val = new Uint8Array(memory.buffer.slice(Number(value_ptr), Number(value_ptr + value_len)));
 
+    console.log('storage_write', register_id, key, new TextDecoder().decode(val), value_len);
     let alreadyExisted = 0n;
-    if (storage[key] !=undefined) {
+    if (storage[key] != undefined) {
+        registers[register_id] = storage[key];
         alreadyExisted = 1n;
     }
     storage[key] = val;
-    registers[register_id] = val;
     return alreadyExisted;
 }
 
-export function storage_remove( key_len,
+export function storage_remove(key_len,
     key_ptr,
     register_id) {
     const key = new TextDecoder().decode(memory.buffer.slice(Number(key_ptr), Number(key_ptr + key_len)));
@@ -88,7 +98,7 @@ export function account_locked_balance() {
     return 0n;
 }
 export function value_return(value_len, value_ptr) {
-    latest_return_value = new TextDecoder().decode(memory.buffer.slice(Number(value_ptr), Number(value_ptr + value_len)));    
+    latest_return_value = new TextDecoder().decode(memory.buffer.slice(Number(value_ptr), Number(value_ptr + value_len)));
 }
 
 export function promise_batch_action_create_account() { }
@@ -102,12 +112,16 @@ export function promise_batch_action_delete_key() { }
 export function promise_batch_action_delete_account() { }
 export function promise_batch_action_function_call_weight() { }
 export function read_register(register, ptr) {
+
     const reg_value = registers[register];
-    new Uint8Array(memory.buffer).set(reg_value, Number(ptr));
-    //console.log('read_register', new TextDecoder().decode(new Uint8Array(memory.buffer).slice(Number(ptr))));
+    if (reg_value != undefined && reg_value.length > 0) {
+        new Uint8Array(memory.buffer).set(reg_value, Number(ptr));
+    }
+    console.log('read_register', reg_value, new TextDecoder().decode(new Uint8Array(memory.buffer).slice(Number(ptr),Number(ptr)+reg_value.length)));
 }
 export function register_len(register_id) {
-    return BigInt(registers[register_id]?.length ?? 0);
+    const registercontent = registers[register_id];
+    return BigInt(registercontent != undefined ? registercontent.length : BigInt('0xffffffffffffffff'));
 }
 
 export function write_register() { }
@@ -131,13 +145,13 @@ export function keccak512() { }
 export function ripemd160() { }
 export function ecrecover() { }
 export function panic() { }
-export function panic_utf8(len, ptr) { 
+export function panic_utf8(len, ptr) {
     const msg = new TextDecoder().decode(memory.buffer.slice(Number(ptr), Number(ptr + len)));
     console.error('panic', msg);
     throw msg;
 }
 export function log(msg) { print(msg) }
-export function log_utf8(len, ptr) { 
+export function log_utf8(len, ptr) {
     const msg = new TextDecoder().decode(memory.buffer.slice(Number(ptr), Number(ptr + len)));
     console.log('log', msg);
 }

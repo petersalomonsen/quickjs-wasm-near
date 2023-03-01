@@ -7,7 +7,12 @@ import { autocompletion } from '@codemirror/autocomplete';
 import html from './code-editor.component.html.js';
 
 import '@material/mwc-fab';
-import * as nearsdkjsapi from '../near-sdk-js/api.js';
+import { getBuiltinJSProperties } from '../compiler/jsinrust/contract-wasms.js';
+
+let completion_options = [];
+export async function setCompletions(wasm_contract_type) {
+    completion_options = await getBuiltinJSProperties(wasm_contract_type);
+}
 
 function completions(context) {
     let word = context.matchBefore(/\w*/)
@@ -15,17 +20,19 @@ function completions(context) {
         return null
     return {
         from: word.from,
-        options: Object.keys(nearsdkjsapi).map(k => ({
+        options: completion_options.map(k => ({
             label: k,
             type: "function", 
-            info: ((str) => str.substring(str.indexOf(k),str.length-1))(nearsdkjsapi[k].toString().split('\n')[0])
+            info: ''
         }))
     }
 }
 
 const extensions = [basicSetup,
     keymap.of([indentWithTab]),
-    autocompletion({ override: [completions] }),
+    autocompletion({
+        override: [completions] 
+    }),
     javascript()
 ];
 

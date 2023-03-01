@@ -8,6 +8,7 @@ import { bundle } from '../compiler/bundler.js';
 import html from './code-page.component.html.js';
 import css from './code-page.component.css.js';
 import { WASM_URLS } from '../compiler/jsinrust/contract-wasms.js';
+import { setCompletions } from './code-editor.component.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
@@ -24,6 +25,7 @@ class CodePageComponent extends HTMLElement {
         this.sourcecodeeditor = sourcecodeeditor;
         const lastSavedSourceCode = localStorage.getItem('lastSavedSourceCode');
         const lastSelectedBundleType = localStorage.getItem('lastSelectedBundleType');
+
         sourcecodeeditor.value = lastSavedSourceCode ? lastSavedSourceCode : `export function hello() {
             env.log("Hello Near");
         }`;
@@ -37,6 +39,10 @@ class CodePageComponent extends HTMLElement {
         await new Promise(r => setTimeout(() => r(), 100));
         this.bundletypeselect.value = lastSelectedBundleType;
 
+        if (this.bundletypeselect.value != '') {
+            setCompletions(this.bundletypeselect.value);
+        }
+        this.bundletypeselect.addEventListener('change', () => setCompletions(this.bundletypeselect.value));
         deploybutton.addEventListener('click', async () => {
             if (this.bundletypeselect.value == '') {
                 this.shadowRoot.querySelector('#selectTargetContractTypeSnackbar').show();
@@ -90,7 +96,7 @@ class CodePageComponent extends HTMLElement {
                     }
                     toggleIndeterminateProgress(false);
                 };
-                
+
                 if (this.bundletypeselect.value == 'nearapi') {
                     if (await isStandaloneMode()) {
                         const standaloneWasmBytes = await createStandalone(bytecode, this.exportedMethodNames);

@@ -1,39 +1,36 @@
 import { EditorView, basicSetup } from 'codemirror';
-import { javascript } from '@codemirror/lang-javascript';
+import { javascript, javascriptLanguage, completionPath } from '@codemirror/lang-javascript';
 import { indentWithTab } from "@codemirror/commands"
 import { keymap } from "@codemirror/view";
 import { EditorState } from '@codemirror/state';
-import { autocompletion } from '@codemirror/autocomplete';
 import html from './code-editor.component.html.js';
-
 import '@material/mwc-fab';
 import { getBuiltinJSProperties } from '../compiler/jsinrust/contract-wasms.js';
 
 let completion_options = [];
 export async function setCompletions(wasm_contract_type) {
-    completion_options = await getBuiltinJSProperties(wasm_contract_type);
-}
-
-function completions(context) {
-    let word = context.matchBefore(/\w*/)
-    if (word.from == word.to && !context.explicit)
-        return null
-    return {
-        from: word.from,
-        options: completion_options.map(k => ({
-            label: k,
-            type: "function", 
-            info: ''
-        }))
-    }
+    completion_options = (await getBuiltinJSProperties(wasm_contract_type))
+        .map((prop) => ({
+            type: 'function',
+            label: prop
+        }));
 }
 
 const extensions = [basicSetup,
     keymap.of([indentWithTab]),
-    autocompletion({
-        override: [completions] 
-    }),
-    javascript()
+    javascript(),
+    javascriptLanguage.data.of({
+        autocomplete: (context) => {
+            let path = completionPath(context);
+
+            if (!path) return null;
+
+            return {
+                from: context.pos - path.name.length,
+                options: completion_options
+            }
+        }
+    })
 ];
 
 class CodeEditor extends HTMLElement {

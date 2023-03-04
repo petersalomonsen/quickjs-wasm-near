@@ -40,9 +40,9 @@ class CodePageComponent extends HTMLElement {
         this.bundletypeselect.value = lastSelectedBundleType;
 
         if (this.bundletypeselect.value != '') {
-            sourcecodeeditor.setCompletions(this.bundletypeselect.value);
+            sourcecodeeditor.setEnvCompletions(this.bundletypeselect.value);
         }
-        this.bundletypeselect.addEventListener('change', () => sourcecodeeditor.setCompletions(this.bundletypeselect.value));
+        this.bundletypeselect.addEventListener('change', () => sourcecodeeditor.setEnvCompletions(this.bundletypeselect.value));
         deploybutton.addEventListener('click', async () => {
             if (this.bundletypeselect.value == '') {
                 this.shadowRoot.querySelector('#selectTargetContractTypeSnackbar').show();

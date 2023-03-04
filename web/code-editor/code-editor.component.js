@@ -5,11 +5,9 @@ import { keymap } from "@codemirror/view";
 import { EditorState } from '@codemirror/state';
 import html from './code-editor.component.html.js';
 import '@material/mwc-fab';
-import { getBuiltinJSProperties } from '../compiler/jsinrust/contract-wasms.js';
+import { getJSEnvProperties } from '../compiler/jsinrust/contract-wasms.js';
 
-
-
-class CodeEditor extends HTMLElement {
+export class CodeEditor extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
@@ -32,11 +30,21 @@ class CodeEditor extends HTMLElement {
                     autocomplete: (context) => {
                         let path = completionPath(context);
 
-                        if (!path) return null;
-
-                        return {
-                            from: context.pos - path.name.length,
-                            options: this.completion_options
+                        if (!path) {
+                            return null;
+                        } else if (path.path[0] == 'env') {
+                            return {
+                                from: context.pos - path.name.length,
+                                options: this.completion_options
+                            }
+                        } else {
+                            return {
+                                from: context.pos - path.name.length,
+                                options: [{
+                                    type: 'variable',
+                                    label: 'env'
+                                }]
+                            }
                         }
                     }
                 })
@@ -56,8 +64,8 @@ class CodeEditor extends HTMLElement {
         });
     }
 
-    async setCompletions(wasm_contract_type) {
-        this.completion_options = (await getBuiltinJSProperties(wasm_contract_type))
+    async setEnvCompletions(wasm_contract_type) {
+        this.completion_options = (await getJSEnvProperties(wasm_contract_type))
             .map((prop) => ({
                 type: 'function',
                 label: prop

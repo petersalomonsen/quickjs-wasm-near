@@ -68,7 +68,7 @@ export function storage_write(key_len, key_ptr, value_len, value_ptr, register_i
     const key = new TextDecoder().decode(memory.buffer.slice(Number(key_ptr), Number(key_ptr + key_len)));
     const val = new Uint8Array(memory.buffer.slice(Number(value_ptr), Number(value_ptr + value_len)));
 
-    console.log('storage_write', register_id, key, new TextDecoder().decode(val), value_len);
+    // console.log('storage_write', register_id, key, new TextDecoder().decode(val), value_len);
     let alreadyExisted = 0n;
     if (storage[key] != undefined) {
         registers[register_id] = storage[key];
@@ -117,7 +117,7 @@ export function read_register(register, ptr) {
     if (reg_value != undefined && reg_value.length > 0) {
         new Uint8Array(memory.buffer).set(reg_value, Number(ptr));
     }
-    console.log('read_register', reg_value, new TextDecoder().decode(new Uint8Array(memory.buffer).slice(Number(ptr),Number(ptr)+reg_value.length)));
+    // console.log('read_register', reg_value, new TextDecoder().decode(new Uint8Array(memory.buffer).slice(Number(ptr),Number(ptr)+reg_value.length)));
 }
 export function register_len(register_id) {
     const registercontent = registers[register_id];

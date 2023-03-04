@@ -6,6 +6,7 @@ import { EditorState } from '@codemirror/state';
 import html from './code-editor.component.html.js';
 import '@material/mwc-fab';
 import { getJSEnvProperties } from '../compiler/jsinrust/contract-wasms.js';
+import { env_function_docs } from './env-function-docs.js';
 
 export class CodeEditor extends HTMLElement {
     constructor() {
@@ -66,10 +67,10 @@ export class CodeEditor extends HTMLElement {
 
     async setEnvCompletions(wasm_contract_type) {
         this.completion_options = (await getJSEnvProperties(wasm_contract_type))
-            .map((prop) => ({
+            .map((prop) => Object.assign({
                 type: 'function',
                 label: prop
-            }));
+            }, env_function_docs[prop]));
     }
 
     set value(val) {

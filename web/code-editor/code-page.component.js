@@ -8,7 +8,6 @@ import { bundle } from '../compiler/bundler.js';
 import html from './code-page.component.html.js';
 import css from './code-page.component.css.js';
 import { WASM_URLS } from '../compiler/jsinrust/contract-wasms.js';
-import { setCompletions } from './code-editor.component.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
@@ -29,6 +28,7 @@ class CodePageComponent extends HTMLElement {
         sourcecodeeditor.value = lastSavedSourceCode ? lastSavedSourceCode : `export function hello() {
             env.log("Hello Near");
         }`;
+        sourcecodeeditor.addEventListener('save', () => this.save());
 
         const savebutton = this.shadowRoot.getElementById('savebutton');
         savebutton.addEventListener('click', () => this.save());
@@ -40,9 +40,9 @@ class CodePageComponent extends HTMLElement {
         this.bundletypeselect.value = lastSelectedBundleType;
 
         if (this.bundletypeselect.value != '') {
-            setCompletions(this.bundletypeselect.value);
+            sourcecodeeditor.setCompletions(this.bundletypeselect.value);
         }
-        this.bundletypeselect.addEventListener('change', () => setCompletions(this.bundletypeselect.value));
+        this.bundletypeselect.addEventListener('change', () => sourcecodeeditor.setCompletions(this.bundletypeselect.value));
         deploybutton.addEventListener('click', async () => {
             if (this.bundletypeselect.value == '') {
                 this.shadowRoot.querySelector('#selectTargetContractTypeSnackbar').show();

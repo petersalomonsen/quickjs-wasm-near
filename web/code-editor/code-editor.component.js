@@ -7,41 +7,42 @@ import html from './code-editor.component.html.js';
 import '@material/mwc-fab';
 import { getBuiltinJSProperties } from '../compiler/jsinrust/contract-wasms.js';
 
-let completion_options = [];
-export async function setCompletions(wasm_contract_type) {
-    completion_options = (await getBuiltinJSProperties(wasm_contract_type))
-        .map((prop) => ({
-            type: 'function',
-            label: prop
-        }));
-}
 
-const extensions = [basicSetup,
-    keymap.of([indentWithTab]),
-    javascript(),
-    javascriptLanguage.data.of({
-        autocomplete: (context) => {
-            let path = completionPath(context);
-
-            if (!path) return null;
-
-            return {
-                from: context.pos - path.name.length,
-                options: completion_options
-            }
-        }
-    })
-];
 
 class CodeEditor extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+        this.completion_options = [];
         this.readyPromise = new Promise(async resolve => {
             this.shadowRoot.innerHTML = html;
-            const editorDiv = this.shadowRoot.getElementById('editor');
+            const editorDiv = this.shadowRoot.getElementById('editor');            
+            
+            this.extensions = [basicSetup,
+                keymap.of([indentWithTab,{
+                    key: 'Ctrl-s',
+                    mac: 'Cmd-s',
+                    run: () => {
+                        this.dispatchEvent(new CustomEvent('save'));
+                        return true;
+                    }
+                }]),
+                javascript(),
+                javascriptLanguage.data.of({
+                    autocomplete: (context) => {
+                        let path = completionPath(context);
+
+                        if (!path) return null;
+
+                        return {
+                            from: context.pos - path.name.length,
+                            options: this.completion_options
+                        }
+                    }
+                })
+            ];
             let state = EditorState.create({
-                extensions: extensions
+                extensions: this.extensions
             });
             this.editorView = new EditorView({
                 state,
@@ -55,10 +56,18 @@ class CodeEditor extends HTMLElement {
         });
     }
 
+    async setCompletions(wasm_contract_type) {
+        this.completion_options = (await getBuiltinJSProperties(wasm_contract_type))
+            .map((prop) => ({
+                type: 'function',
+                label: prop
+            }));
+    }
+
     set value(val) {
         let state = EditorState.create({
             doc: this.editorView.state.toText(val),
-            extensions: extensions
+            extensions: this.extensions
         });
         this.editorView.setState(state);
     }

@@ -1,43 +1,57 @@
 import { EditorView, basicSetup } from 'codemirror';
-import { javascript } from '@codemirror/lang-javascript';
+import { javascript, javascriptLanguage, completionPath } from '@codemirror/lang-javascript';
 import { indentWithTab } from "@codemirror/commands"
 import { keymap } from "@codemirror/view";
 import { EditorState } from '@codemirror/state';
-import { autocompletion } from '@codemirror/autocomplete';
 import html from './code-editor.component.html.js';
-
 import '@material/mwc-fab';
-import * as nearsdkjsapi from '../near-sdk-js/api.js';
+import { getJSEnvProperties } from '../compiler/jsinrust/contract-wasms.js';
+import { env_function_docs } from './env-function-docs.js';
 
-function completions(context) {
-    let word = context.matchBefore(/\w*/)
-    if (word.from == word.to && !context.explicit)
-        return null
-    return {
-        from: word.from,
-        options: Object.keys(nearsdkjsapi).map(k => ({
-            label: k,
-            type: "function", 
-            info: ((str) => str.substring(str.indexOf(k),str.length-1))(nearsdkjsapi[k].toString().split('\n')[0])
-        }))
-    }
-}
-
-const extensions = [basicSetup,
-    keymap.of([indentWithTab]),
-    autocompletion({ override: [completions] }),
-    javascript()
-];
-
-class CodeEditor extends HTMLElement {
+export class CodeEditor extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+        this.completion_options = [];
         this.readyPromise = new Promise(async resolve => {
             this.shadowRoot.innerHTML = html;
-            const editorDiv = this.shadowRoot.getElementById('editor');
+            const editorDiv = this.shadowRoot.getElementById('editor');            
+            
+            this.extensions = [basicSetup,
+                keymap.of([indentWithTab,{
+                    key: 'Ctrl-s',
+                    mac: 'Cmd-s',
+                    run: () => {
+                        this.dispatchEvent(new CustomEvent('save'));
+                        return true;
+                    }
+                }]),
+                javascript(),
+                javascriptLanguage.data.of({
+                    autocomplete: (context) => {
+                        let path = completionPath(context);
+
+                        if (!path) {
+                            return null;
+                        } else if (path.path[0] == 'env') {
+                            return {
+                                from: context.pos - path.name.length,
+                                options: this.completion_options
+                            }
+                        } else {
+                            return {
+                                from: context.pos - path.name.length,
+                                options: [{
+                                    type: 'variable',
+                                    label: 'env'
+                                }]
+                            }
+                        }
+                    }
+                })
+            ];
             let state = EditorState.create({
-                extensions: extensions
+                extensions: this.extensions
             });
             this.editorView = new EditorView({
                 state,
@@ -51,10 +65,18 @@ class CodeEditor extends HTMLElement {
         });
     }
 
+    async setEnvCompletions(wasm_contract_type) {
+        this.completion_options = (await getJSEnvProperties(wasm_contract_type))
+            .map((prop) => Object.assign({
+                type: 'function',
+                label: prop
+            }, env_function_docs[prop]));
+    }
+
     set value(val) {
         let state = EditorState.create({
             doc: this.editorView.state.toText(val),
-            extensions: extensions
+            extensions: this.extensions
         });
         this.editorView.setState(state);
     }

@@ -7,6 +7,7 @@ import { createStandalone } from '../compiler/standalone.js';
 import { bundle } from '../compiler/bundler.js';
 import html from './code-page.component.html.js';
 import css from './code-page.component.css.js';
+import { WASM_URLS } from '../compiler/jsinrust/contract-wasms.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
@@ -23,9 +24,11 @@ class CodePageComponent extends HTMLElement {
         this.sourcecodeeditor = sourcecodeeditor;
         const lastSavedSourceCode = localStorage.getItem('lastSavedSourceCode');
         const lastSelectedBundleType = localStorage.getItem('lastSelectedBundleType');
+
         sourcecodeeditor.value = lastSavedSourceCode ? lastSavedSourceCode : `export function hello() {
             env.log("Hello Near");
         }`;
+        sourcecodeeditor.addEventListener('save', () => this.save());
 
         const savebutton = this.shadowRoot.getElementById('savebutton');
         savebutton.addEventListener('click', () => this.save());
@@ -36,6 +39,10 @@ class CodePageComponent extends HTMLElement {
         await new Promise(r => setTimeout(() => r(), 100));
         this.bundletypeselect.value = lastSelectedBundleType;
 
+        if (this.bundletypeselect.value != '') {
+            sourcecodeeditor.setEnvCompletions(this.bundletypeselect.value);
+        }
+        this.bundletypeselect.addEventListener('change', () => sourcecodeeditor.setEnvCompletions(this.bundletypeselect.value));
         deploybutton.addEventListener('click', async () => {
             if (this.bundletypeselect.value == '') {
                 this.shadowRoot.querySelector('#selectTargetContractTypeSnackbar').show();
@@ -71,10 +78,7 @@ class CodePageComponent extends HTMLElement {
                                 e.message.indexOf('Cannot find contract code for account') >= 0
                             ) {
                                 console.log(`Deploying ${this.bundletypeselect.value} contract wasm because of ${e.message}`);
-                                let wasmUrl = {
-                                    "nft": 'https://ipfs.web4.near.page/ipfs/bafkreic2ktlue3456wdmnrxf4zupu4ayvnzabgvkixihc4xc73zftoztwy?filename=nft-a61c4543.wasm',
-                                    "minimum-web4": 'https://ipfs.web4.near.page/ipfs/bafkreigjjyocek3mdqk6rilzaxleg2swuka2nhzfx2gq4u7yicgdmvlh2a?filename=minimum_web4.wasm'
-                                }[this.bundletypeselect.value];
+                                let wasmUrl = WASM_URLS[this.bundletypeselect.value];
 
                                 await deployStandaloneContract(
                                     new Uint8Array(await fetch(new URL(wasmUrl))
@@ -92,7 +96,7 @@ class CodePageComponent extends HTMLElement {
                     }
                     toggleIndeterminateProgress(false);
                 };
-                
+
                 if (this.bundletypeselect.value == 'nearapi') {
                     if (await isStandaloneMode()) {
                         const standaloneWasmBytes = await createStandalone(bytecode, this.exportedMethodNames);

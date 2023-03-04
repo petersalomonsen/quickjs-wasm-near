@@ -1,4 +1,3 @@
-import { setAppComponent } from '../common/progressindicator.js';
 import { createQuickJS } from '../compiler/quickjs.js';
 import { getNearConfig, viewStandaloneContract, clearWalletConnection } from '../near/near.js';
 

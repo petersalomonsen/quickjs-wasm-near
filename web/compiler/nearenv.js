@@ -36,6 +36,7 @@ export function createNearEnv(args = '', attached_deposit, storage = {}, signer_
         "promise_batch_action_add_key_with_function_call": () => null,
         "promise_batch_action_delete_key": () => null,
         "promise_batch_action_delete_account": () => null,
+        "promise_batch_action_function_call_weight": () => null,
         // enclave
         "read_register": (register) => registers[register],
         "register_len": () => BigInt(Object.keys(registers).length),

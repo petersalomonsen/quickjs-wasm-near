@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -54,15 +55,16 @@
     <div id="logged_in_content">
         <button id="logoutbutton">Logout</button>
         <p>Token id: <input type="text" id="token_id_input" value="22" />
-            &nbsp; Font size: <input type="number" id="font_size_input" value="3" min="1" max="4"/>
+            &nbsp; Font size: <input type="number" id="font_size_input" value="3" min="1" max="4" />
         </p>
-            <button id="mint_button">Mint</button>
-            <button id="preview_button">Preview</button>
+        <button id="mint_button">Mint</button>
+        <button id="preview_button">Preview</button>
         </p>
     </div>
     <div>
         <pre id="mintresultview"></pre>
     </div>
+    <input type="text" id="color_input" style="width: 50px;position: absolute; display: none; z-index: 1000;" />
     <div id="previewresultview">
 
     </div>
@@ -105,6 +107,7 @@
                 location.reload();
             });
             const mintButton = document.getElementById('mint_button');
+            let colors_array = undefined;
             document.getElementById('logged_in_content').style.display = 'block';
             mintButton.addEventListener('click', async () => {
                 mintButton.disabled = true;
@@ -117,7 +120,8 @@
                     const result = await contract.nft_mint({
                         token_id: document.getElementById('token_id_input').value,
                         token_owner_id: account.accountId,
-                        font_size: document.getElementById('font_size_input').value
+                        font_size: document.getElementById('font_size_input').value,
+                        colors: colors_array
                     }, undefined, utils.format.parseNearAmount("0.1"));
                     document.getElementById('mintresultview').innerHTML = JSON.stringify(result, null, 1);
                 } catch (e) {
@@ -138,8 +142,29 @@
                         function_name: 'svg_preview',
                         token_id: document.getElementById('token_id_input').value,
                         font_size: document.getElementById('font_size_input').value,
+                        colors: colors_array
                     });
                     document.getElementById('previewresultview').innerHTML = result.svg;
+                    const color_input = document.getElementById('color_input');
+                    colors_array = [];
+                    Array.from(document.querySelectorAll('#previewresultview svg rect'))
+                        .forEach((rect, ndx) => {
+                            colors_array.push(rect.attributes.fill.value);
+                            rect.addEventListener('click', (e) => {
+                                color_input.style.top = `${e.clientY}px`;
+                                color_input.style.left = `${e.clientX}px`;
+                                color_input.value = rect.attributes.fill.value;
+                                color_input.style.display = 'block';
+                                console.log(color_input);
+                                color_input.onblur = () => {
+                                    rect.attributes.fill.value = color_input.value;
+                                    colors_array[ndx] = color_input.value;
+                                    color_input.style.display = 'none';
+                                }
+                            });
+                        }
+                        );
+                    console.log(colors_array);
                 } catch (e) {
                     document.getElementById('mintresultview').innerHTML = e.toString();
                 }

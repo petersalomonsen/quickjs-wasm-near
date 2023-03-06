@@ -12,7 +12,7 @@ export function web4_get() {
   } else {
     response = {
       contentType: "text/html; charset=UTF-8",
-      bodyUrl: 'https://ipfs.web4.near.page/ipfs/bafkreiexljj6ii5vkvvbiletuenwd2yd2xy6cvpn3zlti6c2boy4cqyvrm?filename=index.html'
+      bodyUrl: 'https://ipfs.web4.near.page/ipfs/bafkreibmbiukhtzupuvsqwx6jun7zm2p7dme35mhtqrvmmha6zukt2tw3u?filename=index.html'
     };
   }
   env.value_return(JSON.stringify(response));

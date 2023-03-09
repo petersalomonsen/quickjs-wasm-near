@@ -60,13 +60,22 @@
         <button id="mint_button">Mint</button>
         <button id="preview_button">Preview</button>
         </p>
-    </div>
-    <div>
-        <pre id="mintresultview"></pre>
-    </div>
-    <input type="text" id="color_input" style="width: 50px;position: absolute; display: none; z-index: 1000;" />
-    <div id="previewresultview">
+        <div>
+            <pre id="mintresultview"></pre>
+        </div>
+        <input type="text" id="color_input" style="width: 50px;position: absolute; display: none; z-index: 1000;" />
+        <div id="previewresultview">
 
+        </div>
+        <h1>Your tokens</h1>
+        <template id="token_template">
+            <div id="token_id"></div>
+            <img id="token_image" style="max-width: 200px;"/>
+            <button id="burn_button">burn</button>
+        </template>
+        <div id="yourtokenslist">
+
+        </div>
     </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/near-api-js@1.1.0/dist/near-api-js.js"
@@ -74,8 +83,8 @@
 <script type="module">
     const { connect, keyStores, WalletConnection, Contract, utils } = nearApi;
 
-    const origin = location.origin;
-    //const origin = 'https://superduper77.testnet.page';
+    //const origin = location.origin;
+    const origin = 'https://superduper77.testnet.page';
     const contractAccountId = origin.substring(origin.lastIndexOf('/') + 1).replace('.page', '');
     const networkId = (suffix => suffix == 'near' ? 'mainnet' : suffix)(contractAccountId.split('.')[1]);
 
@@ -168,6 +177,24 @@
                 } catch (e) {
                     document.getElementById('mintresultview').innerHTML = e.toString();
                 }
+            });
+
+            const account = walletConnection.account();
+            const contract = new Contract(account, contractAccountId, {
+                viewMethods: ['nft_tokens_for_owner'],
+                changeMethods: ['nft_burn']
+            });
+            const tokens = await contract.nft_tokens_for_owner({account_id: account.accountId});
+            const tokensListElement = document.getElementById('yourtokenslist');
+            const tokenViewTemplate = document.getElementById('token_template');
+            tokens.forEach(token => {
+                const tokenViewElement = tokenViewTemplate.content.cloneNode(true);
+                tokenViewElement.getElementById('token_id').innerHTML = token.token_id;
+                tokenViewElement.getElementById('token_image').src = token.metadata.media;
+                tokenViewElement.getElementById('burn_button').addEventListener('click', async () => {
+                    contract.nft_burn({args: {token_id: token.token_id}, amount: 1});
+                });
+                tokensListElement.appendChild(tokenViewElement);
             });
         }
     })();

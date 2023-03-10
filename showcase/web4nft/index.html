@@ -8,7 +8,8 @@
         body {
             background-color: black;
             color: white;
-            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-family: monospace;
+            font-size: 14px;
         }
 
         input {
@@ -21,6 +22,7 @@
         button {
             padding: 10px;
             border: none;
+            border: #114 solid 4px;
             background-color: white;
             color: black;
         }
@@ -83,8 +85,8 @@
 <script type="module">
     const { connect, keyStores, WalletConnection, Contract, utils } = nearApi;
 
-    //const origin = location.origin;
-    const origin = 'https://superduper77.testnet.page';
+    const origin = location.origin;
+    //const origin = 'https://superduper77.testnet.page';
     const contractAccountId = origin.substring(origin.lastIndexOf('/') + 1).replace('.page', '');
     const networkId = (suffix => suffix == 'near' ? 'mainnet' : suffix)(contractAccountId.split('.')[1]);
 
@@ -116,7 +118,12 @@
                 location.reload();
             });
             const mintButton = document.getElementById('mint_button');
-            let colors_array = undefined;
+            const STORED_COLORS_ARRAY_KEY = 'colors_array';
+            let colors_array = localStorage.getItem('colors_array');
+            if (colors_array) {
+                colors_array = JSON.parse(colors_array);
+            }
+
             document.getElementById('logged_in_content').style.display = 'block';
             mintButton.addEventListener('click', async () => {
                 mintButton.disabled = true;
@@ -169,11 +176,11 @@
                                     rect.attributes.fill.value = color_input.value;
                                     colors_array[ndx] = color_input.value;
                                     color_input.style.display = 'none';
+                                    localStorage.setItem(STORED_COLORS_ARRAY_KEY, JSON.stringify(colors_array));
                                 }
                             });
                         }
                         );
-                    console.log(colors_array);
                 } catch (e) {
                     document.getElementById('mintresultview').innerHTML = e.toString();
                 }

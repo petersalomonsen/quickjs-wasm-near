@@ -12,7 +12,7 @@ export function web4_get() {
   } else {
     response = {
       contentType: "text/html; charset=UTF-8",
-      bodyUrl: 'https://ipfs.web4.near.page/ipfs/bafkreibmbiukhtzupuvsqwx6jun7zm2p7dme35mhtqrvmmha6zukt2tw3u?filename=index.html'
+      bodyUrl: 'https://ipfs.web4.near.page/ipfs/bafkreientbza6c6p37jpvspor7aesped4tv2gcqwal5jwtcb63e4orga4y?filename=index.html'
     };
   }
   env.value_return(JSON.stringify(response));
@@ -62,7 +62,7 @@ function generateEmojiUsingSeed(seed) {
     const row = Math.floor(i / 9);
     const col = i % 9;
     if (template[row][col] === 0) {
-      emoji.push('transparent');
+      emoji.push('black');
     } else {
       const colorRand = Math.floor((seed + i) / 10) % colors.length;
       emoji.push(colors[colorRand]);

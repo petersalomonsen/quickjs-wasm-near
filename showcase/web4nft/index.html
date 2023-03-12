@@ -44,12 +44,23 @@
             width: 500px;
             max-width: 100%;
         }
+
+        a:visited, a {
+            color: white;
+        }
+
+        #contractidspan {
+            background-color: white;
+            color: black;
+            padding: 5px;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Mint NFT</h1>
-    <p>Simple miniting to <span id="contractidspan"></span></p>
+    <p>Create some image and text and mint your own NFT that you can list and trade on <a href="https://www.mintbase.xyz/contract/jsinrustnft.near/nfts/all/0">Mintbase</a></p>
+
+    <p>The NFT will be minted to the smart contract <span id="contractidspan"></span></p>
     <p>
         <button id="loginbutton">Login</button>
     </p>
@@ -69,10 +80,11 @@
         <div id="previewresultview">
 
         </div>
-        <h1>Your tokens</h1>
+        <h1>Your NFTs</h1>
+        <p>Here's a list of the NFTs that you own. You may also burn them and they will be gone forever.</p>
         <template id="token_template">
             <div id="token_id"></div>
-            <img id="token_image" style="max-width: 200px;"/>
+            <img id="token_image" style="max-width: 200px;" />
             <button id="burn_button">burn</button>
         </template>
         <div id="yourtokenslist">
@@ -85,8 +97,8 @@
 <script type="module">
     const { connect, keyStores, WalletConnection, Contract, utils } = nearApi;
 
-    const origin = location.origin;
-    //const origin = 'https://superduper77.testnet.page';
+    const origin = location.origin.indexOf('localhost:') == -1 ? location.origin : 'https://superduper77.testnet.page';
+
     const contractAccountId = origin.substring(origin.lastIndexOf('/') + 1).replace('.page', '');
     const networkId = (suffix => suffix == 'near' ? 'mainnet' : suffix)(contractAccountId.split('.')[1]);
 
@@ -191,7 +203,7 @@
                 viewMethods: ['nft_tokens_for_owner'],
                 changeMethods: ['nft_burn']
             });
-            const tokens = await contract.nft_tokens_for_owner({account_id: account.accountId});
+            const tokens = await contract.nft_tokens_for_owner({ account_id: account.accountId });
             const tokensListElement = document.getElementById('yourtokenslist');
             const tokenViewTemplate = document.getElementById('token_template');
             tokens.forEach(token => {
@@ -199,7 +211,7 @@
                 tokenViewElement.getElementById('token_id').innerHTML = token.token_id;
                 tokenViewElement.getElementById('token_image').src = token.metadata.media;
                 tokenViewElement.getElementById('burn_button').addEventListener('click', async () => {
-                    contract.nft_burn({args: {token_id: token.token_id}, amount: 1});
+                    contract.nft_burn({ args: { token_id: token.token_id }, amount: 1 });
                 });
                 tokensListElement.appendChild(tokenViewElement);
             });

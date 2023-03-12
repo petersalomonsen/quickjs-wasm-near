@@ -30,6 +30,19 @@ class CodePageComponent extends HTMLElement {
         }`;
         sourcecodeeditor.addEventListener('save', () => this.save());
 
+        const askAIButton = this.shadowRoot.getElementById('askaibutton');
+        askAIButton.addEventListener('click', async () => {
+            toggleIndeterminateProgress(true);
+            const airesponse = await fetch('https://near-openai.vercel.app/api/edge', {
+                method: 'POST',
+                body: JSON.stringify({messages: [
+                    {"role": "user", "content": `In the next message I will show you some Javascript code. For those lines that starts with \`AI:\`, replace with javascript code according to the text on that line, and only give me the updated javascript code without any extra text before or after.`},
+                    {"role": "user", "content": sourcecodeeditor.value}
+                ]})
+            }).then(r => r.json());
+            sourcecodeeditor.value = airesponse.choices[0].message.content;                
+            toggleIndeterminateProgress(false);
+        });
         const savebutton = this.shadowRoot.getElementById('savebutton');
         savebutton.addEventListener('click', () => this.save());
 

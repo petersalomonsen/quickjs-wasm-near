@@ -1,5 +1,5 @@
 import './code-editor.component.js';
-import { initNFTContract, deployJScontract, deployStandaloneContract, getSuggestedDepositForContract, isStandaloneMode } from '../near/near.js';
+import { initNFTContract, deployJScontract, deployStandaloneContract, getSuggestedDepositForContract, isStandaloneMode, callStandaloneContract, createWalletConnection } from '../near/near.js';
 import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
 import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
@@ -33,12 +33,33 @@ class CodePageComponent extends HTMLElement {
         const askAIButton = this.shadowRoot.getElementById('askaibutton');
         askAIButton.addEventListener('click', async () => {
             toggleIndeterminateProgress(true);
-            const airesponse = await fetch('https://near-openai.vercel.app/api/edge', {
+
+            const walletConnection = await createWalletConnection();
+            await walletConnection.isSignedInAsync();
+
+            const accountId = walletConnection.account().accountId;
+
+            const messages = [
+                {"role": "user", "content": `In the next message I will show you some Javascript code. For those lines that starts with \`AI:\`, replace with javascript code according to the text on that line, and only give me the updated javascript code without any extra text before or after.`},
+                {"role": "user", "content": sourcecodeeditor.value}
+            ];
+
+            const messagesStringified = JSON.stringify(messages);
+            const deposit = (messagesStringified.length * 0.001).toString();
+
+            const message_hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(messagesStringified))))
+                .map((b) => b.toString(16).padStart(2, "0"))
+                .join("");
+            const result = await callStandaloneContract('jsinrust.near', 'ask_ai', {
+                message_hash
+            }, deposit);
+        
+            const airesponse = await fetch('https://near-openai.vercel.app/api/openai', {
                 method: 'POST',
-                body: JSON.stringify({messages: [
-                    {"role": "user", "content": `In the next message I will show you some Javascript code. For those lines that starts with \`AI:\`, replace with javascript code according to the text on that line, and only give me the updated javascript code without any extra text before or after.`},
-                    {"role": "user", "content": sourcecodeeditor.value}
-                ]})
+                body: JSON.stringify({
+                    transaction_hash: result.transaction.hash,
+                    sender_account_id: accountId,
+                    messages: messages})
             }).then(r => r.json());
             sourcecodeeditor.value = airesponse.choices[0].message.content;                
             toggleIndeterminateProgress(false);

@@ -40,12 +40,52 @@ class CodePageComponent extends HTMLElement {
             const accountId = walletConnection.account().accountId;
 
             const messages = [
-                {"role": "user", "content": `In the next message I will show you some Javascript code. For those lines that starts with \`AI:\`, replace with javascript code according to the text on that line, and only give me the updated javascript code without any extra text before or after.`},
+                {"role": "user", "content": `The following Javascript code will return web content.
+\`\`\`
+export function web4_get() {
+    const request = JSON.parse(env.input()).request;
+    
+    let response;
+    if (request.path == '/index.html') {
+        response = {
+        contentType: "text/html; charset=UTF-8",
+        body: env.base64_encode('hello')
+        };
+    }
+    env.value_return(JSON.stringify(response));
+    }
+\`\`\`
+
+And this will create an NFT payout structure with 80% to the token owner and 20% to the contract owner.
+It also returns amount according to the input balance.
+
+\`\`\`
+export function nft_payout() {
+    const args = JSON.parse(env.input());
+    const balance = BigInt(args.balance);
+    const payout = {};
+    const token_owner_id = JSON.parse(env.nft_token(args.token_id)).owner_id;
+    const contract_owner = env.contract_owner();
+    
+    const addPayout = (account, amount) => {
+        if (!payout[account]) {
+        payout[account] = 0n;
+        }
+        payout[account] += amount;
+    };
+    addPayout(token_owner_id, balance * BigInt(80_00) / BigInt(100_00));
+    addPayout(contract_owner, balance * BigInt(20_00) / BigInt(100_00));
+    Object.keys(payout).forEach(k => payout[k] = payout[k].toString());
+    return JSON.stringify({ payout });
+}
+\`\`\`
+                `},
+                {"role": "user", "content": `In the next message I will show you some Javascript code. For those lines that starts with \`AI:\`, replace with javascript code according to the text on that line ( which can be in any human language ), and only give me the fully updated javascript code without any extra text before or after.`},
                 {"role": "user", "content": sourcecodeeditor.value}
             ];
 
             const messagesStringified = JSON.stringify(messages);
-            const deposit = (messagesStringified.length * 0.00001).toString();
+            const deposit = BigInt(messagesStringified.length) * 10000000000000000000n;
 
             const message_hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(messagesStringified))))
                 .map((b) => b.toString(16).padStart(2, "0"))

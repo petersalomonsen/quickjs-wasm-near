@@ -45,7 +45,7 @@ class CodePageComponent extends HTMLElement {
             ];
 
             const messagesStringified = JSON.stringify(messages);
-            const deposit = (messagesStringified.length * 0.001).toString();
+            const deposit = (messagesStringified.length * 0.00001).toString();
 
             const message_hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(messagesStringified))))
                 .map((b) => b.toString(16).padStart(2, "0"))

@@ -140,7 +140,47 @@ export async function callJSContract(contractAccount, methodName, args, deposit)
 export async function callStandaloneContract(contractAccount, methodName, args, deposit, gas) {
     const wc = await checkSignedin();
     if (wc) {
-        return await wc.account().functionCall({ contractId: contractAccount, methodName, args, gas: gas ? gas : (30n * 100_00000_00000n).toString(), attachedDeposit: deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined });
+        return await wc.account().functionCall({
+            contractId: contractAccount, methodName, args, gas: gas ? gas : (30n * 100_00000_00000n).toString(),
+            attachedDeposit: deposit ? typeof deposit === 'bigint' ? deposit.toString() : nearApi.utils.format.parseNearAmount(deposit) : undefined
+        });
+    }
+}
+
+export async function createContractCallTransaction(contractAccount, methodName, args, deposit, gas) {
+    const wc = await checkSignedin();
+    if (wc) {
+        return await wc.account().functionCall({
+            contractId: contractAccount, methodName, args, gas: gas ? gas : (30n * 100_00000_00000n).toString(),
+            attachedDeposit: deposit ? typeof deposit === 'bigint' ? deposit.toString() : nearApi.utils.format.parseNearAmount(deposit) : undefined
+        });
+    }
+}
+
+export async function createFunctionCallTransaction({ receiverId, methodName, args = {}, gas = '300000000000000', attachedDeposit = '0', walletMeta, walletCallbackUrl, stringify, jsContract }) {
+    const walletConnection = await createWalletConnection();
+
+    const senderAccount = walletConnection.account();
+
+    const publicKey = await senderAccount.connection.signer.getPublicKey(senderAccount.accountId, senderAccount.connection.networkId);
+
+    const accessKey = (await senderAccount.findAccessKey()).accessKey;
+    const nonce = ++accessKey.nonce;
+    const recentBlockHash = nearApi.utils.serialize.base_decode(
+        accessKey.block_hash
+    );
+
+    const transaction = nearApi.transactions.createTransaction(
+        senderAccount.accountId,
+        publicKey,
+        receiverId,
+        nonce,
+        [nearApi.transactions.functionCall(methodName, args, gas, attachedDeposit)],
+        recentBlockHash
+    );
+    const [txHash, signedTx] = await nearApi.transactions.signTransaction(transaction, senderAccount.connection.signer, senderAccount.accountId, senderAccount.connection.networkId);
+    return {
+        txHash: nearApi.utils.serialize.base_encode(txHash), signedTx
     }
 }
 
@@ -160,4 +200,10 @@ export async function logout() {
 
 export async function getTargetContractName() {
     return (await createWalletConnection()).account().accountId;
+}
+
+export function getProvider() {
+    return new nearApi.providers.JsonRpcProvider(
+        `https://rpc.${networkId}.near.org`
+    );
 }

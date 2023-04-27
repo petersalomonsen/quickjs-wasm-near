@@ -5,6 +5,7 @@
         "start-dist": "http-server -p 8082 ../dist",
         "importmap": "node importmapgenerator.js",
         "dist": "rollup -c rollup.config.js",
+        "createdevaccount": "node create-dev-account.js",
         "test": "karma start --single-run --browsers ChromeHeadless karma.conf.cjs",
         "test:watch": "karma start --browsers Chrome karma.conf.cjs"
     },
@@ -40,6 +41,7 @@
         "karma-chrome-launcher": "^3.1.1",
         "karma-mocha": "^2.0.1",
         "mocha": "^10.2.0",
+        "near-api-js": "^2.1.1",
         "rollup": "^3.18.0",
         "rollup-plugin-terser": "^7.0.2"
     }

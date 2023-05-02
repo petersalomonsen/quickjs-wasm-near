@@ -98,9 +98,11 @@ export function nft_mint() {
   const args = JSON.parse(env.input());
   const svgstring = create_svg(args.token_id, args.font_size, args.colors);
 
+  const title = args.title ?? `jsinrust#${args.token_id}`;
+  const description = args.description ?? `made with jsinrustnft.near.page`;
   return JSON.stringify({
-    title: `JSinRust NFT token number #${args.token_id}`,
-    description: `An example of Rust NFT customizable with Javascript`,
+    title: title,
+    description: description,
     media: `data:image/svg+xml;base64,${env.base64_encode(svgstring)}`,
     media_hash: env.sha256_utf8_to_base64(svgstring)
   });

@@ -104,7 +104,9 @@ export function nft_mint() {
     title: title,
     description: description,
     media: `data:image/svg+xml;base64,${env.base64_encode(svgstring)}`,
-    media_hash: env.sha256_utf8_to_base64(svgstring)
+    media_hash: env.sha256_utf8_to_base64(svgstring),
+    royalty: args.royalty,
+    extra: args.extra
   });
 }
 
@@ -115,7 +117,8 @@ export function nft_payout() {
   const args = JSON.parse(env.input());
   const balance = BigInt(args.balance);
   const payout = {};
-  const token_owner_id = JSON.parse(env.nft_token(args.token_id)).owner_id;
+  const token_obj = JSON.parse(env.nft_token(args.token_id));
+  const token_owner_id = token_obj.owner_id;
   const contract_owner = env.contract_owner();
 
   const addPayout = (account, amount) => {
@@ -124,8 +127,18 @@ export function nft_payout() {
     }
     payout[account] += amount;
   };
-  addPayout(token_owner_id, balance * BigInt(80_00) / BigInt(100_00));
-  addPayout(contract_owner, balance * BigInt(20_00) / BigInt(100_00));
+
+  if (token_obj.metadata.royalty ) {
+    const royalty = token_obj.metadata.royalty;
+    const totalroyalty = balance * BigInt(royalty.percentage.numerator) / BigInt(10_000);
+    addPayout(token_owner_id, balance - totalroyalty);
+    Object.keys(royalty.split_between).forEach(account => {
+      addPayout(account, totalroyalty * BigInt(royalty.split_between[account].numerator) / BigInt(10_000));
+    });
+  } else {
+    addPayout(token_owner_id, balance * BigInt(80_00) / BigInt(100_00));
+    addPayout(contract_owner, balance * BigInt(20_00) / BigInt(100_00));
+  }
   Object.keys(payout).forEach(k => payout[k] = payout[k].toString());
   return JSON.stringify({ payout });
 }

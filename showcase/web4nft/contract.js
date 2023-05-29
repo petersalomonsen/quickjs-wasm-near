@@ -135,7 +135,7 @@ export function nft_payout() {
 
     }
   }
-  if (extra.royalty) {
+  if (extra?.royalty) {
     const royalty = extra.royalty;
     const totalroyalty = balance * BigInt(royalty.percentage.numerator) / BigInt(10_000);
     addPayout(token_owner_id, balance - totalroyalty);

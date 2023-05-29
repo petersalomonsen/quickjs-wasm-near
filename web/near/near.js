@@ -1,4 +1,4 @@
-import 'https://cdn.jsdelivr.net/npm/near-api-js@1.1.0/dist/near-api-js.min.js';
+import 'https://cdn.jsdelivr.net/npm/near-api-js@2.1.3/dist/near-api-js.min.js';
 import { showLoginDialog } from './near.component.js';
 
 const networkId = (location.origin == 'https://jsinrust.near.page' ? 'mainnet' : 'testnet');
@@ -10,7 +10,7 @@ const nearconfig = {
     nodeUrl: `https://rpc.${networkId}.near.org`,
     archiveNodeUrl: `https://archival-rpc.${networkId}.near.org`,
     contractName: `jsinrust.${accountPostFix}`,
-    walletUrl: `https://wallet.${networkId}.near.org`,
+    walletUrl: networkId == 'testnet' ? 'https://testnet.mynearwallet.com/' : 'https://wallet.mainnet.near.org',
     helperUrl: `https://helper.${networkId}.near.org`,
     networkId: networkId,
     keyStore: null
@@ -44,7 +44,7 @@ export function createWalletConnection() {
         nearconfig.contractName = localStorage.getItem(LOGGED_IN_CONTRACT_NAME);
 
         const near = await nearApi.connect(nearconfig);
-        const wc = new nearApi.WalletConnection(near);
+        const wc = new nearApi.WalletConnection(near, 'js-in-rust');
         resolve(wc);
     });
     return walletConnection;

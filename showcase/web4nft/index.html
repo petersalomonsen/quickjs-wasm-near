@@ -70,6 +70,10 @@
         <p>Token id: <input type="text" id="token_id_input" value="22" />
             &nbsp; Font size: <input type="number" id="font_size_input" value="3" min="1" max="4" />
         </p>
+        <p>
+            Royalty: <input type="number" id="royalty_percentage_input" value="20" />%
+            Split royalty between accounts: <input type="text" id="royalty_accounts_input" value="" />
+        </p>
         <button id="mint_button">Mint</button>
         <button id="preview_button">Preview</button>
         </p>
@@ -106,7 +110,7 @@
         networkId: networkId,
         keyStore: new keyStores.BrowserLocalStorageKeyStore(),
         nodeUrl: `https://rpc.${networkId}.near.org`,
-        walletUrl: `https://wallet.${networkId}.near.org`,
+        walletUrl: networkId == 'testnet' ? 'https://testnet.mynearwallet.com' : `https://wallet.near.org`,
         helperUrl: `https://helper.${networkId}.near.org`,
         explorerUrl: `https://explorer.${networkId}.near.org`,
     };
@@ -129,6 +133,13 @@
                 await walletConnection.signOut();
                 location.reload();
             });
+
+            const account = walletConnection.account();
+
+            const royalty_accounts_input = document.getElementById('royalty_accounts_input');
+            const royalty_percentage_input = document.getElementById('royalty_percentage_input');
+
+            royalty_accounts_input.value = account.accountId;
             const mintButton = document.getElementById('mint_button');
             const STORED_COLORS_ARRAY_KEY = 'colors_array';
             let colors_array = localStorage.getItem('colors_array');
@@ -140,7 +151,7 @@
             mintButton.addEventListener('click', async () => {
                 mintButton.disabled = true;
                 document.getElementById('mintresultview').innerHTML = 'Please wait while executing transaction';
-                const account = walletConnection.account();
+
                 const contract = new Contract(account, contractAccountId, {
                     changeMethods: ['nft_mint']
                 });
@@ -149,7 +160,19 @@
                         token_id: document.getElementById('token_id_input').value,
                         token_owner_id: account.accountId,
                         font_size: document.getElementById('font_size_input').value,
-                        colors: colors_array
+                        colors: colors_array,
+                        royalty: {
+                            percentage: {
+                                numerator: Math.floor(parseFloat(royalty_percentage_input.value) * 100)
+                            },
+                            split_between: royalty_accounts_input.value.split(',').reduce((p, c, ndx, arr) => {
+                                const account_id = c;
+                                p[account_id] = {
+                                    numerator: Math.floor(10_000 / arr.length)
+                                }
+                                return p;
+                            }, {})
+                        }
                     }, undefined, utils.format.parseNearAmount("0.1"));
                     document.getElementById('mintresultview').innerHTML = JSON.stringify(result, null, 1);
                 } catch (e) {
@@ -198,7 +221,6 @@
                 }
             });
 
-            const account = walletConnection.account();
             const contract = new Contract(account, contractAccountId, {
                 viewMethods: ['nft_tokens_for_owner'],
                 changeMethods: ['nft_burn']

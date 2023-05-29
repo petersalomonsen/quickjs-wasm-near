@@ -84,7 +84,7 @@ function create_svg(token_id, font_size, colors) {
         ${token_id}
     </text>
   </svg>`;
-    return svgstring;
+  return svgstring;
 }
 
 export function svg_preview() {
@@ -105,8 +105,7 @@ export function nft_mint() {
     description: description,
     media: `data:image/svg+xml;base64,${env.base64_encode(svgstring)}`,
     media_hash: env.sha256_utf8_to_base64(svgstring),
-    royalty: args.royalty,
-    extra: args.extra
+    extra: JSON.stringify({ royalty: args.royalty })
   });
 }
 
@@ -128,8 +127,16 @@ export function nft_payout() {
     payout[account] += amount;
   };
 
-  if (token_obj.metadata.royalty ) {
-    const royalty = token_obj.metadata.royalty;
+  let extra;
+  if (token_obj.metadata.extra) {
+    try {
+      extra = JSON.parse(token_obj.metadata.extra);
+    } catch (e) {
+
+    }
+  }
+  if (extra.royalty) {
+    const royalty = extra.royalty;
     const totalroyalty = balance * BigInt(royalty.percentage.numerator) / BigInt(10_000);
     addPayout(token_owner_id, balance - totalroyalty);
     Object.keys(royalty.split_between).forEach(account => {

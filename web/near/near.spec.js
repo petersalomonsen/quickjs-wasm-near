@@ -1,4 +1,4 @@
-import { LOGGED_IN_CONTRACT_NAME, byteArrayToBase64, checkSignedin, clearWalletConnection, createFunctionCallTransaction, createWalletConnection, getNearConfig, getProvider } from "./near.js";
+import { LOGGED_IN_CONTRACT_NAME, APP_NAME, byteArrayToBase64, checkSignedin, clearWalletConnection, createFunctionCallTransaction, createWalletConnection, getNearConfig, getProvider } from "./near.js";
 
 describe('near', function () {
     this.timeout(60000);
@@ -12,7 +12,7 @@ describe('near', function () {
 
     it('should sign out if loggedincontractname is not in localstorage', async () => {
         clearWalletConnection();
-        localStorage.setItem('undefined_wallet_auth_key', '{"accountId":"psalomo.testnet","allKeys":["ed25519:eNRiyM1MhKyM3bof1XvAEoLfP75YgY8D3EbKfa1yMxb"]}');
+        localStorage.setItem(`${APP_NAME}_wallet_auth_key`, '{"accountId":"psalomo.testnet","allKeys":["ed25519:eNRiyM1MhKyM3bof1XvAEoLfP75YgY8D3EbKfa1yMxb"]}');
         localStorage.setItem('near-api-js:keystore:psalomo.testnet:testnet', 'ed25519:QVuKCUH8AHt6WqxFnsjbaR8pSdjJBXAsnwfB83C5dgsmCMEP6EAmfULWm6bXWNQXCecGcsv2ATBeJKjJjFdEooG');
         localStorage.removeItem('loggedincontractname');
 
@@ -71,7 +71,7 @@ describe('near', function () {
 
     it('should not sign out if loggedincontractname is in localstorage', async () => {
         clearWalletConnection();
-        localStorage.setItem('undefined_wallet_auth_key', '{"accountId":"psalomo.testnet","allKeys":["ed25519:eNRiyM1MhKyM3bof1XvAEoLfP75YgY8D3EbKfa1yMxb"]}');
+        localStorage.setItem(`${APP_NAME}_wallet_auth_key`, '{"accountId":"psalomo.testnet","allKeys":["ed25519:eNRiyM1MhKyM3bof1XvAEoLfP75YgY8D3EbKfa1yMxb"]}');
         localStorage.setItem('near-api-js:keystore:psalomo.testnet:testnet', 'ed25519:QVuKCUH8AHt6WqxFnsjbaR8pSdjJBXAsnwfB83C5dgsmCMEP6EAmfULWm6bXWNQXCecGcsv2ATBeJKjJjFdEooG');
         localStorage.setItem(LOGGED_IN_CONTRACT_NAME, 'psalomo.testnet');
 
@@ -93,10 +93,10 @@ describe('near', function () {
         clearWalletConnection();
     });
 
-    it.only('should create a function call transaction and sign it, and send it separately', async () => {
+    it('should create a function call transaction and sign it, and send it separately', async () => {
         clearWalletConnection();
         const testaccount = await fetch(new URL('../testnet/testaccount.json', import.meta.url)).then(r => r.json());
-        localStorage.setItem('undefined_wallet_auth_key', `{"accountId":"${testaccount.account_id}","allKeys":["${testaccount.public_key}"]}`);
+        localStorage.setItem(`${APP_NAME}_wallet_auth_key`, `{"accountId":"${testaccount.account_id}","allKeys":["${testaccount.public_key}"]}`);
         localStorage.setItem(`near-api-js:keystore:${testaccount.account_id}:testnet`, testaccount.private_key);
         localStorage.setItem(LOGGED_IN_CONTRACT_NAME, 'psalomo.testnet');
         const { txHash, signedTx } = await createFunctionCallTransaction({ receiverId: 'jsinrust.testnet', methodName: 'fs_store' });

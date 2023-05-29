@@ -102,3 +102,10 @@ let indexHtml = readFileSync('index.html').toString();
 indexHtml = indexHtml.replace(/\<script type=\"importmap\"\>[^<]+\<\/script\>/,
   `<script type="importmap">${importMapJson}</script>`)
 writeFileSync('index.html', indexHtml);
+
+writeFileSync('importmap.js', `
+const importmapscriptelement = document.createElement('script');
+importmapscriptelement.type = 'importmap';
+importmapscriptelement.textContent = JSON.stringify(${importMapJson});
+document.currentScript.after(importmapscriptelement);
+`);

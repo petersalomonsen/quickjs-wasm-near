@@ -10,7 +10,7 @@ export async function fetchWasm(wasm_contract_type) {
     return new Uint8Array(await fetch(new URL(WASM_URLS[wasm_contract_type])).then(r => r.arrayBuffer()))
 }
 
-export async function getJSEnvProperties(wasm_contract_type) {
+export async function getContractSimulationInstance(wasm_contract_type) {
     nearenv.reset_near_env();
     const wasmbinary = prepareWASM(await fetchWasm(wasm_contract_type));
 
@@ -18,9 +18,9 @@ export async function getJSEnvProperties(wasm_contract_type) {
     Object.keys(nearenv).forEach(x => {
         const orig = nearenv[x];
         proxy[x] = (...args) => {
-    //        console.log('method and args:', x, ...args);
+            //        console.log('method and args:', x, ...args);
             const result = orig(...args);
-    //        console.log('result:', result);
+            //        console.log('result:', result);
             return result;
         };
     });
@@ -39,6 +39,12 @@ export async function getJSEnvProperties(wasm_contract_type) {
     if (instanceExports.new) {
         instanceExports.new();
     }
+
+    return instanceExports;
+}
+
+export async function getJSEnvProperties(wasm_contract_type) {
+    const instanceExports = await getContractSimulationInstance(wasm_contract_type);
 
     nearenv.set_args({ javascript: `export function test() {env.value_return(JSON.stringify(Object.keys(env))); }` });
     instanceExports.post_javascript();

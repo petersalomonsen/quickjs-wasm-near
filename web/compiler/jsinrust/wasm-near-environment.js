@@ -28,8 +28,21 @@ export function set_register_string_value(key, str) {
     registers[key] = new TextEncoder().encode(str);
 }
 
+export function set_attached_deposit(deposit) {
+    _attached_deposit = deposit;
+}
+
+export function set_signer_account_id(account_id) {
+    _signer_account_id = account_id;
+}
+
+export function set_predecessor_account_id(account_id) {
+    _predecessor_account_id = account_id;
+}
+
 export function attached_deposit(balance_ptr) {
     new DataView(memory.buffer).setBigUint64(Number(balance_ptr), _attached_deposit, true);
+    new DataView(memory.buffer).setBigUint64(Number(balance_ptr + 8n), _attached_deposit >> 64n, true);
 }
 
 export function current_account_id(register) {
@@ -112,12 +125,11 @@ export function promise_batch_action_delete_key() { }
 export function promise_batch_action_delete_account() { }
 export function promise_batch_action_function_call_weight() { }
 export function read_register(register, ptr) {
-
     const reg_value = registers[register];
     if (reg_value != undefined && reg_value.length > 0) {
         new Uint8Array(memory.buffer).set(reg_value, Number(ptr));
     }
-    // console.log('read_register', reg_value, new TextDecoder().decode(new Uint8Array(memory.buffer).slice(Number(ptr),Number(ptr)+reg_value.length)));
+    //console.log('read_register', reg_value, new TextDecoder().decode(new Uint8Array(memory.buffer).slice(Number(ptr),Number(ptr)+reg_value.length)));
 }
 export function register_len(register_id) {
     const registercontent = registers[register_id];

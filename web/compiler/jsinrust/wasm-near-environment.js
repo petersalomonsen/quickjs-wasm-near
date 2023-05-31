@@ -3,6 +3,8 @@ export let registers = {};
 
 export let memory;
 export let latest_return_value;
+export let latest_transfer_amount;
+
 export let _args = '{}';
 export let _current_account_id = 'test';
 export let _signer_account_id = 'test';
@@ -41,8 +43,9 @@ export function set_predecessor_account_id(account_id) {
 }
 
 export function attached_deposit(balance_ptr) {
-    new DataView(memory.buffer).setBigUint64(Number(balance_ptr), _attached_deposit, true);
-    new DataView(memory.buffer).setBigUint64(Number(balance_ptr + 8n), _attached_deposit >> 64n, true);
+    const dataview = new DataView(memory.buffer);
+    dataview.setBigUint64(Number(balance_ptr), _attached_deposit, true);
+    dataview.setBigUint64(Number(balance_ptr + 8n), _attached_deposit >> 64n, true);
 }
 
 export function current_account_id(register) {
@@ -117,7 +120,11 @@ export function value_return(value_len, value_ptr) {
 export function promise_batch_action_create_account() { }
 export function promise_batch_action_deploy_contract() { }
 export function promise_batch_action_function_call() { }
-export function promise_batch_action_transfer() { }
+export function promise_batch_action_transfer(promise_index, amount_ptr) { 
+    const dataview = new DataView(memory.buffer)
+    const amount = dataview.getBigUint64(Number(amount_ptr), true) + (dataview.getBigUint64(Number(amount_ptr + 8n),  true) << 64n);
+    latest_transfer_amount = amount;
+}
 export function promise_batch_action_stake() { }
 export function promise_batch_action_add_key_with_full_access() { }
 export function promise_batch_action_add_key_with_function_call() { }
@@ -171,7 +178,9 @@ export function log_utf16() { }
 export function promise_create() { }
 export function promise_then() { }
 export function promise_and() { }
-export function promise_batch_create() { }
+export function promise_batch_create() { 
+    return 0n;
+}
 export function promise_batch_then() { }
 export function promise_results_count() { }
 export function promise_result() { }

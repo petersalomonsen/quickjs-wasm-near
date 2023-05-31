@@ -18,9 +18,9 @@ export async function getContractSimulationInstance(wasm_contract_type) {
     Object.keys(nearenv).forEach(x => {
         const orig = nearenv[x];
         proxy[x] = (...args) => {
-            //        console.log('method and args:', x, ...args);
+                //    console.log('method and args:', x, ...args);
             const result = orig(...args);
-            //        console.log('result:', result);
+                //    console.log('result:', result);
             return result;
         };
     });

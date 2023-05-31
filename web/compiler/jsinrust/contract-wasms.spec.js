@@ -81,7 +81,7 @@ export function nft_payout() {
 `
         });
         instanceExports.post_javascript();
-        nearenv.set_attached_deposit(6320000000000000000000n);
+        nearenv.set_attached_deposit(6340000000000000000010n);
         nearenv.set_args({
             token_id: 'abc', description: 'hello',
             token_owner_id: 'lalala.near',
@@ -104,12 +104,20 @@ export function nft_payout() {
             ])
         });
         instanceExports.nft_mint();
+        expect(nearenv.latest_transfer_amount).to.equal(10n);
         nearenv.set_args({
             balance: 10_0000_0000n.toString(),
             token_id: "abc"
         });
         instanceExports.nft_payout();
-        console.log(nearenv.latest_return_value);
+        expect(JSON.parse(nearenv.latest_return_value)).to.deep.equal({
+            "payout":
+            {
+                "peter.near": "150000000",
+                "salomonsen.near": "200000000",
+                "lalala.near": "650000000"
+            }
+        });
     }, 10000);
 
 });

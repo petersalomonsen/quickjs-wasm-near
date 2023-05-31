@@ -1,4 +1,4 @@
-import 'https://cdn.jsdelivr.net/npm/near-api-js@2.1.3/dist/near-api-js.min.js';
+import 'https://cdn.jsdelivr.net/npm/near-api-js@2.1.3/dist/near-api-js.js';
 import { showLoginDialog } from './near.component.js';
 
 export const APP_NAME = 'js-in-rust';
@@ -186,10 +186,16 @@ export async function createFunctionCallTransaction({ receiverId, methodName, ar
     }
 }
 
-export async function viewStandaloneContract(contractAccount, methodName, args) {
+export async function viewStandaloneContract(account_id, method_name, args) {
     const wc = await checkSignedin();
     if (wc) {
-        return await wc.account().viewFunction(contractAccount, methodName, args);
+        const contract  = new nearApi.Contract(
+            wc.account(),
+            account_id, {
+            viewMethods: [method_name]
+        });
+
+        return await contract[method_name](args);
     }
 }
 

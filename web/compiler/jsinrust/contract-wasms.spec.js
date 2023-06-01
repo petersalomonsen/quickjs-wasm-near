@@ -40,7 +40,7 @@ export function nft_mint() {
         title: title,
         description: description,
         media: mediastring,
-        //media_hash: env.sha256_utf8_to_base64(mediastring),
+        media_hash: env.sha256_utf8_to_base64(mediastring),
         extra: args.extra
     });
 }
@@ -81,7 +81,7 @@ export function nft_payout() {
 `
         });
         instanceExports.post_javascript();
-        nearenv.set_attached_deposit(6340000000000000000010n);
+        nearenv.set_attached_deposit(6660000000000000000010n);
         nearenv.set_args({
             token_id: 'abc', description: 'hello',
             token_owner_id: 'lalala.near',
@@ -118,6 +118,8 @@ export function nft_payout() {
                 "lalala.near": "650000000"
             }
         });
+        instanceExports.nft_token();
+        console.log(JSON.parse(nearenv.latest_return_value));
     }, 10000);
 
 });

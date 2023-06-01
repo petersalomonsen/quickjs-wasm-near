@@ -1,3 +1,5 @@
+import * as _sha256 from 'fast-sha256';
+
 export let storage = {};
 export let registers = {};
 
@@ -28,6 +30,10 @@ export function set_wasm_memory(wasm_memory) {
 
 export function set_register_string_value(key, str) {
     registers[key] = new TextEncoder().encode(str);
+}
+
+export function set_register_raw_value(key, bytes) {
+    registers[key] = bytes;
 }
 
 export function set_attached_deposit(deposit) {
@@ -158,7 +164,17 @@ export function epoch_height() { }
 export function prepaid_gas() { }
 export function used_gas() { }
 export function random_seed() { }
-export function sha256() { }
+export function sha256(len, ptr, outputregister) {
+    const data = memory.buffer.slice(Number(ptr), Number(ptr + len));
+    
+    const hash = new _sha256.Hash();
+    hash.reset();
+    hash.update(data);
+    const hashed = hash.digest();
+
+    console.log(new TextDecoder().decode(data), new Uint8Array(hashed).map(r => r.toString(16)).join(' '));
+    set_register_raw_value(outputregister, hashed);        
+}
 export function keccak256() { }
 export function keccak512() { }
 export function ripemd160() { }

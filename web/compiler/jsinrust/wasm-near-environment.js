@@ -1,4 +1,4 @@
-import * as _sha256 from 'fast-sha256';
+import _sha256 from 'fast-sha256';
 
 export let storage = {};
 export let registers = {};
@@ -165,14 +165,8 @@ export function prepaid_gas() { }
 export function used_gas() { }
 export function random_seed() { }
 export function sha256(len, ptr, outputregister) {
-    const data = memory.buffer.slice(Number(ptr), Number(ptr + len));
-    
-    const hash = new _sha256.Hash();
-    hash.reset();
-    hash.update(data);
-    const hashed = hash.digest();
-
-    console.log(new TextDecoder().decode(data), new Uint8Array(hashed).map(r => r.toString(16)).join(' '));
+    const data = new Uint8Array(memory.buffer.slice(Number(ptr), Number(ptr + len)));    
+    const hashed = _sha256(data);
     set_register_raw_value(outputregister, hashed);        
 }
 export function keccak256() { }

@@ -13,15 +13,21 @@ export let _signer_account_id = 'test';
 export let _predecessor_account_id = 'test';
 export let _attached_deposit = 0n;
 export let _input = {};
+export let log_output = [];
 
 export function reset_near_env() {
     storage = {};
     registers = {};
     _args = '{}';
+    log_output = [];
 }
 
 export function set_args(args) {
     _args = JSON.stringify(args);
+}
+
+export function set_args_string(args) {
+    _args = args;
 }
 
 export function set_wasm_memory(wasm_memory) {
@@ -176,13 +182,14 @@ export function ecrecover() { }
 export function panic() { }
 export function panic_utf8(len, ptr) {
     const msg = new TextDecoder().decode(memory.buffer.slice(Number(ptr), Number(ptr + len)));
-    console.error('panic', msg);
+    log_output.push(msg);
     throw msg;
 }
 export function log(msg) { print(msg) }
 export function log_utf8(len, ptr) {
     const msg = new TextDecoder().decode(memory.buffer.slice(Number(ptr), Number(ptr + len)));
     console.log('log', msg);
+    log_output.push(msg);
 }
 export function log_utf16() { }
 export function promise_create() { }

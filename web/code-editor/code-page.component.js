@@ -1,13 +1,14 @@
 import './code-editor.component.js';
-import { initNFTContract, deployJScontract, deployStandaloneContract, getSuggestedDepositForContract, isStandaloneMode, callStandaloneContract, createWalletConnection } from '../near/near.js';
+import { initNFTContract, deployJScontract, deployStandaloneContract, getSuggestedDepositForContract, isStandaloneMode, callStandaloneContract, createWalletConnection, byteArrayToBase64 } from '../near/near.js';
 import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
-import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
 import { createStandalone } from '../compiler/standalone.js';
 import { bundle } from '../compiler/bundler.js';
 import html from './code-page.component.html.js';
 import css from './code-page.component.css.js';
 import { WASM_URLS } from '../compiler/jsinrust/contract-wasms.js';
+import * as nearenv from '../compiler/jsinrust/wasm-near-environment.js';
+import { getContractSimulationInstance } from '../compiler/jsinrust/contract-wasms.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
@@ -40,7 +41,8 @@ class CodePageComponent extends HTMLElement {
             const accountId = walletConnection.account().accountId;
 
             const messages = [
-                {"role": "user", "content": `The following Javascript code will return web content.
+                {
+                    "role": "user", "content": `The following Javascript code will return web content.
 \`\`\`
 export function web4_get() {
     const request = JSON.parse(env.input()).request;
@@ -80,8 +82,8 @@ export function nft_payout() {
 }
 \`\`\`
                 `},
-                {"role": "user", "content": `In the next message I will show you some Javascript code. For those lines that starts with \`AI:\`, replace with javascript code according to the text on that line ( which can be in any human language ), and only give me the fully updated javascript code without any extra text before or after.`},
-                {"role": "user", "content": sourcecodeeditor.value}
+                { "role": "user", "content": `In the next message I will show you some Javascript code. For those lines that starts with \`AI:\`, replace with javascript code according to the text on that line ( which can be in any human language ), and only give me the fully updated javascript code without any extra text before or after.` },
+                { "role": "user", "content": sourcecodeeditor.value }
             ];
 
             const messagesStringified = JSON.stringify(messages);
@@ -93,15 +95,16 @@ export function nft_payout() {
             const result = await callStandaloneContract('jsinrust.near', 'ask_ai', {
                 message_hash
             }, deposit);
-        
+
             const airesponse = await fetch('https://near-openai.vercel.app/api/openai', {
                 method: 'POST',
                 body: JSON.stringify({
                     transaction_hash: result.transaction.hash,
                     sender_account_id: accountId,
-                    messages: messages})
+                    messages: messages
+                })
             }).then(r => r.json());
-            sourcecodeeditor.value = airesponse.choices[0].message.content;                
+            sourcecodeeditor.value = airesponse.choices[0].message.content;
             toggleIndeterminateProgress(false);
         });
         const savebutton = this.shadowRoot.getElementById('savebutton');
@@ -220,31 +223,39 @@ export function nft_payout() {
         const simulatebutton = this.shadowRoot.getElementById('simulatebutton');
         this.simulationOutputArea = this.shadowRoot.querySelector('#simulationoutput');
         simulatebutton.addEventListener('click', async () => {
-            const deposit = this.shadowRoot.querySelector('#depositinput').value;
-            const quickjs = await createQuickJSWithNearEnv(
-                this.shadowRoot.querySelector('#argumentsinput').value,
-                deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined,
-                getStorageObj(),
-                this.shadowRoot.querySelector('#signeraccountidinput').value
-            );
+            const depositInputValue = this.shadowRoot.querySelector('#depositinput').value;
+            const signer_account_id = this.shadowRoot.querySelector('#signeraccountidinput').value;
+            const storage = getStorageObj();
+
+            const quickjs = await createQuickJS();
             const bytecode = quickjs.compileToByteCode(await bundle(sourcecodeeditor.value, this.bundletypeselect.value), 'contractmodule');
-            quickjs.evalByteCode(bytecode);
-            quickjs.stdoutlines = [];
-            quickjs.stdoutlines = [];
+            const instanceExports = await getContractSimulationInstance('nft');
+
+            nearenv.set_args({
+                bytecodebase64: await byteArrayToBase64(bytecode)
+            });
+            instanceExports.post_quickjs_bytecode();
+
             const selectedMethod = this.shadowRoot.querySelector('#methodselect').value;
             if (selectedMethod) {
-                const runcontractsource = `import { ${selectedMethod} } from 'contractmodule';
-    ${selectedMethod}();
-    `;
-                quickjs.evalSource(runcontractsource, 'runcontract');
-                this.simulationOutputArea.textContent = quickjs.stdoutlines.join('\n');
-                quickjs.stdoutlines = [];
-                quickjs.evalSource('env.print_storage()', 'printstorage');
-                const storageAfterRun = JSON.parse(quickjs.stdoutlines[0]);
+                try {
+                    const args = this.shadowRoot.querySelector('#argumentsinput').value;
+                    if (depositInputValue) {
+                        nearenv.set_attached_deposit(BigInt(depositInputValue));
+                    }
+                    nearenv.set_args_string(args);
+                    instanceExports[selectedMethod]();
+                } catch (e) {
+                    console.error(e);
+                }
+                this.simulationOutputArea.textContent = nearenv.log_output.join('\n');
+                const storageAfterRun = nearenv.storage;
                 storageitemsdiv.replaceChildren([]);
+
                 for (const key in storageAfterRun) {
                     addStorageItem(key, storageAfterRun[key]);
                 }
+
                 this.simulationContext = {
                     selectedMethod: selectedMethod,
                     storage: storageAfterRun,

@@ -20,11 +20,13 @@ export default /*html*/ `
 <h3>Simulation</h3>
 <p>
   <mwc-select id="methodselect" label="method"></mwc-select>
-  <mwc-textfield id="argumentsinput" label="arguments (JSON)"></mwc-textfield>
+
   <mwc-textfield id="depositinput" label="attached deposit" type="number"></mwc-textfield>
   <mwc-textfield id="signeraccountidinput" label="signer account id"></mwc-textfield>
+  
 </p>
-
+Arguments (json):<br />
+<args-editor id="argumentsinput"></args-editor>
 <p>
   <mwc-button raised id="simulatebutton" icon="play_arrow">Run</mwc-button>
 <p>

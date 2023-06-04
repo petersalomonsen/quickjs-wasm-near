@@ -6,9 +6,8 @@ import { createStandalone } from '../compiler/standalone.js';
 import { bundle } from '../compiler/bundler.js';
 import html from './code-page.component.html.js';
 import css from './code-page.component.css.js';
-import { WASM_URLS } from '../compiler/jsinrust/contract-wasms.js';
+import { WASM_URLS, getContractSimulationInstance, loadContractWasmIntoSimulator } from '../compiler/jsinrust/contract-wasms.js';
 import * as nearenv from '../compiler/jsinrust/wasm-near-environment.js';
-import { getContractSimulationInstance } from '../compiler/jsinrust/contract-wasms.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
@@ -114,12 +113,9 @@ export function nft_payout() {
         const deploybutton = this.shadowRoot.getElementById('deploybutton');
         this.bundletypeselect = this.shadowRoot.getElementById('bundletypeselect');
         await new Promise(r => setTimeout(() => r(), 100));
+        this.bundletypeselect.addEventListener('change', () => sourcecodeeditor.setEnvCompletions(this.bundletypeselect.value));
         this.bundletypeselect.value = lastSelectedBundleType;
 
-        if (this.bundletypeselect.value != '') {
-            sourcecodeeditor.setEnvCompletions(this.bundletypeselect.value);
-        }
-        this.bundletypeselect.addEventListener('change', () => sourcecodeeditor.setEnvCompletions(this.bundletypeselect.value));
         deploybutton.addEventListener('click', async () => {
             if (this.bundletypeselect.value == '') {
                 this.shadowRoot.querySelector('#selectTargetContractTypeSnackbar').show();
@@ -201,40 +197,13 @@ export function nft_payout() {
             URL.revokeObjectURL(link.href);
         });
 
-        const addstorageitembutton = this.shadowRoot.getElementById('addstorageitembutton');
-        const storageitemsdiv = this.shadowRoot.getElementById('storageitems');
-        const addStorageItem = (key = '', val = '') => {
-            const storageitemtemplate = this.shadowRoot.getElementById('storageitemtemplate');
-            storageitemsdiv.appendChild(storageitemtemplate.content.cloneNode(true));
-            const storageitem = storageitemsdiv.lastElementChild;
-            storageitem.querySelector('.deletestorageitembutton').addEventListener('click', () => storageitem.remove());
-            storageitem.querySelector('.storagekeyinput').value = key;
-            storageitem.querySelector('.storagevalueinput').value = val;
-        };
-        addstorageitembutton.addEventListener('click', () => {
-            addStorageItem();
-        });
-
-        const getStorageObj = () => [...storageitemsdiv.children].reduce((p, c) => {
-            p[c.querySelector('.storagekeyinput').value] = c.querySelector('.storagevalueinput').value;
-            return p;
-        }, {});
-
         const simulatebutton = this.shadowRoot.getElementById('simulatebutton');
         this.simulationOutputArea = this.shadowRoot.querySelector('#simulationoutput');
+
         simulatebutton.addEventListener('click', async () => {
+            nearenv.reset_log_output();
             const depositInputValue = this.shadowRoot.querySelector('#depositinput').value;
             const signer_account_id = this.shadowRoot.querySelector('#signeraccountidinput').value;
-            const storage = getStorageObj();
-
-            const quickjs = await createQuickJS();
-            const bytecode = quickjs.compileToByteCode(await bundle(sourcecodeeditor.value, this.bundletypeselect.value), 'contractmodule');
-            const instanceExports = await getContractSimulationInstance('nft');
-
-            nearenv.set_args({
-                bytecodebase64: await byteArrayToBase64(bytecode)
-            });
-            instanceExports.post_quickjs_bytecode();
 
             const selectedMethod = this.shadowRoot.querySelector('#methodselect').value;
             if (selectedMethod) {
@@ -242,23 +211,23 @@ export function nft_payout() {
                     const args = this.shadowRoot.querySelector('#argumentsinput').value;
                     if (depositInputValue) {
                         nearenv.set_attached_deposit(BigInt(depositInputValue));
+                    } else {
+                        nearenv.set_attached_deposit(0n);
                     }
+                    nearenv.set_signer_account_id(signer_account_id);
+                    
                     nearenv.set_args_string(args);
-                    instanceExports[selectedMethod]();
+                    const simulationInstance = await getContractSimulationInstance();
+                    simulationInstance[selectedMethod]();
                 } catch (e) {
                     console.error(e);
                 }
-                this.simulationOutputArea.textContent = nearenv.log_output.join('\n');
-                const storageAfterRun = nearenv.storage;
-                storageitemsdiv.replaceChildren([]);
-
-                for (const key in storageAfterRun) {
-                    addStorageItem(key, storageAfterRun[key]);
-                }
+                this.simulationOutputArea.textContent = `${nearenv.log_output.join('\n')}
+${nearenv.latest_return_value}
+`;
 
                 this.simulationContext = {
                     selectedMethod: selectedMethod,
-                    storage: storageAfterRun,
                     arguments: this.shadowRoot.querySelector('#argumentsinput').value,
                     deposit: this.shadowRoot.querySelector('#depositinput').value,
                 };
@@ -274,11 +243,6 @@ export function nft_payout() {
             this.shadowRoot.querySelector('#methodselect').value = this.simulationContext.selectedMethod;
             this.shadowRoot.querySelector('#argumentsinput').value = this.simulationContext.arguments;
             this.shadowRoot.querySelector('#depositinput').value = this.simulationContext.deposit;
-            const storageitemsdiv = this.shadowRoot.getElementById('storageitems');
-            storageitemsdiv.replaceChildren([]);
-            for (const key in this.simulationContext.storage) {
-                addStorageItem(key, this.simulationContext.storage[key]);
-            }
         }
     }
 
@@ -287,12 +251,12 @@ export function nft_payout() {
         localStorage.setItem('lastSavedSourceCode', source);
         localStorage.setItem('lastSelectedBundleType', this.bundletypeselect.value);
         const methodselect = this.shadowRoot.querySelector('#methodselect');
-        const quickjs = await createQuickJS();
+        await loadContractWasmIntoSimulator(this.bundletypeselect.value);
+
         try {
-            quickjs.evalSource(await bundle(source, this.bundletypeselect.value), 'contractmodule');
-            quickjs.evalSource(`import * as contract from 'contractmodule';
-            print('method names:', Object.keys(contract));`, 'main');
-            const methodnames = quickjs.stdoutlines.find(l => l.indexOf('method names:') == 0).substring('method names: '.length).split(',');
+            const simulationInstance = await getContractSimulationInstance();
+    
+            const methodnames = Object.keys(simulationInstance);
             this.exportedMethodNames = methodnames;
             methodselect.querySelectorAll('mwc-list-item').forEach(li => li.remove());
             methodnames.forEach(methodname => {
@@ -301,12 +265,21 @@ export function nft_payout() {
                 option.value = methodname;
                 methodselect.appendChild(option);
             });
+
+            const quickjs = await createQuickJS();
+            const bytecode = quickjs.compileToByteCode(await bundle(source, this.bundletypeselect.value), 'contractmodule');
+
+            nearenv.set_args({
+                bytecodebase64: await byteArrayToBase64(bytecode)
+            });
+            simulationInstance.post_quickjs_bytecode();
+
             this.simulationOutputArea.innerHTML = '';
             if (this.simulationContext) {
                 setTimeout(() => methodselect.value = this.simulationContext.selectedMethod, 0);
             }
         } catch (e) {
-            this.simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
+            this.simulationOutputArea.innerHTML = e;
             const compileErrorSnackbar = this.shadowRoot.querySelector('#compileErrorSnackbar');
             compileErrorSnackbar.show();
         }

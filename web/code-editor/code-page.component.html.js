@@ -24,18 +24,7 @@ export default /*html*/ `
   <mwc-textfield id="depositinput" label="attached deposit" type="number"></mwc-textfield>
   <mwc-textfield id="signeraccountidinput" label="signer account id"></mwc-textfield>
 </p>
-<h4>Storage</h4>
-<template id="storageitemtemplate">
-  <div>
-    <mwc-textfield class="storagekeyinput" label="key"></mwc-textfield>
-    <mwc-textfield class="storagevalueinput" label="value"></mwc-textfield>
-    <mwc-icon-button icon="delete" slot="navigationIcon" class="deletestorageitembutton"></mwc-icon-button>
-  </div>
-</template>
-<div id="storageitems">
 
-</div>
-<mwc-button id="addstorageitembutton" icon="add">Add storage item</mwc-button>
 <p>
   <mwc-button raised id="simulatebutton" icon="play_arrow">Run</mwc-button>
 <p>

@@ -22,6 +22,10 @@ export function reset_near_env() {
     log_output = [];
 }
 
+export function reset_log_output() {
+    log_output = [];
+}
+
 export function set_args(args) {
     _args = JSON.stringify(args);
 }

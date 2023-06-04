@@ -1,4 +1,4 @@
-import _sha256 from 'fast-sha256';
+import _sha256 from './fast-sha256.min.js';
 
 export const CONTRACT_ACCOUNT_ID = 'thecontractowner.near';
 export let storage = {};

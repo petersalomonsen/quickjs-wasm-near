@@ -32,3 +32,13 @@ jobs:
           yarn install
           yarn createdevaccount
           yarn test
+  distbundle:
+    name: Dist bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Chrome headless
+        run: |
+          cd web
+          yarn install
+          yarn dist

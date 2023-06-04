@@ -201,7 +201,7 @@ export function nft_payout() {
         this.simulationOutputArea = this.shadowRoot.querySelector('#simulationoutput');
 
         simulatebutton.addEventListener('click', async () => {
-            nearenv.reset_log_output();
+            nearenv.reset_output();
             const depositInputValue = this.shadowRoot.querySelector('#depositinput').value;
             const signer_account_id = this.shadowRoot.querySelector('#signeraccountidinput').value;
 
@@ -272,6 +272,7 @@ ${nearenv.latest_return_value}
             nearenv.set_args({
                 bytecodebase64: await byteArrayToBase64(bytecode)
             });
+            nearenv.set_attached_deposit(0n);
             simulationInstance.post_quickjs_bytecode();
 
             this.simulationOutputArea.innerHTML = '';

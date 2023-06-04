@@ -30,11 +30,7 @@ export default /*html*/ `
 <p>
 
 <div class="outputarea">
-  <pre>
-      <code id="simulationoutput">
-
-      </code>
-    </pre>
+  <pre><code id="simulationoutput"></code></pre>
 </div>
 
 <mwc-dialog id="deploy-contract-dialog" heading="Deploy contract?">

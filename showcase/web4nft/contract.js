@@ -134,9 +134,7 @@ export function nft_payout() {
     }
     addPayout(token_owner_id, remainingbalance);
   } catch (e) {
-    const contractRoyaltyAmount = balance * BigInt(2000) / BigInt(10000);
-    addPayout(contract_owner, contractRoyaltyAmount);
-    addPayout(token_owner_id, balance - contractRoyaltyAmount);
+    addPayout(token_owner_id, balance);
   }
 
   Object.keys(payout).forEach(k => payout[k] = payout[k].toString());

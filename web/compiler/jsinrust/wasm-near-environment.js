@@ -1,5 +1,6 @@
 import _sha256 from 'fast-sha256';
 
+export const CONTRACT_ACCOUNT_ID = 'thecontractowner.near';
 export let storage = {};
 export let registers = {};
 
@@ -8,9 +9,9 @@ export let latest_return_value;
 export let latest_transfer_amount;
 
 export let _args = '{}';
-export let _current_account_id = 'test';
-export let _signer_account_id = 'test';
-export let _predecessor_account_id = 'test';
+export let _current_account_id = CONTRACT_ACCOUNT_ID;
+export let _signer_account_id = CONTRACT_ACCOUNT_ID;
+export let _predecessor_account_id = CONTRACT_ACCOUNT_ID;
 export let _attached_deposit = 0n;
 export let _input = {};
 export let log_output = [];
@@ -20,10 +21,15 @@ export function reset_near_env() {
     registers = {};
     _args = '{}';
     log_output = [];
+    _attached_deposit = 0n;
+    _current_account_id = CONTRACT_ACCOUNT_ID;
+    _signer_account_id = CONTRACT_ACCOUNT_ID;
+    _predecessor_account_id = CONTRACT_ACCOUNT_ID;
 }
 
-export function reset_log_output() {
+export function reset_output() {
     log_output = [];
+    latest_return_value = '';
 }
 
 export function set_args(args) {
@@ -136,9 +142,9 @@ export function value_return(value_len, value_ptr) {
 export function promise_batch_action_create_account() { }
 export function promise_batch_action_deploy_contract() { }
 export function promise_batch_action_function_call() { }
-export function promise_batch_action_transfer(promise_index, amount_ptr) { 
+export function promise_batch_action_transfer(promise_index, amount_ptr) {
     const dataview = new DataView(memory.buffer)
-    const amount = dataview.getBigUint64(Number(amount_ptr), true) + (dataview.getBigUint64(Number(amount_ptr + 8n),  true) << 64n);
+    const amount = dataview.getBigUint64(Number(amount_ptr), true) + (dataview.getBigUint64(Number(amount_ptr + 8n), true) << 64n);
     latest_transfer_amount = amount;
 }
 export function promise_batch_action_stake() { }
@@ -175,9 +181,9 @@ export function prepaid_gas() { }
 export function used_gas() { }
 export function random_seed() { }
 export function sha256(len, ptr, outputregister) {
-    const data = new Uint8Array(memory.buffer.slice(Number(ptr), Number(ptr + len)));    
+    const data = new Uint8Array(memory.buffer.slice(Number(ptr), Number(ptr + len)));
     const hashed = _sha256(data);
-    set_register_raw_value(outputregister, hashed);        
+    set_register_raw_value(outputregister, hashed);
 }
 export function keccak256() { }
 export function keccak512() { }
@@ -199,7 +205,7 @@ export function log_utf16() { }
 export function promise_create() { }
 export function promise_then() { }
 export function promise_and() { }
-export function promise_batch_create() { 
+export function promise_batch_create() {
     return 0n;
 }
 export function promise_batch_then() { }

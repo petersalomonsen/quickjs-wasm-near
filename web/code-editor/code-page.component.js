@@ -209,6 +209,7 @@ export function nft_payout() {
             const selectedMethod = this.shadowRoot.querySelector('#methodselect').value;
             if (selectedMethod) {
                 try {
+                    const simulationInstance = await getContractSimulationInstance();
                     const args = this.shadowRoot.querySelector('#argumentsinput').value;
                     if (depositInputValue) {
                         nearenv.set_attached_deposit(BigInt(depositInputValue));
@@ -218,7 +219,7 @@ export function nft_payout() {
                     nearenv.set_signer_account_id(signer_account_id);
                     
                     nearenv.set_args_string(args);
-                    const simulationInstance = await getContractSimulationInstance();
+                    
                     simulationInstance[selectedMethod]();
                 } catch (e) {
                     console.error(e);

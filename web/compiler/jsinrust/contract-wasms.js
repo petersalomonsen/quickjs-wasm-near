@@ -40,6 +40,7 @@ export async function loadContractWasmIntoSimulator(wasm_contract_type) {
 }
 
 export async function getContractSimulationInstance() {
+    nearenv.reset_near_env(false);
     const memory = new WebAssembly.Memory({
         initial: 1024,
         maximum: 2048

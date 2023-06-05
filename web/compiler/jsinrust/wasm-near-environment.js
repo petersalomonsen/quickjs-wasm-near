@@ -16,8 +16,10 @@ export let _attached_deposit = 0n;
 export let _input = {};
 export let log_output = [];
 
-export function reset_near_env() {
-    storage = {};
+export function reset_near_env(reset_storage = true) {
+    if (reset_storage) {
+        storage = {};
+    }
     registers = {};
     _args = '{}';
     log_output = [];

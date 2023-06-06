@@ -5,7 +5,7 @@ export default /*html*/ `
     <mwc-list-item value="nft">NFT</mwc-list-item>
   </mwc-select>
   <span style="flex-grow: 1"></span>
-  <mwc-button raised id="askaibutton" icon="question_mark">Ask AI</mwc-button>
+  <mwc-button raised id="askaibutton" icon="question_mark" style="display: none;">Ask AI</mwc-button>
 </div>
 <p>
   <code-editor id="sourcecodeeditor"></code-editor>

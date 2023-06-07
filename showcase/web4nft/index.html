@@ -71,8 +71,14 @@
             &nbsp; Font size: <input type="number" id="font_size_input" value="3" min="1" max="4" />
         </p>
         <p>
-            Royalty: <input type="number" id="royalty_percentage_input" value="20" />%
-            Split royalty between accounts: <input type="text" id="royalty_accounts_input" value="" />
+            <template id="royalty_row_template">
+                <tr class="royalty_row">
+                    <td><input type="text" class="royalty_account_input" /></td>
+                    <td><input type="number" class="royalty_percentage_input" />%</td>
+                </tr>
+            </template>
+            <table id="royalty_table">
+            </table>             
         </p>
         <button id="mint_button">Mint</button>
         <button id="preview_button">Preview</button>
@@ -135,11 +141,13 @@
             });
 
             const account = walletConnection.account();
+            const royalty_row_template = document.getElementById('royalty_row_template');
+            const royalty_table = document.getElementById('royalty_table');
+            const royalty_row_element = royalty_row_template.content.cloneNode(true);
+            royalty_row_element.querySelector('.royalty_account_input').value = account.accountId;
+            royalty_row_element.querySelector('.royalty_percentage_input').value = 20;
+            royalty_table.appendChild(royalty_row_element);
 
-            const royalty_accounts_input = document.getElementById('royalty_accounts_input');
-            const royalty_percentage_input = document.getElementById('royalty_percentage_input');
-
-            royalty_accounts_input.value = account.accountId;
             const mintButton = document.getElementById('mint_button');
             const STORED_COLORS_ARRAY_KEY = 'colors_array';
             let colors_array = localStorage.getItem('colors_array');
@@ -161,18 +169,17 @@
                         token_owner_id: account.accountId,
                         font_size: document.getElementById('font_size_input').value,
                         colors: colors_array,
-                        royalty: {
-                            percentage: {
-                                numerator: Math.floor(parseFloat(royalty_percentage_input.value) * 100)
-                            },
-                            split_between: royalty_accounts_input.value.split(',').reduce((p, c, ndx, arr) => {
-                                const account_id = c;
-                                p[account_id] = {
-                                    numerator: Math.floor(10_000 / arr.length)
-                                }
-                                return p;
-                            }, {})
-                        }
+                        extra: Array.from(document.querySelectorAll('.royalty_row')).map((val) => {
+                            const account_id = val.querySelector('.royalty_account_input').value;
+                            const numerator = Math.floor(parseFloat(val.querySelector('.royalty_percentage_input').value) * 100);
+                            return {
+                                trait_type: 'royalty',
+                                    value: {
+                                        account_id,
+                                        numerator
+                                    }                                
+                                };
+                        })
                     }, undefined, utils.format.parseNearAmount("0.1"));
                     document.getElementById('mintresultview').innerHTML = JSON.stringify(result, null, 1);
                 } catch (e) {

@@ -175,17 +175,19 @@
                         token_owner_id: account.accountId,
                         font_size: document.getElementById('font_size_input').value,
                         colors: colors_array,
-                        extra: Array.from(document.querySelectorAll('.royalty_row')).map((val) => {
-                            const account_id = val.querySelector('.royalty_account_input').value;
-                            const numerator = Math.floor(parseFloat(val.querySelector('.royalty_percentage_input').value) * 100);
-                            return {
-                                trait_type: 'royalty',
-                                    value: {
-                                        account_id,
-                                        numerator
-                                    }                                
-                                };
-                        }).filter(royalty => royalty.value.account_id && royalty.value.numerator > 0)
+                        extra: JSON.stringify(
+                            Array.from(document.querySelectorAll('.royalty_row')).map((val) => {
+                                const account_id = val.querySelector('.royalty_account_input').value;
+                                const numerator = Math.floor(parseFloat(val.querySelector('.royalty_percentage_input').value) * 100);
+                                return {
+                                    trait_type: 'royalty',
+                                        value: {
+                                            account_id,
+                                            numerator
+                                        }                                
+                                    };
+                            }).filter(royalty => royalty.value.account_id && royalty.value.numerator > 0)
+                        )
                     }, undefined, utils.format.parseNearAmount("0.1"));
                     document.getElementById('mintresultview').innerHTML = JSON.stringify(result, null, 1);
                 } catch (e) {

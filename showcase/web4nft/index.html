@@ -74,11 +74,12 @@
             <template id="royalty_row_template">
                 <tr class="royalty_row">
                     <td><input type="text" class="royalty_account_input" /></td>
-                    <td><input type="number" class="royalty_percentage_input" />%</td>
+                    <td><input type="number" class="royalty_percentage_input" value="0" />%</td>
                 </tr>
             </template>
             <table id="royalty_table">
-            </table>             
+            </table>
+            <button id="add_royalty_button">Add royalty receiver</button>
         </p>
         <button id="mint_button">Mint</button>
         <button id="preview_button">Preview</button>
@@ -147,6 +148,11 @@
             royalty_row_element.querySelector('.royalty_account_input').value = account.accountId;
             royalty_row_element.querySelector('.royalty_percentage_input').value = 20;
             royalty_table.appendChild(royalty_row_element);
+            const add_royalty_button = document.getElementById('add_royalty_button');
+            add_royalty_button.addEventListener('click', () => {
+                const royalty_row_element = royalty_row_template.content.cloneNode(true);
+                royalty_table.appendChild(royalty_row_element);
+            });
 
             const mintButton = document.getElementById('mint_button');
             const STORED_COLORS_ARRAY_KEY = 'colors_array';
@@ -179,7 +185,7 @@
                                         numerator
                                     }                                
                                 };
-                        })
+                        }).filter(royalty => royalty.value.account_id && royalty.value.numerator > 0)
                     }, undefined, utils.format.parseNearAmount("0.1"));
                     document.getElementById('mintresultview').innerHTML = JSON.stringify(result, null, 1);
                 } catch (e) {

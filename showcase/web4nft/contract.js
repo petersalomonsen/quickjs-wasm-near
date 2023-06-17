@@ -115,7 +115,6 @@ export function nft_payout() {
   const payout = {};
   const token_obj = JSON.parse(env.nft_token(args.token_id));
   const token_owner_id = token_obj.owner_id;
-  const contract_owner = env.contract_owner();
 
   const addPayout = (account, amount) => {
     if (!payout[account]) {

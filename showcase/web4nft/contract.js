@@ -103,8 +103,8 @@ export function nft_mint() {
   return JSON.stringify({
     title: title,
     description: description,
-    media: `data:image/svg+xml;base64,${env.base64_encode(svgstring)}`,
-    media_hash: env.sha256_utf8_to_base64(svgstring),
+    media: args.media ?? `data:image/svg+xml;base64,${env.base64_encode(svgstring)}`,
+    media_hash: args.media_hash ?? env.sha256_utf8_to_base64(svgstring),
     extra: args.extra
   });
 }

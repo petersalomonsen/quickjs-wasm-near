@@ -1,0 +1,8 @@
+{
+    "customizations": {
+        "vscode": {
+            "extensions": ["ms-vscode.makefile-tools"]
+        }
+    },
+    "postCreateCommand": "./devcontainer/post-create.sh"
+}

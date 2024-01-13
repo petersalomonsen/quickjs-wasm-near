@@ -136,7 +136,7 @@ JSValue js_load_bytecode(const uint8_t *buf, size_t buf_len)
 
     module_obj = JS_ReadObject(ctx, buf, buf_len, JS_READ_OBJ_BYTECODE);
     JS_EvalFunction(ctx, module_obj);
-    return JS_GetModule_NS(ctx, JS_VALUE_GET_PTR(module_obj));
+    return JS_GetImportMeta(ctx, JS_VALUE_GET_PTR(module_obj));
 }
 
 JSValue js_call_function(JSValue mod_obj, const char *function_name)

@@ -1,23 +1,45 @@
+import _sha256 from './fast-sha256.min.js';
+
+export const CONTRACT_ACCOUNT_ID = 'thecontractowner.near';
 export let storage = {};
 export let registers = {};
 
 export let memory;
 export let latest_return_value;
+export let latest_transfer_amount;
+
 export let _args = '{}';
-export let _current_account_id = 'test';
-export let _signer_account_id = 'test';
-export let _predecessor_account_id = 'test';
+export let _current_account_id = CONTRACT_ACCOUNT_ID;
+export let _signer_account_id = CONTRACT_ACCOUNT_ID;
+export let _predecessor_account_id = CONTRACT_ACCOUNT_ID;
 export let _attached_deposit = 0n;
 export let _input = {};
+export let log_output = [];
 
-export function reset_near_env() {
-    storage = {};
+export function reset_near_env(reset_storage = true) {
+    if (reset_storage) {
+        storage = {};
+    }
     registers = {};
     _args = '{}';
+    log_output = [];
+    _attached_deposit = 0n;
+    _current_account_id = CONTRACT_ACCOUNT_ID;
+    _signer_account_id = CONTRACT_ACCOUNT_ID;
+    _predecessor_account_id = CONTRACT_ACCOUNT_ID;
+}
+
+export function reset_output() {
+    log_output = [];
+    latest_return_value = '';
 }
 
 export function set_args(args) {
     _args = JSON.stringify(args);
+}
+
+export function set_args_string(args) {
+    _args = args;
 }
 
 export function set_wasm_memory(wasm_memory) {
@@ -28,8 +50,26 @@ export function set_register_string_value(key, str) {
     registers[key] = new TextEncoder().encode(str);
 }
 
+export function set_register_raw_value(key, bytes) {
+    registers[key] = bytes;
+}
+
+export function set_attached_deposit(deposit) {
+    _attached_deposit = deposit;
+}
+
+export function set_signer_account_id(account_id) {
+    _signer_account_id = account_id;
+}
+
+export function set_predecessor_account_id(account_id) {
+    _predecessor_account_id = account_id;
+}
+
 export function attached_deposit(balance_ptr) {
-    new DataView(memory.buffer).setBigUint64(Number(balance_ptr), _attached_deposit, true);
+    const dataview = new DataView(memory.buffer);
+    dataview.setBigUint64(Number(balance_ptr), _attached_deposit, true);
+    dataview.setBigUint64(Number(balance_ptr + 8n), _attached_deposit >> 64n, true);
 }
 
 export function current_account_id(register) {
@@ -104,7 +144,11 @@ export function value_return(value_len, value_ptr) {
 export function promise_batch_action_create_account() { }
 export function promise_batch_action_deploy_contract() { }
 export function promise_batch_action_function_call() { }
-export function promise_batch_action_transfer() { }
+export function promise_batch_action_transfer(promise_index, amount_ptr) {
+    const dataview = new DataView(memory.buffer)
+    const amount = dataview.getBigUint64(Number(amount_ptr), true) + (dataview.getBigUint64(Number(amount_ptr + 8n), true) << 64n);
+    latest_transfer_amount = amount;
+}
 export function promise_batch_action_stake() { }
 export function promise_batch_action_add_key_with_full_access() { }
 export function promise_batch_action_add_key_with_function_call() { }
@@ -112,12 +156,11 @@ export function promise_batch_action_delete_key() { }
 export function promise_batch_action_delete_account() { }
 export function promise_batch_action_function_call_weight() { }
 export function read_register(register, ptr) {
-
     const reg_value = registers[register];
     if (reg_value != undefined && reg_value.length > 0) {
         new Uint8Array(memory.buffer).set(reg_value, Number(ptr));
     }
-    // console.log('read_register', reg_value, new TextDecoder().decode(new Uint8Array(memory.buffer).slice(Number(ptr),Number(ptr)+reg_value.length)));
+    //console.log('read_register', reg_value, new TextDecoder().decode(new Uint8Array(memory.buffer).slice(Number(ptr),Number(ptr)+reg_value.length)));
 }
 export function register_len(register_id) {
     const registercontent = registers[register_id];
@@ -139,7 +182,11 @@ export function epoch_height() { }
 export function prepaid_gas() { }
 export function used_gas() { }
 export function random_seed() { }
-export function sha256() { }
+export function sha256(len, ptr, outputregister) {
+    const data = new Uint8Array(memory.buffer.slice(Number(ptr), Number(ptr + len)));
+    const hashed = _sha256(data);
+    set_register_raw_value(outputregister, hashed);
+}
 export function keccak256() { }
 export function keccak512() { }
 export function ripemd160() { }
@@ -147,19 +194,22 @@ export function ecrecover() { }
 export function panic() { }
 export function panic_utf8(len, ptr) {
     const msg = new TextDecoder().decode(memory.buffer.slice(Number(ptr), Number(ptr + len)));
-    console.error('panic', msg);
+    log_output.push(msg);
     throw msg;
 }
 export function log(msg) { print(msg) }
 export function log_utf8(len, ptr) {
     const msg = new TextDecoder().decode(memory.buffer.slice(Number(ptr), Number(ptr + len)));
     console.log('log', msg);
+    log_output.push(msg);
 }
 export function log_utf16() { }
 export function promise_create() { }
 export function promise_then() { }
 export function promise_and() { }
-export function promise_batch_create() { }
+export function promise_batch_create() {
+    return 0n;
+}
 export function promise_batch_then() { }
 export function promise_results_count() { }
 export function promise_result() { }

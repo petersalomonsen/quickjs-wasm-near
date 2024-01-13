@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,7 +8,8 @@
         body {
             background-color: black;
             color: white;
-            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-family: monospace;
+            font-size: 14px;
         }
 
         input {
@@ -20,6 +22,7 @@
         button {
             padding: 10px;
             border: none;
+            border: #114 solid 4px;
             background-color: white;
             color: black;
         }
@@ -41,12 +44,23 @@
             width: 500px;
             max-width: 100%;
         }
+
+        a:visited, a {
+            color: white;
+        }
+
+        #contractidspan {
+            background-color: white;
+            color: black;
+            padding: 5px;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Mint NFT</h1>
-    <p>Simple miniting to <span id="contractidspan"></span></p>
+    <p>Create some image and text and mint your own NFT that you can list and trade on <a href="https://www.mintbase.xyz/contract/jsinrustnft.near/nfts/all/0">Mintbase</a></p>
+
+    <p>The NFT will be minted to the smart contract <span id="contractidspan"></span></p>
     <p>
         <button id="loginbutton">Login</button>
     </p>
@@ -54,17 +68,39 @@
     <div id="logged_in_content">
         <button id="logoutbutton">Logout</button>
         <p>Token id: <input type="text" id="token_id_input" value="22" />
-            &nbsp; Font size: <input type="number" id="font_size_input" value="3" min="1" max="4"/>
+            &nbsp; Font size: <input type="number" id="font_size_input" value="3" min="1" max="4" />
         </p>
-            <button id="mint_button">Mint</button>
-            <button id="preview_button">Preview</button>
+        <p>
+            <template id="royalty_row_template">
+                <tr class="royalty_row">
+                    <td><input type="text" class="royalty_account_input" /></td>
+                    <td><input type="number" class="royalty_percentage_input" value="0" />%</td>
+                </tr>
+            </template>
+            <table id="royalty_table">
+            </table>
+            <button id="add_royalty_button">Add royalty receiver</button>
         </p>
-    </div>
-    <div>
-        <pre id="mintresultview"></pre>
-    </div>
-    <div id="previewresultview">
+        <button id="mint_button">Mint</button>
+        <button id="preview_button">Preview</button>
+        </p>
+        <div>
+            <pre id="mintresultview"></pre>
+        </div>
+        <input type="text" id="color_input" style="width: 50px;position: absolute; display: none; z-index: 1000;" />
+        <div id="previewresultview">
 
+        </div>
+        <h1>Your NFTs</h1>
+        <p>Here's a list of the NFTs that you own. You may also burn them and they will be gone forever.</p>
+        <template id="token_template">
+            <div id="token_id"></div>
+            <img id="token_image" style="max-width: 200px;" />
+            <button id="burn_button">burn</button>
+        </template>
+        <div id="yourtokenslist">
+
+        </div>
     </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/near-api-js@1.1.0/dist/near-api-js.js"
@@ -72,8 +108,8 @@
 <script type="module">
     const { connect, keyStores, WalletConnection, Contract, utils } = nearApi;
 
-    const origin = location.origin;
-    //const origin = 'https://superduper77.testnet.page';
+    const origin = location.origin.indexOf('localhost:') == -1 ? location.origin : 'https://superduper77.testnet.page';
+
     const contractAccountId = origin.substring(origin.lastIndexOf('/') + 1).replace('.page', '');
     const networkId = (suffix => suffix == 'near' ? 'mainnet' : suffix)(contractAccountId.split('.')[1]);
 
@@ -81,7 +117,7 @@
         networkId: networkId,
         keyStore: new keyStores.BrowserLocalStorageKeyStore(),
         nodeUrl: `https://rpc.${networkId}.near.org`,
-        walletUrl: `https://wallet.${networkId}.near.org`,
+        walletUrl: networkId == 'testnet' ? 'https://testnet.mynearwallet.com' : `https://wallet.near.org`,
         helperUrl: `https://helper.${networkId}.near.org`,
         explorerUrl: `https://explorer.${networkId}.near.org`,
     };
@@ -104,12 +140,32 @@
                 await walletConnection.signOut();
                 location.reload();
             });
+
+            const account = walletConnection.account();
+            const royalty_row_template = document.getElementById('royalty_row_template');
+            const royalty_table = document.getElementById('royalty_table');
+            const royalty_row_element = royalty_row_template.content.cloneNode(true);
+            royalty_row_element.querySelector('.royalty_account_input').value = account.accountId;
+            royalty_row_element.querySelector('.royalty_percentage_input').value = 20;
+            royalty_table.appendChild(royalty_row_element);
+            const add_royalty_button = document.getElementById('add_royalty_button');
+            add_royalty_button.addEventListener('click', () => {
+                const royalty_row_element = royalty_row_template.content.cloneNode(true);
+                royalty_table.appendChild(royalty_row_element);
+            });
+
             const mintButton = document.getElementById('mint_button');
+            const STORED_COLORS_ARRAY_KEY = 'colors_array';
+            let colors_array = localStorage.getItem('colors_array');
+            if (colors_array) {
+                colors_array = JSON.parse(colors_array);
+            }
+
             document.getElementById('logged_in_content').style.display = 'block';
             mintButton.addEventListener('click', async () => {
                 mintButton.disabled = true;
                 document.getElementById('mintresultview').innerHTML = 'Please wait while executing transaction';
-                const account = walletConnection.account();
+
                 const contract = new Contract(account, contractAccountId, {
                     changeMethods: ['nft_mint']
                 });
@@ -117,7 +173,21 @@
                     const result = await contract.nft_mint({
                         token_id: document.getElementById('token_id_input').value,
                         token_owner_id: account.accountId,
-                        font_size: document.getElementById('font_size_input').value
+                        font_size: document.getElementById('font_size_input').value,
+                        colors: colors_array,
+                        extra: JSON.stringify(
+                            Array.from(document.querySelectorAll('.royalty_row')).map((val) => {
+                                const account_id = val.querySelector('.royalty_account_input').value;
+                                const numerator = Math.floor(parseFloat(val.querySelector('.royalty_percentage_input').value) * 100);
+                                return {
+                                    trait_type: 'royalty',
+                                        value: {
+                                            account_id,
+                                            numerator
+                                        }                                
+                                    };
+                            }).filter(royalty => royalty.value.account_id && royalty.value.numerator > 0)
+                        )
                     }, undefined, utils.format.parseNearAmount("0.1"));
                     document.getElementById('mintresultview').innerHTML = JSON.stringify(result, null, 1);
                 } catch (e) {
@@ -138,11 +208,49 @@
                         function_name: 'svg_preview',
                         token_id: document.getElementById('token_id_input').value,
                         font_size: document.getElementById('font_size_input').value,
+                        colors: colors_array
                     });
                     document.getElementById('previewresultview').innerHTML = result.svg;
+                    const color_input = document.getElementById('color_input');
+                    colors_array = [];
+                    Array.from(document.querySelectorAll('#previewresultview svg rect'))
+                        .forEach((rect, ndx) => {
+                            colors_array.push(rect.attributes.fill.value);
+                            rect.addEventListener('click', (e) => {
+                                color_input.style.top = `${e.clientY}px`;
+                                color_input.style.left = `${e.clientX}px`;
+                                color_input.value = rect.attributes.fill.value;
+                                color_input.style.display = 'block';
+                                console.log(color_input);
+                                color_input.onblur = () => {
+                                    rect.attributes.fill.value = color_input.value;
+                                    colors_array[ndx] = color_input.value;
+                                    color_input.style.display = 'none';
+                                    localStorage.setItem(STORED_COLORS_ARRAY_KEY, JSON.stringify(colors_array));
+                                }
+                            });
+                        }
+                        );
                 } catch (e) {
                     document.getElementById('mintresultview').innerHTML = e.toString();
                 }
+            });
+
+            const contract = new Contract(account, contractAccountId, {
+                viewMethods: ['nft_tokens_for_owner'],
+                changeMethods: ['nft_burn']
+            });
+            const tokens = await contract.nft_tokens_for_owner({ account_id: account.accountId });
+            const tokensListElement = document.getElementById('yourtokenslist');
+            const tokenViewTemplate = document.getElementById('token_template');
+            tokens.forEach(token => {
+                const tokenViewElement = tokenViewTemplate.content.cloneNode(true);
+                tokenViewElement.getElementById('token_id').innerHTML = token.token_id;
+                tokenViewElement.getElementById('token_image').src = token.metadata.media;
+                tokenViewElement.getElementById('burn_button').addEventListener('click', async () => {
+                    contract.nft_burn({ args: { token_id: token.token_id }, amount: 1 });
+                });
+                tokensListElement.appendChild(tokenViewElement);
             });
         }
     })();

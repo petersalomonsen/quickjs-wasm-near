@@ -1,4 +1,4 @@
-import html from '@web/rollup-plugin-html';
+import { rollupPluginHTML } from '@web/rollup-plugin-html';
 import { terser } from 'rollup-plugin-terser';
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets';
 import { readFileSync, rmdirSync, existsSync } from 'fs';
@@ -44,7 +44,7 @@ export default {
                 code: code
             }
         }
-    }))(), importMetaAssets(), html({
+    }))(), importMetaAssets(), rollupPluginHTML({
         include: '**/*.html', minify: true,
         transformHtml: (html) => {
             return html.replace(/<script type=\"importmap\">[^<]+<\/script>/g, "");

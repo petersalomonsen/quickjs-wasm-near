@@ -1,9 +1,9 @@
 import './app.component.js';
-import { LOGGED_IN_CONTRACT_NAME, clearWalletConnection, getNearConfig } from './near/near.js';
+import { APP_NAME, LOGGED_IN_CONTRACT_NAME, clearWalletConnection, getNearConfig } from './near/near.js';
 
 describe('app-component', () => {
     it('should show the logout button if logged in', async () => {
-        localStorage.setItem('undefined_wallet_auth_key', '{"accountId":"psalomo.testnet","allKeys":["ed25519:eNRiyM1MhKyM3bof1XvAEoLfP75YgY8D3EbKfa1yMxb"]}');
+        localStorage.setItem(`${APP_NAME}_wallet_auth_key`, '{"accountId":"psalomo.testnet","allKeys":["ed25519:eNRiyM1MhKyM3bof1XvAEoLfP75YgY8D3EbKfa1yMxb"]}');
         localStorage.setItem('near-api-js:keystore:psalomo.testnet:testnet', 'ed25519:QVuKCUH8AHt6WqxFnsjbaR8pSdjJBXAsnwfB83C5dgsmCMEP6EAmfULWm6bXWNQXCecGcsv2ATBeJKjJjFdEooG');
         clearWalletConnection();
         const appRootElement = document.createElement('app-root');
@@ -28,7 +28,7 @@ describe('app-component', () => {
         document.documentElement.removeChild(appRootElement);
     });
     it('should display the login button if not logged in', async () => {
-        localStorage.removeItem('undefined_wallet_auth_key');
+        localStorage.removeItem(`${APP_NAME}_wallet_auth_key`);
         clearWalletConnection();
         const appRootElement = document.createElement('app-root');
         document.documentElement.appendChild(appRootElement);
@@ -51,7 +51,7 @@ describe('app-component', () => {
         document.documentElement.removeChild(appRootElement);
     });
     it('should logout if clicking logout button', async () => {
-        localStorage.setItem('undefined_wallet_auth_key', '{"accountId":"psalomo.testnet","allKeys":["ed25519:eNRiyM1MhKyM3bof1XvAEoLfP75YgY8D3EbKfa1yMxb"]}');
+        localStorage.setItem(`${APP_NAME}_wallet_auth_key`, '{"accountId":"psalomo.testnet","allKeys":["ed25519:eNRiyM1MhKyM3bof1XvAEoLfP75YgY8D3EbKfa1yMxb"]}');
         localStorage.setItem('near-api-js:keystore:psalomo.testnet:testnet', 'ed25519:QVuKCUH8AHt6WqxFnsjbaR8pSdjJBXAsnwfB83C5dgsmCMEP6EAmfULWm6bXWNQXCecGcsv2ATBeJKjJjFdEooG');
         clearWalletConnection();
         const appRootElement = document.createElement('app-root');
@@ -87,17 +87,17 @@ describe('app-component', () => {
                 attributes: true
             });
         });
-        while (localStorage.getItem('undefined_wallet_auth_key')) {
+        while (localStorage.getItem(`${APP_NAME}_wallet_auth_key`)) {
             await new Promise(r => setTimeout(r, 0));
         }
-        expect(localStorage.getItem('undefined_wallet_auth_key')).to.be.null;
+        expect(localStorage.getItem(`${APP_NAME}_wallet_auth_key`)).to.be.null;
         expect(appRootElement.shadowRoot.querySelector('#logout-menuitem')).to.be.null;
         expect(appRootElement.shadowRoot.querySelector('#login-menuitem')).not.to.be.null;
 
         document.documentElement.removeChild(appRootElement);
     });
     it('should receive key from wallet when logging in', async () => {
-        localStorage.removeItem('undefined_wallet_auth_key');
+        localStorage.removeItem(`${APP_NAME}_wallet_auth_key`);
 
         const randomNumber = Math.floor(Math.random() * (99999999999999 - 10000000000000) + 10000000000000);
 
@@ -114,7 +114,7 @@ describe('app-component', () => {
         document.documentElement.appendChild(appRootElement);
         await appRootElement.readyPromise;
 
-        expect(localStorage.getItem('undefined_wallet_auth_key')).not.to.be.null;
+        expect(localStorage.getItem(`${APP_NAME}_wallet_auth_key`)).not.to.be.null;
         expect(appRootElement.shadowRoot.getElementById('loggedinuserspan').innerHTML).to.equal(`${accountId} @ ${accountId}`);
     })
 });

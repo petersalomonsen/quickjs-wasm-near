@@ -1,13 +1,14 @@
 import './code-editor.component.js';
-import { initNFTContract, deployJScontract, deployStandaloneContract, getSuggestedDepositForContract, isStandaloneMode } from '../near/near.js';
+import './args-editor.component.js';
+import { initNFTContract, deployJScontract, deployStandaloneContract, getSuggestedDepositForContract, isStandaloneMode, callStandaloneContract, createWalletConnection, byteArrayToBase64 } from '../near/near.js';
 import { createQuickJS } from '../compiler/quickjs.js'
 import { toggleIndeterminateProgress } from '../common/progressindicator.js';
-import { createQuickJSWithNearEnv } from '../compiler/nearenv.js';
 import { createStandalone } from '../compiler/standalone.js';
 import { bundle } from '../compiler/bundler.js';
 import html from './code-page.component.html.js';
 import css from './code-page.component.css.js';
-import { WASM_URLS } from '../compiler/jsinrust/contract-wasms.js';
+import { WASM_URLS, getContractSimulationInstance, loadContractWasmIntoSimulator } from '../compiler/jsinrust/contract-wasms.js';
+import * as nearenv from '../compiler/jsinrust/wasm-near-environment.js';
 
 class CodePageComponent extends HTMLElement {
     constructor() {
@@ -30,6 +31,82 @@ class CodePageComponent extends HTMLElement {
         }`;
         sourcecodeeditor.addEventListener('save', () => this.save());
 
+        const askAIButton = this.shadowRoot.getElementById('askaibutton');
+        askAIButton.addEventListener('click', async () => {
+            toggleIndeterminateProgress(true);
+
+            const walletConnection = await createWalletConnection();
+            await walletConnection.isSignedInAsync();
+
+            const accountId = walletConnection.account().accountId;
+
+            const messages = [
+                {
+                    "role": "user", "content": `The following Javascript code will return web content.
+\`\`\`
+export function web4_get() {
+    const request = JSON.parse(env.input()).request;
+    
+    let response;
+    if (request.path == '/index.html') {
+        response = {
+        contentType: "text/html; charset=UTF-8",
+        body: env.base64_encode('hello')
+        };
+    }
+    env.value_return(JSON.stringify(response));
+    }
+\`\`\`
+
+And this will create an NFT payout structure with 80% to the token owner and 20% to the contract owner.
+It also returns amount according to the input balance.
+
+\`\`\`
+export function nft_payout() {
+    const args = JSON.parse(env.input());
+    const balance = BigInt(args.balance);
+    const payout = {};
+    const token_owner_id = JSON.parse(env.nft_token(args.token_id)).owner_id;
+    const contract_owner = env.contract_owner();
+    
+    const addPayout = (account, amount) => {
+        if (!payout[account]) {
+        payout[account] = 0n;
+        }
+        payout[account] += amount;
+    };
+    addPayout(token_owner_id, balance * BigInt(80_00) / BigInt(100_00));
+    addPayout(contract_owner, balance * BigInt(20_00) / BigInt(100_00));
+    Object.keys(payout).forEach(k => payout[k] = payout[k].toString());
+    return JSON.stringify({ payout });
+}
+\`\`\`
+                `},
+                { "role": "user", "content": `In the next message I will show you some Javascript code. For those lines that starts with \`AI:\`, replace with javascript code according to the text on that line ( which can be in any human language ), and only give me the fully updated javascript code without any extra text before or after.` },
+                { "role": "user", "content": sourcecodeeditor.value }
+            ];
+
+            const messagesStringified = JSON.stringify(messages);
+            const deposit = BigInt(messagesStringified.length) * 10000000000000000000n;
+
+            const message_hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(messagesStringified))))
+                .map((b) => b.toString(16).padStart(2, "0"))
+                .join("");
+            const result = await callStandaloneContract('jsinrust.near', 'ask_ai', {
+                message_hash
+            }, deposit);
+
+            const airesponse = await fetch('https://near-openai.vercel.app/api/openai', {
+                method: 'POST',
+                body: JSON.stringify({
+                    transaction_hash: result.transaction.hash,
+                    sender_account_id: accountId,
+                    messages: messages
+                })
+            }).then(r => r.json());
+            sourcecodeeditor.value = airesponse.choices[0].message.content;
+            toggleIndeterminateProgress(false);
+        });
         const savebutton = this.shadowRoot.getElementById('savebutton');
         savebutton.addEventListener('click', () => this.save());
 
@@ -37,12 +114,9 @@ class CodePageComponent extends HTMLElement {
         const deploybutton = this.shadowRoot.getElementById('deploybutton');
         this.bundletypeselect = this.shadowRoot.getElementById('bundletypeselect');
         await new Promise(r => setTimeout(() => r(), 100));
+        this.bundletypeselect.addEventListener('change', () => sourcecodeeditor.setEnvCompletions(this.bundletypeselect.value));
         this.bundletypeselect.value = lastSelectedBundleType;
 
-        if (this.bundletypeselect.value != '') {
-            sourcecodeeditor.setEnvCompletions(this.bundletypeselect.value);
-        }
-        this.bundletypeselect.addEventListener('change', () => sourcecodeeditor.setEnvCompletions(this.bundletypeselect.value));
         deploybutton.addEventListener('click', async () => {
             if (this.bundletypeselect.value == '') {
                 this.shadowRoot.querySelector('#selectTargetContractTypeSnackbar').show();
@@ -124,56 +198,38 @@ class CodePageComponent extends HTMLElement {
             URL.revokeObjectURL(link.href);
         });
 
-        const addstorageitembutton = this.shadowRoot.getElementById('addstorageitembutton');
-        const storageitemsdiv = this.shadowRoot.getElementById('storageitems');
-        const addStorageItem = (key = '', val = '') => {
-            const storageitemtemplate = this.shadowRoot.getElementById('storageitemtemplate');
-            storageitemsdiv.appendChild(storageitemtemplate.content.cloneNode(true));
-            const storageitem = storageitemsdiv.lastElementChild;
-            storageitem.querySelector('.deletestorageitembutton').addEventListener('click', () => storageitem.remove());
-            storageitem.querySelector('.storagekeyinput').value = key;
-            storageitem.querySelector('.storagevalueinput').value = val;
-        };
-        addstorageitembutton.addEventListener('click', () => {
-            addStorageItem();
-        });
-
-        const getStorageObj = () => [...storageitemsdiv.children].reduce((p, c) => {
-            p[c.querySelector('.storagekeyinput').value] = c.querySelector('.storagevalueinput').value;
-            return p;
-        }, {});
-
         const simulatebutton = this.shadowRoot.getElementById('simulatebutton');
         this.simulationOutputArea = this.shadowRoot.querySelector('#simulationoutput');
+
         simulatebutton.addEventListener('click', async () => {
-            const deposit = this.shadowRoot.querySelector('#depositinput').value;
-            const quickjs = await createQuickJSWithNearEnv(
-                this.shadowRoot.querySelector('#argumentsinput').value,
-                deposit ? nearApi.utils.format.parseNearAmount(deposit) : undefined,
-                getStorageObj(),
-                this.shadowRoot.querySelector('#signeraccountidinput').value
-            );
-            const bytecode = quickjs.compileToByteCode(await bundle(sourcecodeeditor.value, this.bundletypeselect.value), 'contractmodule');
-            quickjs.evalByteCode(bytecode);
-            quickjs.stdoutlines = [];
-            quickjs.stdoutlines = [];
+            nearenv.reset_output();
+            const depositInputValue = this.shadowRoot.querySelector('#depositinput').value;
+            const signer_account_id = this.shadowRoot.querySelector('#signeraccountidinput').value;
+
             const selectedMethod = this.shadowRoot.querySelector('#methodselect').value;
             if (selectedMethod) {
-                const runcontractsource = `import { ${selectedMethod} } from 'contractmodule';
-    ${selectedMethod}();
-    `;
-                quickjs.evalSource(runcontractsource, 'runcontract');
-                this.simulationOutputArea.textContent = quickjs.stdoutlines.join('\n');
-                quickjs.stdoutlines = [];
-                quickjs.evalSource('env.print_storage()', 'printstorage');
-                const storageAfterRun = JSON.parse(quickjs.stdoutlines[0]);
-                storageitemsdiv.replaceChildren([]);
-                for (const key in storageAfterRun) {
-                    addStorageItem(key, storageAfterRun[key]);
+                try {
+                    const simulationInstance = await getContractSimulationInstance();
+                    const args = this.shadowRoot.querySelector('#argumentsinput').value;
+                    if (depositInputValue) {
+                        nearenv.set_attached_deposit(BigInt(depositInputValue));
+                    } else {
+                        nearenv.set_attached_deposit(0n);
+                    }
+                    nearenv.set_signer_account_id(signer_account_id);
+                    
+                    nearenv.set_args_string(args);
+                    
+                    simulationInstance[selectedMethod]();
+                } catch (e) {
+                    console.error(e);
                 }
+                this.simulationOutputArea.textContent = `${nearenv.log_output.join('\n')}
+${nearenv.latest_return_value}
+`;
+
                 this.simulationContext = {
                     selectedMethod: selectedMethod,
-                    storage: storageAfterRun,
                     arguments: this.shadowRoot.querySelector('#argumentsinput').value,
                     deposit: this.shadowRoot.querySelector('#depositinput').value,
                 };
@@ -189,11 +245,6 @@ class CodePageComponent extends HTMLElement {
             this.shadowRoot.querySelector('#methodselect').value = this.simulationContext.selectedMethod;
             this.shadowRoot.querySelector('#argumentsinput').value = this.simulationContext.arguments;
             this.shadowRoot.querySelector('#depositinput').value = this.simulationContext.deposit;
-            const storageitemsdiv = this.shadowRoot.getElementById('storageitems');
-            storageitemsdiv.replaceChildren([]);
-            for (const key in this.simulationContext.storage) {
-                addStorageItem(key, this.simulationContext.storage[key]);
-            }
         }
     }
 
@@ -202,12 +253,12 @@ class CodePageComponent extends HTMLElement {
         localStorage.setItem('lastSavedSourceCode', source);
         localStorage.setItem('lastSelectedBundleType', this.bundletypeselect.value);
         const methodselect = this.shadowRoot.querySelector('#methodselect');
-        const quickjs = await createQuickJS();
+        await loadContractWasmIntoSimulator(this.bundletypeselect.value);
+
         try {
-            quickjs.evalSource(await bundle(source, this.bundletypeselect.value), 'contractmodule');
-            quickjs.evalSource(`import * as contract from 'contractmodule';
-            print('method names:', Object.keys(contract));`, 'main');
-            const methodnames = quickjs.stdoutlines.find(l => l.indexOf('method names:') == 0).substring('method names: '.length).split(',');
+            const simulationInstance = await getContractSimulationInstance();
+    
+            const methodnames = Object.keys(simulationInstance);
             this.exportedMethodNames = methodnames;
             methodselect.querySelectorAll('mwc-list-item').forEach(li => li.remove());
             methodnames.forEach(methodname => {
@@ -216,12 +267,22 @@ class CodePageComponent extends HTMLElement {
                 option.value = methodname;
                 methodselect.appendChild(option);
             });
+
+            const quickjs = await createQuickJS();
+            const bytecode = quickjs.compileToByteCode(await bundle(source, this.bundletypeselect.value), 'contractmodule');
+
+            nearenv.set_args({
+                bytecodebase64: await byteArrayToBase64(bytecode)
+            });
+            nearenv.set_attached_deposit(0n);
+            simulationInstance.post_quickjs_bytecode();
+
             this.simulationOutputArea.innerHTML = '';
             if (this.simulationContext) {
                 setTimeout(() => methodselect.value = this.simulationContext.selectedMethod, 0);
             }
         } catch (e) {
-            this.simulationOutputArea.innerHTML = quickjs.stdoutlines.join('\n');
+            this.simulationOutputArea.innerHTML = e;
             const compileErrorSnackbar = this.shadowRoot.querySelector('#compileErrorSnackbar');
             compileErrorSnackbar.show();
         }

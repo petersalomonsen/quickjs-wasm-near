@@ -1,5 +1,5 @@
 import { createQuickJS } from '../compiler/quickjs.js';
-import { getNearConfig, viewStandaloneContract, clearWalletConnection } from '../near/near.js';
+import { getNearConfig, viewStandaloneContract, clearWalletConnection, APP_NAME } from '../near/near.js';
 
 async function waitForElement(rootElement, selector) {
     return await new Promise(resolve => {
@@ -53,7 +53,7 @@ describe('codepage-component', function () {
         await keyStore.setKey(nearConfig.networkId, accountId, keyPair);
         localStorage.setItem('lastSelectedBundleType', 'minimum-web4');
         localStorage.setItem('loggedincontractname', accountId);
-        localStorage.setItem('undefined_wallet_auth_key', JSON.stringify({ accountId: accountId, allKeys: [keyPair.publicKey] }));
+        localStorage.setItem(`${APP_NAME}_wallet_auth_key`, JSON.stringify({ accountId: accountId, allKeys: [keyPair.publicKey] }));
         clearWalletConnection();
 
         const codePageElement = document.createElement('code-page');
@@ -93,7 +93,6 @@ describe('codepage-component', function () {
         });
 
         const response = await viewStandaloneContract(accountId, 'web4_get', { request: { path: '/index.html' } });
-        console.log(response);
         expect(response).to.deep.equal({ contentType: 'text/html; charset=UTF-8', body: 'aGVsbG8=' });
         console.log('web4-minimum contract is deployed');
     });
@@ -111,7 +110,7 @@ describe('codepage-component', function () {
         await keyStore.setKey(nearConfig.networkId, accountId, keyPair);
         localStorage.setItem('lastSelectedBundleType', 'nft');
         localStorage.setItem('loggedincontractname', accountId);
-        localStorage.setItem('undefined_wallet_auth_key', JSON.stringify({ accountId: accountId, allKeys: [keyPair.publicKey] }));
+        localStorage.setItem(`${APP_NAME}_wallet_auth_key`, JSON.stringify({ accountId: accountId, allKeys: [keyPair.publicKey] }));
         clearWalletConnection();
 
         const codePageElement = document.createElement('code-page');

@@ -5,7 +5,7 @@ import { keymap } from "@codemirror/view";
 import { EditorState } from '@codemirror/state';
 import html from './code-editor.component.html.js';
 import '@material/mwc-fab';
-import { getJSEnvProperties } from '../compiler/jsinrust/contract-wasms.js';
+import { getJSEnvProperties, loadContractWasmIntoSimulator } from '../compiler/jsinrust/contract-wasms.js';
 import { env_function_docs } from './env-function-docs.js';
 
 export class CodeEditor extends HTMLElement {
@@ -66,7 +66,10 @@ export class CodeEditor extends HTMLElement {
     }
 
     async setEnvCompletions(wasm_contract_type) {
-        this.completion_options = (await getJSEnvProperties(wasm_contract_type))
+        await loadContractWasmIntoSimulator(wasm_contract_type);
+
+        const props = await getJSEnvProperties();
+        this.completion_options = (props)
             .map((prop) => Object.assign({
                 type: 'function',
                 label: prop

@@ -6,4 +6,5 @@ export default /*css*/ `.outputarea {
 
 .outputarea pre {
     overflow: auto;
-}`;
+    whitespace: wrap;
+}`

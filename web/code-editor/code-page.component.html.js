@@ -1,9 +1,12 @@
 export default /*html*/ `
-<mwc-select id="bundletypeselect" label="target contract type">  
-  <mwc-list-item value="minimum-web4" selected>Minimum Web4</mwc-list-item>
-  <mwc-list-item value="nft">NFT</mwc-list-item>
-</mwc-select>
-
+<div style="display: flex; flex-direction: row;">
+  <mwc-select id="bundletypeselect" label="target contract type">  
+    <mwc-list-item value="minimum-web4" selected>Minimum Web4</mwc-list-item>
+    <mwc-list-item value="nft">NFT</mwc-list-item>
+  </mwc-select>
+  <span style="flex-grow: 1"></span>
+  <mwc-button raised id="askaibutton" icon="question_mark" style="display: none;">Ask AI</mwc-button>
+</div>
 <p>
   <code-editor id="sourcecodeeditor"></code-editor>
 </p>
@@ -17,32 +20,19 @@ export default /*html*/ `
 <h3>Simulation</h3>
 <p>
   <mwc-select id="methodselect" label="method"></mwc-select>
-  <mwc-textfield id="argumentsinput" label="arguments (JSON)"></mwc-textfield>
+
   <mwc-textfield id="depositinput" label="attached deposit" type="number"></mwc-textfield>
   <mwc-textfield id="signeraccountidinput" label="signer account id"></mwc-textfield>
+  
 </p>
-<h4>Storage</h4>
-<template id="storageitemtemplate">
-  <div>
-    <mwc-textfield class="storagekeyinput" label="key"></mwc-textfield>
-    <mwc-textfield class="storagevalueinput" label="value"></mwc-textfield>
-    <mwc-icon-button icon="delete" slot="navigationIcon" class="deletestorageitembutton"></mwc-icon-button>
-  </div>
-</template>
-<div id="storageitems">
-
-</div>
-<mwc-button id="addstorageitembutton" icon="add">Add storage item</mwc-button>
+Arguments (json):<br />
+<args-editor id="argumentsinput"></args-editor>
 <p>
   <mwc-button raised id="simulatebutton" icon="play_arrow">Run</mwc-button>
 <p>
 
 <div class="outputarea">
-  <pre>
-      <code id="simulationoutput">
-
-      </code>
-    </pre>
+  <pre><code id="simulationoutput"></code></pre>
 </div>
 
 <mwc-dialog id="deploy-contract-dialog" heading="Deploy contract?">

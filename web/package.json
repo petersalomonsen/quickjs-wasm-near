@@ -6,8 +6,8 @@
         "importmap": "node importmapgenerator.js",
         "dist": "rollup -c rollup.config.js",
         "createdevaccount": "node create-dev-account.js",
-        "test": "karma start --single-run --browsers ChromeHeadless karma.conf.cjs",
-        "test:watch": "karma start --browsers Chrome karma.conf.cjs"
+        "test": "wtr",
+        "test:watch": "wtr --watch"
     },
     "dependencies": {
         "@codemirror/autocomplete": "^6.4.2",
@@ -35,6 +35,8 @@
         "@rollup/plugin-node-resolve": "^15.0.1",
         "@web/rollup-plugin-html": "^1.10.3",
         "@web/rollup-plugin-import-meta-assets": "^1.0.7",
+        "@web/test-runner": "^0.18.0",
+        "@web/test-runner-playwright": "^0.11.0",
         "chai": "^4.3.6",
         "http-server": "^14.1.0",
         "karma": "^6.3.19",

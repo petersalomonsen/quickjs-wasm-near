@@ -13,3 +13,6 @@ npm i -g wasm-opt
 (cd wasmlib && source ../emsdk/emsdk_env.sh && ./build.sh)                    
 cd ../web
 yarn install
+yarn playwright install
+sudo yarn playwright install-deps
+yarn createdevaccount

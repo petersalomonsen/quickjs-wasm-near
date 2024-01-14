@@ -4,7 +4,8 @@
             "extensions": [
                 "ms-vscode.makefile-tools",
                 "ms-vscode.cpptools-extension-pack",
-                "github.vscode-github-actions"
+                "github.vscode-github-actions",
+                "dtsvet.vscode-wasm"
             ]
         }
     },

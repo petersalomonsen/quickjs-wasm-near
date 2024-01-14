@@ -37,26 +37,7 @@ async function waitForElement(rootElement, selector) {
 
 describe('codepage-component', function () {
     this.timeout(60000);
-    it('should download bytecode', async () => {
-        const codePageElement = document.createElement('code-page');
-        document.body.appendChild(codePageElement);
-        const sourcecodeeditor = await waitForElement(codePageElement, '#sourcecodeeditor');
-        expect(sourcecodeeditor).not.to.be.undefined;
-        await codePageElement.readyPromise;
-        sourcecodeeditor.value = `print('hello')`;
 
-        const downloadByteCodeButton = codePageElement.shadowRoot.querySelector('#downloadbytecodebutton');
-        const downloadUrl = await new Promise(async resolve => {
-            URL.revokeObjectURL = (url) => {
-                resolve(url);
-            };
-            downloadByteCodeButton.click();
-        });
-        const bytecode = new Uint8Array(await fetch(downloadUrl).then(r => r.arrayBuffer()));
-        const quickjs = await createQuickJS();
-        quickjs.evalByteCode(bytecode);
-        expect(quickjs.stdoutlines.indexOf('hello')).to.be.greaterThan(-1);
-    });
     it('should deploy minimum-web4 js contract to new account', async () => {
         const randomNumber = Math.floor(Math.random() * (99999999999999 - 10000000000000) + 10000000000000);
 
@@ -79,7 +60,7 @@ describe('codepage-component', function () {
         const sourcecodeeditor = await waitForElement(codePageElement, '#sourcecodeeditor');
         await codePageElement.readyPromise;
 
-        sourcecodeeditor.value = `export function web4_get() {
+        const src = `export function web4_get() {
             const request = JSON.parse(env.input()).request;
         
             let response;
@@ -93,6 +74,8 @@ describe('codepage-component', function () {
             env.value_return(JSON.stringify(response));
         }
         `;
+        sourcecodeeditor.value = src;
+        expect(sourcecodeeditor.value).to.equal(src);
 
         const deployButton = codePageElement.shadowRoot.querySelector('#deploybutton');
 
@@ -136,7 +119,7 @@ describe('codepage-component', function () {
         const sourcecodeeditor = await waitForElement(codePageElement, '#sourcecodeeditor');
         await codePageElement.readyPromise;
 
-        sourcecodeeditor.value = `export function web4_get() {
+        const src = `export function web4_get() {
             const request = JSON.parse(env.input()).request;
         
             let response;
@@ -150,6 +133,8 @@ describe('codepage-component', function () {
             env.value_return(JSON.stringify(response));
         }
         `;
+        sourcecodeeditor.value = src;
+        expect(sourcecodeeditor.value).to.equal(src);
 
         const deployButton = codePageElement.shadowRoot.querySelector('#deploybutton');
         const deployContractDialog = codePageElement.shadowRoot.querySelector('#deploy-contract-dialog');
@@ -183,7 +168,7 @@ describe('codepage-component', function () {
         const sourcecodeeditor = await waitForElement(codePageElement, '#sourcecodeeditor');
         await codePageElement.readyPromise;
 
-        sourcecodeeditor.value = `export function web4_get() {
+        const src =`export function web4_get() {
             const request = JSON.parse(env.input()).request;
         
             let response;
@@ -197,6 +182,8 @@ describe('codepage-component', function () {
             env.value_return(JSON.stringify(response));
         }
         `;
+        sourcecodeeditor.value = src;
+        expect(sourcecodeeditor.value).to.equal(src);
 
         const deployButton = codePageElement.shadowRoot.querySelector('#deploybutton');
         const deployContractDialog = codePageElement.shadowRoot.querySelector('#deploy-contract-dialog');

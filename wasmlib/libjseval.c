@@ -130,20 +130,18 @@ JSValue js_eval_bytecode(const uint8_t *buf, size_t buf_len)
 JSValue js_load_bytecode(const uint8_t *buf, size_t buf_len)
 {
     JSValue module_obj;
-    JSModuleDef *m;
-
     create_runtime();
 
     module_obj = JS_ReadObject(ctx, buf, buf_len, JS_READ_OBJ_BYTECODE);
     JS_EvalFunction(ctx, module_obj);
-    return JS_GetImportMeta(ctx, JS_VALUE_GET_PTR(module_obj));
+    return module_obj;
 }
 
 JSValue js_call_function(JSValue mod_obj, const char *function_name)
 {
     JSValue fun_obj, val;
 
-    fun_obj = JS_GetProperty(ctx, mod_obj, JS_NewAtom(ctx, function_name));
+    fun_obj = JS_GetPropertyStr(ctx, mod_obj, function_name);
     val = JS_Call(ctx, fun_obj, mod_obj, 0, NULL);
     if (JS_IsException(val))
     {

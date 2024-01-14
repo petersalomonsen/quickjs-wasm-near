@@ -1,15 +1,22 @@
 import { createQuickJS } from '../compiler/quickjs.js';
 import { getNearConfig, viewStandaloneContract, clearWalletConnection, APP_NAME } from '../near/near.js';
+import './code-page.component.js';
 
 async function waitForElement(rootElement, selector) {
     return await new Promise(resolve => {
+        const findElement = () => rootElement.shadowRoot.querySelector(selector);
+        const foundElement = findElement();
+        if (foundElement) {
+            resolve(foundElement);
+        }
         const observer = new MutationObserver((mutationsList, observer) => {
-            const foundElement = rootElement.shadowRoot.querySelector(selector);
+            const foundElement = findElement();
             if (foundElement) {
                 observer.disconnect();
                 resolve(foundElement);
             }
         });
+        
         observer.observe(rootElement.shadowRoot, {
             childList: true,
             subtree: true,

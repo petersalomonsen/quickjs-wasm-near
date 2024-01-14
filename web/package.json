@@ -3,7 +3,7 @@
     "scripts": {
         "start": "http-server -p 8082 .",
         "start-dist": "http-server -p 8082 ../dist",
-        "importmap": "node importmapgenerator.js",
+        "generateimportmap": "jspm link index.html -o index.html && jspm link index.html -o importmap.json",
         "dist": "rollup -c rollup.config.js",
         "createdevaccount": "node create-dev-account.js",
         "test": "wtr",
@@ -40,6 +40,7 @@
         "@web/test-runner-playwright": "^0.11.0",
         "chai": "^4.3.6",
         "http-server": "^14.1.0",
+        "jspm": "^3.2.0",
         "karma": "^6.3.19",
         "karma-chai": "^0.1.0",
         "karma-chrome-launcher": "^3.1.1",

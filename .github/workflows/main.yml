@@ -14,12 +14,12 @@ jobs:
         run: |
           grep -rq --include '*.spec.js' \.only\( . && echo 'You have .only() in your tests!' && exit 1
           exit 0
-  chromeheadless:
-    name: Chrome headless
+  webtestrunner:
+    name: Web Test Runner
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Chrome headless
+      - name: Web Test Runner
         run: |
           wget https://bellard.org/quickjs/quickjs-2024-01-13.tar.xz
           tar -xf quickjs-2024-01-13.tar.xz

@@ -1,3 +1,13 @@
+import '@material/mwc-top-app-bar';
+import '@material/mwc-icon-button';
+import '@material/mwc-button';
+import '@material/mwc-dialog';
+import '@material/mwc-drawer';
+import '@material/mwc-list';
+import '@material/mwc-textfield';
+import '@material/mwc-select';
+import '@material/mwc-snackbar';
+
 import { createQuickJS } from '../compiler/quickjs.js';
 import { getNearConfig, viewStandaloneContract, clearWalletConnection, APP_NAME } from '../near/near.js';
 import './code-page.component.js';

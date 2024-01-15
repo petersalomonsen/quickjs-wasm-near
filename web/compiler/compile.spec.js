@@ -97,7 +97,7 @@ describe('compiler', function() {
         expect(quickjs.getObjectPropertyValue(result, 'hello')).to.equal('world');
         expect(quickjs.getObjectPropertyValue(result, 'thenumberis')).to.equal(42);
     });
-    it.only('should call function from bytecode', async () => {
+    it('should call function from bytecode', async () => {
         const quickjs = await createQuickJS();
         const bytecode = await quickjs.compileToByteCode(`
 export function get_obj() {

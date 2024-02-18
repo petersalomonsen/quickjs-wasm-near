@@ -12,7 +12,7 @@ const nearconfig = {
     nodeUrl: `https://rpc.${networkId}.near.org`,
     archiveNodeUrl: `https://archival-rpc.${networkId}.near.org`,
     contractName: `jsinrust.${accountPostFix}`,
-    walletUrl: networkId == 'testnet' ? 'https://testnet.mynearwallet.com/' : 'https://wallet.mainnet.near.org',
+    walletUrl: networkId == 'testnet' ? 'https://testnet.mynearwallet.com/' : 'https://app.mynearwallet.com/',
     helperUrl: `https://helper.${networkId}.near.org`,
     networkId: networkId,
     keyStore: null

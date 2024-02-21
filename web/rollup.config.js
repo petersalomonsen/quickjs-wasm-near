@@ -1,7 +1,7 @@
 import { rollupPluginHTML } from '@web/rollup-plugin-html';
 import { terser } from 'rollup-plugin-terser';
 import { importMetaAssets } from '@web/rollup-plugin-import-meta-assets';
-import { readFileSync, rmdirSync, existsSync } from 'fs';
+import { readFileSync, rmdirSync, existsSync, writeFileSync } from 'fs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 const outdir = '../dist';
@@ -11,7 +11,7 @@ if (existsSync(outdir)) {
 
 export default {
     input: './index.html',
-    output: { dir: outdir, entryFileNames: "app.[hash].js" },
+    output: { dir: outdir, entryFileNames: "main.js" },
     plugins: [nodeResolve(), (() => ({
         transform(code, id) {
             let urlMatch;
@@ -49,5 +49,29 @@ export default {
         transformHtml: (html) => {
             return html.replace(/<script type=\"importmap\">[^<]+<\/script>/g, "");
         }
-    }), terser()],
+    }), terser(),
+    {
+        name: "inline-js",
+        closeBundle: () => {
+          const js = readFileSync(`${outdir}/main.js`).toString();
+          const html = readFileSync(`${outdir}/index.html`)
+            .toString()
+            .replace(
+              `<script type="module" src="./main.js"></script>`,
+              `<script type="module">${js}</script>`
+            );
+          writeFileSync(`${outdir}/index.html`, html);
+          const dataUri = `data:text/html;base64,${Buffer.from(html).toString(
+            "base64"
+          )}`;
+          writeFileSync(
+            `${outdir}/nearbos.jsx`,
+            `
+  return <iframe style={{ width: "100%", height: "600px" }}
+  src="${dataUri}">
+  </iframe>;`
+          );
+        }
+    }
+],
 };

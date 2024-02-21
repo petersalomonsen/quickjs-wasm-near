@@ -11,7 +11,7 @@ if (existsSync(outdir)) {
 
 export default {
     input: './index.html',
-    output: { dir: outdir, entryFileNames: "app.[hash].js" },
+    output: { dir: outdir, entryFileNames: "main.js" },
     plugins: [nodeResolve(), (() => ({
         transform(code, id) {
             let urlMatch;
@@ -53,11 +53,11 @@ export default {
     {
         name: "inline-js",
         closeBundle: () => {
-          const js = readFileSync("./app.component.js").toString();
-          const html = readFileSync("./index.html")
+          const js = readFileSync(`${outdir}/main.js`).toString();
+          const html = readFileSync(`${outdir}/index.html`)
             .toString()
             .replace(
-              `<script type="module" src="app.component.js"></script>`,
+              `<script type="module" src="./main.js"></script>`,
               `<script type="module">${js}</script>`
             );
           writeFileSync(`${outdir}/index.html`, html);
@@ -72,5 +72,6 @@ export default {
   </iframe>;`
           );
         }
-    }],
+    }
+],
 };
